@@ -1,5 +1,5 @@
 // src/pages/employee/EmpHeader.js
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './EmpHeader.css';
 
