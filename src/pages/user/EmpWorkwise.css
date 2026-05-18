@@ -1,0 +1,371 @@
+/* src/pages/user/EmpWorkwise.css */
+.workwise-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* CARDS */
+.ww-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  padding: 32px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.ww-top-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.ww-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+/* STATUS BLOCK */
+.ww-status-block {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.ww-status-icon-box {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  color: #fff;
+}
+.ww-status-icon-box.stopped {
+  background: #739aff; /* Soft blue */
+}
+.ww-status-icon-box.running {
+  background: #13c6df;
+  box-shadow: 0 0 12px rgba(19, 198, 223, 0.5);
+  animation: ww-pulse 2s infinite;
+}
+
+@keyframes ww-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(19, 198, 223, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(19, 198, 223, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(19, 198, 223, 0); }
+}
+
+.ww-status-label {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #222;
+}
+
+/* FORM */
+.ww-form {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ww-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ww-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ww-label-desc {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 400;
+}
+
+.ww-req {
+  color: #ff3b5c;
+}
+
+.ww-icon-check { color: #2e7d32; }
+.ww-icon-folder { color: #f57c00; }
+.ww-icon-book { color: #43a047; }
+.ww-icon-gear { color: #8e24aa; }
+
+.ww-select-wrap {
+  position: relative;
+}
+
+.ww-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  color: #333;
+  appearance: none;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.ww-select:focus {
+  outline: none;
+  border-color: #739aff;
+  box-shadow: 0 0 0 3px rgba(115, 154, 255, 0.15);
+}
+
+.ww-select.disabled {
+  background: #f9f9f9;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.ww-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+.ww-sub-hint {
+  font-size: 0.7rem;
+  color: #999;
+  margin-top: -4px;
+  margin-left: 2px;
+}
+
+.ww-btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.ww-toggle-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.ww-btn-disabled {
+  background: #dcdcdc;
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.ww-btn-start {
+  background: #739aff;
+  color: #fff;
+}
+.ww-btn-start:hover {
+  background: #5b85f2;
+}
+
+.ww-btn-stop {
+  background: #ff4d4d;
+  color: #fff;
+}
+.ww-btn-stop:hover {
+  background: #e63939;
+}
+
+/* BOTTOM CARD */
+.ww-bottom-card {
+  padding: 24px 32px;
+}
+
+.ww-logs-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+/* FILTERS */
+.ww-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.ww-filter-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ww-filter-col label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.ww-filter-select, .ww-filter-date {
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  color: #333;
+  min-width: 140px;
+  background: #fff;
+}
+
+.ww-clear-col {
+  margin-left: auto;
+}
+
+.ww-clear-btn {
+  background: none;
+  border: none;
+  color: #666;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+.ww-clear-btn:hover {
+  background: #f0f0f0;
+}
+
+/* TABLE */
+.ww-table-container {
+  overflow-x: auto;
+}
+
+.ww-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.ww-table th, .ww-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ww-table th {
+  color: #555;
+  font-weight: 600;
+  background: #fcfcfc;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.ww-table td {
+  color: #444;
+}
+
+/* STATUS CHIPS */
+.ww-status-chip {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+}
+
+.ww-status-chip.stopped {
+  background: #ffe6e6;
+  color: #d32f2f;
+  border: 1px solid #ffcdd2;
+}
+
+.ww-status-chip.completed {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+/* PAGINATION */
+.ww-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.ww-page-items {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ww-page-select {
+  padding: 4px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: 'Poppins', sans-serif;
+  background: #fff;
+}
+
+.ww-page-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ww-page-btn {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ww-page-btn:hover {
+  background: #f5f5f5;
+}
+
+.ww-page-btn.active {
+  background: #2196f3;
+  color: #fff;
+  border-color: #2196f3;
+}

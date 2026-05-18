@@ -1,0 +1,322 @@
+/* =========================
+   PAGE LAYOUT
+========================= */
+
+.login-page {
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 0;
+
+  background-image: url("../../../assets/images/login-bg.png");
+  background-size: cover;        /* fills screen properly */
+  background-position: center;   /* keeps focus centered */
+  background-repeat: no-repeat;
+
+  overflow: hidden;
+}
+
+.overlay {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+
+  align-items: flex-start; width: 100%;
+  height: 100vh;   /* instead of min-height */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;/* 👈 move to top */
+
+  padding-top: 25px; /* controls how far from top */
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* =========================
+   LOGIN HEADER
+========================= */
+
+.login-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.login-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+    font-family: "Arial Black", "Montserrat", sans-serif;
+  letter-spacing: 1px;
+  color: #e43466;
+  text-transform: uppercase;
+}
+/* COLORS */
+
+.arrow {
+  color: #ff3b5c; /* red/pink */
+}
+
+.data {
+  color: #9b9b9b; /* gray */
+}
+
+.tech {
+  color: #13c6df; /* cyan */
+}
+.portal-text {
+  margin-top: 10px;
+
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+
+  letter-spacing: 0.3px;
+  line-height: 1.5;
+}
+
+/* HIGHLIGHT TEXT */
+
+.portal-highlight {
+  background: linear-gradient(
+    90deg,
+    #13c6df,
+    #4de7ff,
+    #13c6df
+  );
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  font-weight: 700;
+
+  text-shadow:
+    0 0 8px rgba(19, 198, 223, 0.45),
+    0 0 16px rgba(19, 198, 223, 0.25);
+
+  animation: glowPortal 2.5s ease-in-out infinite;
+}
+
+/* GLOW ANIMATION */
+
+@keyframes glowPortal {
+  0% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.35);
+  }
+
+  100% {
+    filter: brightness(1);
+  }
+}
+
+.login-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* =========================
+   LOGIN CARD (GLASS UI)
+========================= */
+
+.login-card {
+  width: 100%;
+  max-width: 320px;   /* reduced from 380px */
+
+  margin-top: 8px;
+
+  padding: 20px 18px; /* reduced padding */
+  border-radius: 14px;
+
+  background: rgba(25, 25, 25, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+  color: #fff;
+  text-align: center;
+}
+
+/* =========================
+   HEADING
+========================= */
+
+.login-card h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* =========================
+   TOGGLE BUTTONS
+========================= */
+
+.login-toggle {
+  display: flex;
+  gap: 8px;
+
+  padding: 6px;
+  margin-bottom: 24px;
+
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.login-toggle button {
+  flex: 1;
+
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+
+  font-size: 12px;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+
+  position: relative;
+  overflow: hidden;
+}
+
+.login-toggle button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.login-toggle button.active {
+  background: #13c6df;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(19, 198, 223, 0.35);
+}
+
+/* =========================
+   FORM
+========================= */
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* INPUT GROUP */
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.input-group label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* INPUT */
+
+.login-card input {
+  width: 100%;
+  padding: 14px 16px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+
+  font-size: 12px;
+
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.login-card input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.login-card input:focus {
+  border-color: #13c6df;
+  background: rgba(255, 255, 255, 0.1);
+
+  box-shadow: 0 0 0 3px rgba(19, 198, 223, 0.2);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #13c6df;
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  box-shadow: 0 10px 20px rgba(19, 198, 223, 0.25);
+}
+
+.login-btn:hover {
+  background: #10b3c9;
+  transform: translateY(-2px);
+}
+
+.login-btn:active {
+  transform: scale(0.98);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+  .login-card {
+    max-width: 92%;
+    padding: 24px 18px;
+  }
+
+  .login-card h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    padding: 20px;
+  }
+
+  .login-card {
+    padding: 20px 16px;
+  }
+
+  .login-toggle button {
+    font-size: 14px;
+  }
+}
