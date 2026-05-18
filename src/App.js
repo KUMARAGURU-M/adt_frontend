@@ -6,35 +6,31 @@ import './App.css';
 
 /* ── Layouts ── */
 import Sidebar from './components/layouts/Sidebar';
-import Header  from './components/layouts/Header';
+import Header from './components/layouts/Header';
 
 /* ── Auth ── */
 import Login from './pages/auth/Login/Login';
 
 /* ── Employee Portal ── */
 import EmpDashboard from './pages/user/EmpDashboard';
+import WorkPortal from './pages/user/WorkPortal';
 
 /* ── Admin Pages ── */
-import AdminDashboard    from './pages/admin/AdminDashboard';
-import UserManagement    from './pages/admin/UserManagement';
-import Project          from './pages/admin/Project';
-import BooksJobs         from './pages/admin/BooksJobs';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import Project from './pages/admin/Project';
+import BooksJobs from './pages/admin/BooksJobs';
 import ProcessManagement from './pages/admin/ProcessManagement';
-import ShiftManagement   from './pages/admin/ShiftManagement';
-import Leaves           from './pages/admin/Leave';
-import TaskManagement    from './pages/admin/TaskManagement';
-import ReportsAnalytics  from './pages/admin/ReportsAnalytics';
-import ActivityLogs      from './pages/admin/ActivityLogs';
-import RolesPermission   from './pages/admin/RolesPermission';
-import Setting          from './pages/admin/Setting';
-import Tools             from './pages/admin/Tools';
-import WorkPortal        from './pages/user/WorkPortal';
-/* ════════════════════════════════════════════════════════
-   Admin Layout Wrapper
-   — extracted so each Route doesn't use nested <Routes>
-   — fixes the "You cannot render a <Routes> inside another
-     <Routes>" warning from React Router v6
-════════════════════════════════════════════════════════ */
+import ShiftManagement from './pages/admin/ShiftManagement';
+import Leaves from './pages/admin/Leave';
+import TaskManagement from './pages/admin/TaskManagement';
+import ReportsAnalytics from './pages/admin/ReportsAnalytics';
+import ActivityLogs from './pages/admin/ActivityLogs';
+import RolesPermission from './pages/admin/RolesPermission';
+import Setting from './pages/admin/Setting';
+import Tools from './pages/admin/Tools';
+
+/* ── Admin Layout ── */
 const AdminLayout = ({ children }) => (
   <div className="app-container">
     <Sidebar />
@@ -47,50 +43,24 @@ const AdminLayout = ({ children }) => (
   </div>
 );
 
-/* ── Placeholder for sections not yet built ── */
-const Placeholder = ({ title }) => (
-  <div style={{
-    padding: '40px 28px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '300px',
-    color: '#718096',
-    fontSize: '1rem',
-    gap: 12,
-  }}>
-    <span style={{ fontSize: '2.5rem' }}>🚧</span>
-    <strong style={{ color: '#2d3748' }}>{title}</strong>
-    <span>This section is coming soon.</span>
-  </div>
-);
+/* ───────────────────────────── */
 
-/* ══════════════════════════════════════════
-   APP
-══════════════════════════════════════════ */
 function App() {
   return (
     <Router>
       <Routes>
 
-        {/* ── Default: redirect to login ── */}
+        {/* Default */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* ── Public: Login page ── */}
+        {/* Auth */}
         <Route path="/login" element={<Login />} />
 
-        {/* ── Employee Portal (no sidebar/header) ── */}
-        {/* /* ── Employee Portal (no sidebar/header) ── */ }
+        {/* Employee */}
         <Route path="/employee/dashboard" element={<EmpDashboard />} />
-
         <Route path="/workportal" element={<WorkPortal />} />
-        {/* ════════════════════════════════════
-            ADMIN ROUTES
-            Each route wraps AdminLayout independently
-            — avoids nested <Routes> entirely
-        ════════════════════════════════════ */}
 
+        {/* Admin */}
         <Route path="/admin/dashboard" element={
           <AdminLayout><AdminDashboard /></AdminLayout>
         } />
@@ -140,10 +110,10 @@ function App() {
         } />
 
         <Route path="/admin/settings" element={
-          <AdminLayout><Setting/></AdminLayout>
+          <AdminLayout><Setting /></AdminLayout>
         } />
 
-        {/* ── Catch-all: back to login ── */}
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
