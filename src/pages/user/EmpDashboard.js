@@ -1,6 +1,6 @@
 // src/pages/employee/EmpDashboard.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 
 import EmpHeader from './EmpHeader';
 import EmpWorkwise from './EmpWorkwise';
@@ -29,7 +29,7 @@ const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 
 export default function EmpDashboard() {
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('workwise');
   const [now, setNow] = useState(new Date());
