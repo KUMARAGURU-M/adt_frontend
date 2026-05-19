@@ -15,10 +15,10 @@ const PDF_TYPES = [
 ];
 
 const COMPLEXITY_OPTIONS = [
-  { label: 'Simple',        color: '#22c55e' },
-  { label: 'Medium',        color: '#f59e0b' },
-  { label: 'Complex',       color: '#ef4444' },
-  { label: 'Heavy complex', color: '#7c3aed' },
+  { label: 'SIMPLE',        color: '#22c55e' },
+  { label: 'MEDIUM',        color: '#f59e0b' },
+  { label: 'COMPLEX',       color: '#ef4444' },
+  { label: 'HEAVY COMPLEX', color: '#7c3aed' },
 ];
 
 const STATUS_OPTIONS = [
@@ -26,9 +26,9 @@ const STATUS_OPTIONS = [
   'RTU', 'UPLOADED', 'PENDING', 'HOLD', 'QUERY',
 ];
 
-const FILE_STATUS_OPTIONS = ['Hold', 'Client Query', 'NOT_UPLOADED', 'UPLOADED'];
+const FILE_STATUS_OPTIONS = ['UPLOADED', 'READY TO UPLOAD', 'QUERY', 'HOLD'];
 
-const BILLING_STATUS_OPTIONS = ['Credited', 'Pending', 'Invoiced'];
+const BILLING_STATUS_OPTIONS = ['CREDITED', 'PENDING', 'INVOICED'];
 
 const REF_TYPES = [
   '-', 'BE-REF', 'CH-REF',
@@ -38,20 +38,20 @@ const REF_TYPES = [
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
 const ALL_BULK_FIELDS = [
-  { key: "receiveDate", label: "Receive Date", mandatory: true },
-  { key: "jobId", label: "Job ID", mandatory: true },
-  { key: "title", label: "Title Name", mandatory: true },
-  { key: "pageCount", label: "Page Count", mandatory: true },
-  { key: "month", label: "Month" },
+  { key: "receiveDate", label: "RECIEVED DATE", mandatory: true },
+  { key: "jobId", label: "JOB ID", mandatory: true },
+  { key: "title", label: "TITLE NAME", mandatory: true },
+  { key: "pageCount", label: "PAGE COUNT", mandatory: true },
+  { key: "month", label: "MONTH" },
   { key: "isbn", label: "XML ISBN" },
-  { key: "chapters", label: "Number of Chapters" },
-  { key: "pdfType", label: "PDF Input Type" },
-  { key: "complexity", label: "Complexity" },
-  { key: "refType", label: "Reference Type" },
-  { key: "status", label: "Status" },
-  { key: "fileStatus", label: "File Status" },
-  { key: "uploadDate", label: "Uploaded Date" },
-  { key: "billing", label: "Billing Status" },
+  { key: "chapters", label: "NUMBER OF CHAPTERS" },
+  { key: "pdfType", label: "PDF INPUT TYPE" },
+  { key: "complexity", label: "COMPLEXITY" },
+  { key: "refType", label: "REFERENCE TYPE" },
+  { key: "status", label: "STATUS" },
+  { key: "fileStatus", label: "FILE STATUS" },
+  { key: "uploadDate", label: "UPLOADED DATE" },
+  { key: "billing", label: "BILLING STATUS" },
 ];
 
 /* ─── Seed data ─────────────────────────────────────────────────── */
@@ -688,20 +688,20 @@ const BooksJobs = () => {
         <table className="bj-table">
           <thead>
             <tr>
-              <th>Project<br/>(Publisher) ↕</th>
+              <th>Project</th>
               <th>Month</th>
-              <th>Receive<br/>Date ↕</th>
-              <th>Job ID ↕</th>
-              <th>XML ISBN ↕</th>
-              <th>Title Name ↕</th>
-              <th>Page<br/>Count ↕</th>
+              <th>Receive Date </th>
+              <th>Job ID </th>
+              <th>XML ISBN </th>
+              <th>Title Name </th>
+              <th>Page Count </th>
               <th>PDF Type</th>
               <th>Complexity</th>
-              <th>Ref<br/>Type</th>
-              <th>Status ↕</th>
+              <th>Ref Type</th>
+              <th>Status </th>
               <th>File Status</th>
-              <th>Upload<br/>Date</th>
-              <th>Billing<br/>Status</th>
+              <th>Upload Date</th>
+              <th>Billing Status</th>
               <th>Actions</th>
             </tr>
           </thead>

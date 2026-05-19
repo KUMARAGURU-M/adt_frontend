@@ -1,6 +1,7 @@
 // src/pages/admin/UserManagement.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import './UserManagement.css';
 
 /* ─── Static seed data ─────────────────────────────────────────── */
@@ -612,6 +613,15 @@ const UserManagement = () => {
   const [users,       setUsers]       = useState(initialUsers);
   const [modal,       setModal]       = useState(null);
   const [showAddUser, setShowAddUser] = useState(false);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAddUser) {
+      setShowAddUser(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const open  = (type, user) => setModal({ type, user });
   const close = ()            => setModal(null);

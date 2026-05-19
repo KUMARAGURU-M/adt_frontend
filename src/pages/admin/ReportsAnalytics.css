@@ -252,7 +252,7 @@
   color: #475569;
   font-weight: 700;
   font-size: 12.5px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #edf2f7;
   white-space: nowrap;
   letter-spacing: 0.2px;
@@ -263,6 +263,7 @@
   border-bottom: 1px solid #f1f5f9;
   color: #4a5568;
   vertical-align: middle;
+  text-align: center;
 }
 .ra-table tbody tr:last-child td { border-bottom: none; }
 .ra-table tbody tr:hover          { background: #f8fafc; }
@@ -323,6 +324,31 @@
 .ra-pages-icon-sm { font-size: 11px; }
 
 .ra-dash { color: #cbd5e0; }
+
+/* Status Badges */
+.ra-status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.ra-status-badge.completed {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.ra-status-badge.stopped {
+  background: #ffe6e6;
+  color: #d32f2f;
+}
+
+.ra-status-badge.on-hold {
+  background: #fff3e0;
+  color: #e65100;
+}
 
 /* Table footer */
 .ra-table-footer {

@@ -16,25 +16,25 @@ const ALL_PROJECTS = [
 
 /* ─── Seed Time Logs ─────────────────────────────────────────────── */
 const seedLogs = [
-  { id: 1,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-18T23:10:38', endTime: '2026-02-18T23:10:56', durationHrs: 0.01,  pages: 8   },
-  { id: 2,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-03T11:44:18', endTime: '2026-02-03T11:49:46', durationHrs: 0.09,  pages: 15  },
-  { id: 3,  employee: 'Employee',       project: 'ING - Usen',  task: '-',                                           startTime: '2026-02-02T23:59:17', endTime: '2026-02-03T00:00:27', durationHrs: 0.03,  pages: null},
-  { id: 4,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-02T23:52:29', endTime: '2026-02-02T23:52:56', durationHrs: 0.02,  pages: null},
-  { id: 5,  employee: 'Employee',       project: 'LDM - Hanser',task: '-',                                           startTime: '2026-02-02T22:48:30', endTime: '2026-02-02T22:57:15', durationHrs: 0.15,  pages: 10  },
-  { id: 6,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-02T20:35:38', endTime: '2026-02-02T20:50:41', durationHrs: 0.25,  pages: 100 },
-  { id: 7,  employee: 'Employee',       project: 'LDM - Hanser',task: 'FIG - Croping - 9783446480438 - LDM - Hanser',startTime: '2026-02-02T00:59:26', endTime: '2026-02-02T20:31:19', durationHrs: 19.53, pages: 50  },
-  { id: 8,  employee: 'Employee',       project: 'ING - Usen',  task: '-',                                           startTime: '2026-02-02T00:38:19', endTime: '2026-02-02T00:38:36', durationHrs: 0,     pages: 20  },
-  { id: 9,  employee: 'Employee',       project: 'LDM - Hanser',task: 'FIG - Croping - 9783446480438 - LDM - Hanser',startTime: '2026-02-02T00:37:20', endTime: '2026-02-02T00:37:29', durationHrs: 0,     pages: 10  },
-  { id: 10, employee: 'T. Mohamed Usen',project: 'ING - Usen',  task: 'EPUB - QC - 9798881870973 - ING - Usen',      startTime: '2026-01-31T10:00:00', endTime: '2026-01-31T10:00:00', durationHrs: 0,     pages: 10  },
-  { id: 11, employee: 'Narkis',         project: 'ING - Usen',  task: 'EPUB - Tagging',                              startTime: '2026-01-30T09:00:00', endTime: '2026-01-30T09:00:00', durationHrs: 0,     pages: 14  },
+  { id: 1,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-18T23:10:38', endTime: '2026-02-18T23:10:56', durationHrs: 0.01,  pages: 8,   status: 'Completed' },
+  { id: 2,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-03T11:44:18', endTime: '2026-02-03T11:49:46', durationHrs: 0.09,  pages: 15,  status: 'Completed' },
+  { id: 3,  employee: 'Employee',       project: 'ING - Usen',  task: '-',                                           startTime: '2026-02-02T23:59:17', endTime: '2026-02-03T00:00:27', durationHrs: 0.03,  pages: null,status: 'Stopped'   },
+  { id: 4,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-02T23:52:29', endTime: '2026-02-02T23:52:56', durationHrs: 0.02,  pages: null,status: 'On-Hold'   },
+  { id: 5,  employee: 'Employee',       project: 'LDM - Hanser',task: '-',                                           startTime: '2026-02-02T22:48:30', endTime: '2026-02-02T22:57:15', durationHrs: 0.15,  pages: 10,  status: 'Completed' },
+  { id: 6,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-02T20:35:38', endTime: '2026-02-02T20:50:41', durationHrs: 0.25,  pages: 100, status: 'Completed' },
+  { id: 7,  employee: 'Employee',       project: 'LDM - Hanser',task: 'FIG - Croping - 9783446480438 - LDM - Hanser',startTime: '2026-02-02T00:59:26', endTime: '2026-02-02T20:31:19', durationHrs: 19.53, pages: 50,  status: 'Completed' },
+  { id: 8,  employee: 'Employee',       project: 'ING - Usen',  task: '-',                                           startTime: '2026-02-02T00:38:19', endTime: '2026-02-02T00:38:36', durationHrs: 0,     pages: 20,  status: 'Stopped'   },
+  { id: 9,  employee: 'Employee',       project: 'LDM - Hanser',task: 'FIG - Croping - 9783446480438 - LDM - Hanser',startTime: '2026-02-02T00:37:20', endTime: '2026-02-02T00:37:29', durationHrs: 0,     pages: 10,  status: 'Completed' },
+  { id: 10, employee: 'T. Mohamed Usen',project: 'ING - Usen',  task: 'EPUB - QC - 9798881870973 - ING - Usen',      startTime: '2026-01-31T10:00:00', endTime: '2026-01-31T10:00:00', durationHrs: 0,     pages: 10,  status: 'Completed' },
+  { id: 11, employee: 'Narkis',         project: 'ING - Usen',  task: 'EPUB - Tagging',                              startTime: '2026-01-30T09:00:00', endTime: '2026-01-30T09:00:00', durationHrs: 0,     pages: 14,  status: 'Completed' },
   /* Extra to hit 411.1 hrs / 795 pages totals */
-  { id: 12, employee: 'Employee',       project: 'ING - Usen',  task: 'XML - Tagging',                               startTime: '2026-01-29T08:00:00', endTime: '2026-01-29T08:00:00', durationHrs: 389.5, pages: 363 },
-  { id: 13, employee: 'Employee',       project: 'LDM - T&F',   task: '-',                                           startTime: '2026-01-20T10:00:00', endTime: '2026-01-20T10:12:00', durationHrs: 0.2,   pages: 37  },
-  { id: 14, employee: 'Employee',       project: 'CMT - JATS',  task: 'XML - Tagging',                               startTime: '2026-01-18T14:00:00', endTime: '2026-01-18T14:00:00', durationHrs: 0,     pages: 106 },
-  { id: 15, employee: 'Employee',       project: 'ING - ACDC',  task: '-',                                           startTime: '2026-01-15T09:00:00', endTime: '2026-01-15T09:00:00', durationHrs: 0,     pages: 18  },
-  { id: 16, employee: 'Employee',       project: 'LDM - WILEY', task: '-',                                           startTime: '2026-01-10T11:00:00', endTime: '2026-01-10T11:24:00', durationHrs: 0.4,   pages: null},
-  { id: 17, employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-01-08T13:00:00', endTime: '2026-01-08T14:18:00', durationHrs: 1.3,   pages: 123 },
-  { id: 18, employee: 'Employee',       project: 'LDM - Hanser',task: 'TP25 - 0386',                                 startTime: '2026-01-05T09:00:00', endTime: '2026-01-05T09:00:00', durationHrs: 0,     pages: 10  },
+  { id: 12, employee: 'Employee',       project: 'ING - Usen',  task: 'XML - Tagging',                               startTime: '2026-01-29T08:00:00', endTime: '2026-01-29T08:00:00', durationHrs: 389.5, pages: 363, status: 'Completed' },
+  { id: 13, employee: 'Employee',       project: 'LDM - T&F',   task: '-',                                           startTime: '2026-01-20T10:00:00', endTime: '2026-01-20T10:12:00', durationHrs: 0.2,   pages: 37,  status: 'Completed' },
+  { id: 14, employee: 'Employee',       project: 'CMT - JATS',  task: 'XML - Tagging',                               startTime: '2026-01-18T14:00:00', endTime: '2026-01-18T14:00:00', durationHrs: 0,     pages: 106, status: 'Completed' },
+  { id: 15, employee: 'Employee',       project: 'ING - ACDC',  task: '-',                                           startTime: '2026-01-15T09:00:00', endTime: '2026-01-15T09:00:00', durationHrs: 0,     pages: 18,  status: 'Completed' },
+  { id: 16, employee: 'Employee',       project: 'LDM - WILEY', task: '-',                                           startTime: '2026-01-10T11:00:00', endTime: '2026-01-10T11:24:00', durationHrs: 0.4,   pages: null,status: 'Stopped'   },
+  { id: 17, employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-01-08T13:00:00', endTime: '2026-01-08T14:18:00', durationHrs: 1.3,   pages: 123, status: 'Completed' },
+  { id: 18, employee: 'Employee',       project: 'LDM - Hanser',task: 'TP25 - 0386',                                 startTime: '2026-01-05T09:00:00', endTime: '2026-01-05T09:00:00', durationHrs: 0,     pages: 10,  status: 'Completed' },
 ];
 
 /* ─── Format helpers ─────────────────────────────────────────────── */
@@ -134,11 +134,11 @@ const ReportsAnalytics = () => {
 
   /* ── Export CSV ── */
   const exportCSV = () => {
-    const headers = ['Employee','Project','Task','Start Time','End Time','Duration (hrs)','Pages'];
+    const headers = ['Employee','Project','Task','Start Time','End Time','Duration (hrs)','Pages','Status'];
     const rows = filteredLogs.map(l => [
       `"${l.employee}"`, `"${l.project}"`, `"${l.task}"`,
       fmtDateTime(l.startTime), fmtDateTime(l.endTime),
-      l.durationHrs, l.pages ?? '',
+      l.durationHrs, l.pages ?? '', `"${l.status || '-'}"`
     ].join(','));
     const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type:'text/csv' });
     const a = Object.assign(document.createElement('a'), {
@@ -308,12 +308,13 @@ const ReportsAnalytics = () => {
                 <th>End Time</th>
                 <th>Duration</th>
                 <th>Pages</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="ra-table-empty">
+                  <td colSpan="8" className="ra-table-empty">
                     No time logs found for selected filters.
                   </td>
                 </tr>
@@ -337,11 +338,16 @@ const ReportsAnalytics = () => {
                   </td>
                   <td className="td-pages">
                     {log.pages != null
-                      ? <span className="ra-pages-cell">
+                      ? <span className="ra-pages-cell" style={{ justifyContent: 'center' }}>
                           <span className="ra-pages-icon-sm">📄</span>
                           {log.pages}
                         </span>
                       : <span className="ra-dash">-</span>}
+                  </td>
+                  <td className="td-status">
+                    <span className={`ra-status-badge ${log.status ? log.status.toLowerCase() : ''}`}>
+                      {log.status || '-'}
+                    </span>
                   </td>
                 </tr>
               ))}

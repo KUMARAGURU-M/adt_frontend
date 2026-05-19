@@ -5,8 +5,8 @@ import "./Leave.css";
 
 /* ─── Seed Data ──────────────────────────────────────────────────── */
 const EMPLOYEES = ["All Employees", "Sureka", "Ayeesha M", "Shakina A", "T. Mohamed Usen", "Karthika"];
-const STATUS_OPTIONS = ["All Status", "Pending", "Approved", "Rejected", "Cancelled"];
-const LEAVE_TYPE_OPTIONS = ["All Types", "Annual Leave", "Sick Leave", "Casual Leave", "Maternity Leave"];
+const STATUS_OPTIONS = ["All Status", "Pending", "Approved", "Rejected"];
+const LEAVE_TYPE_OPTIONS = ["All Types", "Annual Leave", "Sick Leave", "Casual Leave", "Maternity Leave", "Emergency Leave"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 const initialLeaveRequests = [];
@@ -80,7 +80,7 @@ const LeaveRequests = () => {
     (filterType     === "All Types"     || r.leaveType === filterType)
   );
 
-  const statusClass = (s) => ({ Pending: "lv-badge--pending", Approved: "lv-badge--approved", Rejected: "lv-badge--rejected", Cancelled: "lv-badge--cancelled" }[s] || "");
+  const statusClass = (s) => ({ Pending: "lv-badge--pending", Approved: "lv-badge--approved", Rejected: "lv-badge--rejected" }[s] || "");
 
   return (
     <div>

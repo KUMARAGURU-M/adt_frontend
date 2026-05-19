@@ -1,6 +1,33 @@
 import React, { useState } from "react";
 import "./Tools.css";
 
+const SAMPLE_EMPLOYEES = [
+  {
+    name: "John Peter",
+    email: "john@arrowdatatech.com",
+    phone: "9876543210",
+    role: "Employee",
+  },
+  {
+    name: "Priya Sharma",
+    email: "priya@arrowdatatech.com",
+    phone: "9123456780",
+    role: "Manager",
+  },
+  {
+    name: "Rahul Kumar",
+    email: "rahul@arrowdatatech.com",
+    phone: "9001234567",
+    role: "Employee",
+  },
+  {
+    name: "Sneha Devi",
+    email: "sneha@arrowdatatech.com",
+    phone: "9988776655",
+    role: "Viewer",
+  },
+];
+
 // ── Initial Data ────────────────────────────────────────────────────────────
 const INITIAL_COMMON_TOOLS = [
   { id: 1, name: "ARtitle", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
@@ -20,11 +47,11 @@ const INITIAL_COMMON_TOOLS = [
 ];
 
 const INITIAL_EMPLOYEES = [
-  { id: 1, name: "Sureka", email: "sureka@arrowdatatech.com", phone: "-", role: "Employee", initial: "S", tools: [] },
-  { id: 2, name: "Ayeesha M", email: "vimala@arrowdatatech.com", phone: "9791778036", role: "Manager", initial: "A", tools: [] },
-  { id: 3, name: "Shakina A", email: "shakina@arrowdatatech.com", phone: "9944732344", role: "Manager", initial: "S", tools: [] },
-  { id: 4, name: "T. Mohamed Usen", email: "usen@arrowdatatech.com", phone: "9894562152", role: "Admin", initial: "T", tools: [] },
-  { id: 5, name: "Karthika", email: "karthika@arrowdatatech.com", phone: "-", role: "Employee", initial: "K", tools: [] },
+  { id: 1, name: "Sureka", email: "sureka@arrowdatatech.com", phone: "-", role: "Employee", initial: "S", hasCommonAccess: false, hasOcrAccess: false },
+  { id: 2, name: "Ayeesha M", email: "vimala@arrowdatatech.com", phone: "9791778036", role: "Manager", initial: "A", hasCommonAccess: false, hasOcrAccess: false },
+  { id: 3, name: "Shakina A", email: "shakina@arrowdatatech.com", phone: "9944732344", role: "Manager", initial: "S", hasCommonAccess: false, hasOcrAccess: false },
+  { id: 4, name: "T. Mohamed Usen", email: "usen@arrowdatatech.com", phone: "9894562152", role: "Admin", initial: "T", hasCommonAccess: false, hasOcrAccess: false },
+  { id: 5, name: "Karthika", email: "karthika@arrowdatatech.com", phone: "-", role: "Employee", initial: "K", hasCommonAccess: false, hasOcrAccess: false },
 ];
 
 const INITIAL_OCR_TOOLS = [
@@ -54,10 +81,7 @@ const avatarColor = (initial) => {
 export default function Tools() {
   const [activeTab, setActiveTab] = useState("common");
 
-  // Digital Convertor state
   const [commonTools] = useState(INITIAL_COMMON_TOOLS);
-
-  // OCR state
   const [ocrTools] = useState(INITIAL_OCR_TOOLS);
 
   // Employee state
@@ -68,7 +92,9 @@ export default function Tools() {
   const [selEmp, setSelEmp] = useState(null);
   const [empForm, setEmpForm] = useState(emptyEmployeeForm);
   const [empErrors, setEmpErrors] = useState({});
-  const [empAccessTools, setEmpAccessTools] = useState([]);
+  const [showEmpDropdown, setShowEmpDropdown] = useState(false);
+  // ── Toggle state for the modal (local, before saving) ──
+  const [modalToggle, setModalToggle] = useState(false);
 
   // ── Employee CRUD ────────────────────────────────────────────────────────
   const validateEmp = (f) => {
@@ -79,7 +105,11 @@ export default function Tools() {
     return e;
   };
 
-  const openAddEmp = () => { setEmpForm(emptyEmployeeForm); setEmpErrors({}); setShowAddEmp(true); };
+  const openAddEmp = () => {
+    setEmpForm(emptyEmployeeForm);
+    setEmpErrors({});
+    setShowAddEmp(true);
+  };
 
   const handleCreateEmp = () => {
     const e = validateEmp(empForm);
@@ -91,25 +121,45 @@ export default function Tools() {
       phone: empForm.phone || "-",
       role: empForm.role,
       initial: empForm.name.trim()[0].toUpperCase(),
-      tools: [],
+      hasCommonAccess: false,
+      hasOcrAccess: false,
     }]);
     setShowAddEmp(false);
   };
 
+  const handleAddSampleEmployee = (emp) => {
+  setEmployees(prev => [
+    ...prev,
+    {
+      id: Date.now(),
+      ...emp,
+      initial: emp.name[0].toUpperCase(),
+      hasCommonAccess: false,
+      hasOcrAccess: false,
+    },
+  ]);
+
+  setShowEmpDropdown(false);
+};
+
+  // Open modal — seed toggle from the employee's current access for that tab
   const openEditAccess = (emp) => {
     setSelEmp(emp);
-    setEmpAccessTools(emp.tools || []);
+    if (activeTab === "common") {
+      setModalToggle(emp.hasCommonAccess);
+    } else {
+      setModalToggle(emp.hasOcrAccess);
+    }
     setShowEditAccess(true);
   };
 
-  const toggleToolAccess = (toolName) => {
-    setEmpAccessTools(prev =>
-      prev.includes(toolName) ? prev.filter(t => t !== toolName) : [...prev, toolName]
-    );
-  };
-
+  // Save the single toggle back to the employee record
   const handleSaveAccess = () => {
-    setEmployees(employees.map(e => e.id === selEmp.id ? { ...e, tools: empAccessTools } : e));
+    setEmployees(employees.map(e => {
+      if (e.id !== selEmp.id) return e;
+      if (activeTab === "common") return { ...e, hasCommonAccess: modalToggle };
+      return { ...e, hasOcrAccess: modalToggle };
+    }));
     setShowEditAccess(false);
   };
 
@@ -118,10 +168,10 @@ export default function Tools() {
     setShowDelEmp(false);
   };
 
-  // Tools for the access modal depend on active tab
-  const currentToolNames = activeTab === "common"
-    ? commonTools.map(t => t.name)
-    : ocrTools.map(t => t.name);
+  // Label shown inside the modal
+  const accessModalLabel = activeTab === "common"
+    ? "Give Digital Convertor Tool access to"
+    : "Give OCR Tool access to";
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -150,53 +200,105 @@ export default function Tools() {
         </button>
       </div>
 
-      {/* ── DIGITAL CONVERTOR TAB ─────────────────────────────────── */}
+      {/* ── DIGITAL CONVERTOR TAB ── */}
       {activeTab === "common" && (
         <EmployeeTable
-          employees={employees}
-          onAdd={openAddEmp}
-          onEditAccess={openEditAccess}
-          onDelete={(emp) => { setSelEmp(emp); setShowDelEmp(true); }}
-        />
+  employees={employees}
+  activeTab="common"
+  onAdd={openAddEmp}
+  onEditAccess={openEditAccess}
+  onDelete={(emp) => {
+    setSelEmp(emp);
+    setShowDelEmp(true);
+  }}
+  showEmpDropdown={showEmpDropdown}
+  setShowEmpDropdown={setShowEmpDropdown}
+  sampleEmployees={SAMPLE_EMPLOYEES}
+  onAddSample={handleAddSampleEmployee}
+/>
       )}
 
-      {/* ── OCR TAB ──────────────────────────────────────────────── */}
+      {/* ── OCR TAB ── */}
       {activeTab === "ocr" && (
         <EmployeeTable
-          employees={employees}
-          onAdd={openAddEmp}
-          onEditAccess={openEditAccess}
-          onDelete={(emp) => { setSelEmp(emp); setShowDelEmp(true); }}
-        />
+  employees={employees}
+  activeTab="ocr"
+  onAdd={openAddEmp}
+  onEditAccess={openEditAccess}
+  onDelete={(emp) => {
+    setSelEmp(emp);
+    setShowDelEmp(true);
+  }}
+  showEmpDropdown={showEmpDropdown}
+  setShowEmpDropdown={setShowEmpDropdown}
+  sampleEmployees={SAMPLE_EMPLOYEES}
+  onAddSample={handleAddSampleEmployee}
+/>
       )}
 
+      {/* ════ MODALS ════ */}
 
-
-      {/* ════ MODALS — Employee ════ */}
+      {/* Add Employee */}
       {showAddEmp && (
         <Modal title="Add Employee" onClose={() => setShowAddEmp(false)}>
-          <EmployeeForm form={empForm} errors={empErrors} onChange={(f, v) => { setEmpForm(p => ({ ...p, [f]: v })); setEmpErrors(p => ({ ...p, [f]: undefined })); }} />
-          <ModalActions onCancel={() => setShowAddEmp(false)} onConfirm={handleCreateEmp} confirmLabel="Add Employee" />
+          <EmployeeForm
+            form={empForm}
+            errors={empErrors}
+            onChange={(f, v) => {
+              setEmpForm(p => ({ ...p, [f]: v }));
+              setEmpErrors(p => ({ ...p, [f]: undefined }));
+            }}
+          />
+          <ModalActions
+            onCancel={() => setShowAddEmp(false)}
+            onConfirm={handleCreateEmp}
+            confirmLabel="Add Employee"
+          />
         </Modal>
       )}
+
+      {/* Edit Access — single toggle */}
       {showEditAccess && (
-        <Modal title={`Edit Tool Access — ${selEmp?.name}`} onClose={() => setShowEditAccess(false)} wide>
-          <p className="modal-hint">Select the tools this employee can access:</p>
-          <div className="access-grid">
-            {currentToolNames.map(toolName => (
-              <label key={toolName} className={`access-item ${empAccessTools.includes(toolName) ? "access-item--checked" : ""}`}>
-                <input type="checkbox" checked={empAccessTools.includes(toolName)} onChange={() => toggleToolAccess(toolName)} />
-                <span>{toolName}</span>
-              </label>
-            ))}
+        <Modal title="Tool Access" onClose={() => setShowEditAccess(false)}>
+          <div className="access-toggle-container">
+            <span className="access-toggle-label">
+              {accessModalLabel} <strong>{selEmp?.name}</strong>
+            </span>
+            <label className="toggle-switch">
+              <input
+                type="checkbox"
+                checked={modalToggle}
+                onChange={() => setModalToggle(prev => !prev)}
+              />
+              <span className="toggle-slider"></span>
+            </label>
           </div>
-          <ModalActions onCancel={() => setShowEditAccess(false)} onConfirm={handleSaveAccess} confirmLabel="Save Access" />
+          <p className="access-toggle-status">
+            {modalToggle
+              ? <span className="access-status--granted">✓ Access will be granted</span>
+              : <span className="access-status--revoked">✗ Access will be revoked</span>
+            }
+          </p>
+          <ModalActions
+            onCancel={() => setShowEditAccess(false)}
+            onConfirm={handleSaveAccess}
+            confirmLabel="Save"
+          />
         </Modal>
       )}
+
+      {/* Delete Employee */}
       {showDelEmp && (
         <Modal title="Remove Employee" onClose={() => setShowDelEmp(false)} confirm>
-          <p className="modal-confirm-text">Are you sure you want to remove <strong>{selEmp?.name}</strong>?</p>
-          <ModalActions onCancel={() => setShowDelEmp(false)} onConfirm={handleDeleteEmp} confirmLabel="OK, Remove" danger />
+          <p className="modal-confirm-text">
+            Are you sure you want to remove <strong>{selEmp?.name}</strong>?
+          </p>
+          <ModalActions
+            onCancel={() => setShowDelEmp(false)}
+            onConfirm={handleDeleteEmp}
+            confirmLabel="OK, Remove"
+            danger
+          />
         </Modal>
       )}
     </div>
@@ -205,20 +307,73 @@ export default function Tools() {
 
 // ── Shared Icons ──────────────────────────────────────────────────────────────
 function AccessIcon() {
-  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="16" height="16"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>;
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+      <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+    </svg>
+  );
 }
 function DeleteIcon() {
-  return <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" /></svg>;
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+    </svg>
+  );
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function EmployeeTable({ employees, onAdd, onEditAccess, onDelete }) {
+function EmployeeTable({
+  employees,
+  onAdd,
+  onEditAccess,
+  onDelete,
+  activeTab,
+  showEmpDropdown,
+  setShowEmpDropdown,
+  sampleEmployees,
+  onAddSample
+}) {
   return (
     <div className="tm-section tm-section--emp">
       <div className="tm-section-header">
-        <span className="tm-section-title">Employee Access</span>
-        <button className="tm-btn-add" onClick={onAdd}>+ Add Employee</button>
+        <span className="tm-section-title">
+          {activeTab === "common"
+            ? "Digital Convertor — Employee Access"
+            : "OCR — Employee Access"}
+        </span>
+
+        <div className="tm-dropdown-wrapper">
+  <button
+    className="tm-btn-add"
+    onClick={() => setShowEmpDropdown(prev => !prev)}
+  >
+    + Add Employee ▾
+  </button>
+
+  {showEmpDropdown && (
+    <div className="tm-dropdown-menu">
+      <button
+        className="tm-dropdown-item"
+        onClick={onAdd}
+      >
+        + Create New Employee
+      </button>
+
+      {sampleEmployees.map((emp, index) => (
+        <button
+          key={index}
+          className="tm-dropdown-item"
+          onClick={() => onAddSample(emp)}
+        >
+          {emp.name}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
       </div>
+
       <div className="tm-table-container">
         <table className="tm-table tm-table--emp">
           <thead>
@@ -226,35 +381,82 @@ function EmployeeTable({ employees, onAdd, onEditAccess, onDelete }) {
               <th>Photo</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Phone</th>
               <th>Role</th>
+              <th>Access</th>
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {employees.length === 0 ? (
-              <tr><td colSpan={6} className="tm-empty">No employees found.</td></tr>
-            ) : employees.map(emp => (
-              <tr key={emp.id} className="tm-row">
-                <td>
-                  <div className="emp-avatar" style={{ background: avatarColor(emp.initial) }}>{emp.initial}</div>
-                </td>
-                <td className="tm-cell-name">{emp.name}</td>
-                <td className="tm-cell-muted">{emp.email}</td>
-                <td className="tm-cell-muted">{emp.phone}</td>
-                <td><span className={`emp-role ${roleClass(emp.role)}`}>{emp.role}</span></td>
-                <td>
-                  <div className="tm-actions">
-                    <button className="tm-action-btn tm-action-btn--edit" title="Give Access" onClick={() => onEditAccess(emp)}>
-                      <AccessIcon />
-                    </button>
-                    <button className="tm-action-btn tm-action-btn--delete" title="Remove Employee" onClick={() => onDelete(emp)}>
-                      <DeleteIcon />
-                    </button>
-                  </div>
+              <tr>
+                <td colSpan={6} className="tm-empty">
+                  No employees found.
                 </td>
               </tr>
-            ))}
+            ) : (
+              employees.map((emp) => {
+                const hasAccess =
+                  activeTab === "common"
+                    ? emp.hasCommonAccess
+                    : emp.hasOcrAccess;
+
+                return (
+                  <tr key={emp.id} className="tm-row">
+                    <td>
+                      <div
+                        className="emp-avatar"
+                        style={{ background: avatarColor(emp.initial) }}
+                      >
+                        {emp.initial}
+                      </div>
+                    </td>
+
+                    <td className="tm-cell-name">{emp.name}</td>
+
+                    <td className="tm-cell-muted">{emp.email}</td>
+
+                    <td>
+                      <span className={`emp-role ${roleClass(emp.role)}`}>
+                        {emp.role}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span
+                        className={`tm-access-badge ${
+                          hasAccess
+                            ? "tm-access-badge--granted"
+                            : "tm-access-badge--denied"
+                        }`}
+                      >
+                        {hasAccess ? "Granted" : "Denied"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <div className="tm-actions">
+                        <button
+                          className="tm-action-btn tm-action-btn--edit"
+                          title="Give Access"
+                          onClick={() => onEditAccess(emp)}
+                        >
+                          <AccessIcon />
+                        </button>
+
+                        <button
+                          className="tm-action-btn tm-action-btn--delete"
+                          title="Remove Employee"
+                          onClick={() => onDelete(emp)}
+                        >
+                          <DeleteIcon />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -267,21 +469,41 @@ function EmployeeForm({ form, errors, onChange }) {
     <div className="modal-form">
       <div className="form-group">
         <label className="form-label">Name <span className="req">*</span></label>
-        <input className={`form-input ${errors.name ? "form-input--err" : ""}`} value={form.name} onChange={e => onChange("name", e.target.value)} placeholder="Full name" />
+        <input
+          className={`form-input ${errors.name ? "form-input--err" : ""}`}
+          value={form.name}
+          onChange={e => onChange("name", e.target.value)}
+          placeholder="Full name"
+        />
         {errors.name && <span className="form-error">{errors.name}</span>}
       </div>
       <div className="form-group">
         <label className="form-label">Email <span className="req">*</span></label>
-        <input className={`form-input ${errors.email ? "form-input--err" : ""}`} type="email" value={form.email} onChange={e => onChange("email", e.target.value)} placeholder="email@example.com" />
+        <input
+          className={`form-input ${errors.email ? "form-input--err" : ""}`}
+          type="email"
+          value={form.email}
+          onChange={e => onChange("email", e.target.value)}
+          placeholder="email@example.com"
+        />
         {errors.email && <span className="form-error">{errors.email}</span>}
       </div>
       <div className="form-group">
         <label className="form-label">Phone</label>
-        <input className="form-input" value={form.phone} onChange={e => onChange("phone", e.target.value)} placeholder="Optional" />
+        <input
+          className="form-input"
+          value={form.phone}
+          onChange={e => onChange("phone", e.target.value)}
+          placeholder="Optional"
+        />
       </div>
       <div className="form-group">
         <label className="form-label">Role <span className="req">*</span></label>
-        <select className={`form-select ${errors.role ? "form-input--err" : ""}`} value={form.role} onChange={e => onChange("role", e.target.value)}>
+        <select
+          className={`form-select ${errors.role ? "form-input--err" : ""}`}
+          value={form.role}
+          onChange={e => onChange("role", e.target.value)}
+        >
           {ROLES.map(r => <option key={r}>{r}</option>)}
         </select>
         {errors.role && <span className="form-error">{errors.role}</span>}
@@ -293,7 +515,10 @@ function EmployeeForm({ form, errors, onChange }) {
 function Modal({ title, onClose, children, confirm, wide }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className={`modal-box ${confirm ? "modal-box--confirm" : ""} ${wide ? "modal-box--wide" : ""}`} onClick={e => e.stopPropagation()}>
+      <div
+        className={`modal-box ${confirm ? "modal-box--confirm" : ""} ${wide ? "modal-box--wide" : ""}`}
+        onClick={e => e.stopPropagation()}
+      >
         {confirm && <div className="modal-warn-icon">⚠️</div>}
         <h2 className="modal-title">{title}</h2>
         {children}
@@ -306,7 +531,12 @@ function ModalActions({ onCancel, onConfirm, confirmLabel, danger }) {
   return (
     <div className="modal-actions">
       <button className="modal-btn-cancel" onClick={onCancel}>Cancel</button>
-      <button className={`modal-btn-confirm ${danger ? "modal-btn-confirm--danger" : ""}`} onClick={onConfirm}>{confirmLabel}</button>
+      <button
+        className={`modal-btn-confirm ${danger ? "modal-btn-confirm--danger" : ""}`}
+        onClick={onConfirm}
+      >
+        {confirmLabel}
+      </button>
     </div>
   );
 }

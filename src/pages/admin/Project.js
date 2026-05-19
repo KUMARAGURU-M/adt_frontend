@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "./Project.css";
 
 const initialProjects = [
@@ -71,6 +72,15 @@ export default function Projects() {
     setErrors({});
     setShowAddModal(true);
   };
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAddProject) {
+      handleOpenAdd();
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleCreate = () => {
     const e = validate(form);

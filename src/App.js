@@ -18,6 +18,7 @@ import WorkPortal from './pages/user/WorkPortal';
 /* ── Admin Pages ── */
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
+import Attendance from './pages/admin/Attendance';
 import Project from './pages/admin/Project';
 import BooksJobs from './pages/admin/BooksJobs';
 import ProcessManagement from './pages/admin/ProcessManagement';
@@ -67,6 +68,10 @@ function App() {
 
         <Route path="/admin/users" element={
           <AdminLayout><UserManagement /></AdminLayout>
+        } />
+
+        <Route path="/admin/attendance" element={
+          <AdminLayout><Attendance /></AdminLayout>
         } />
 
         <Route path="/admin/projects" element={

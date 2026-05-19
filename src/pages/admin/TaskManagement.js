@@ -1,5 +1,6 @@
 // src/pages/admin/TaskManagement.js
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "./TaskManagement.css";
 
 /* ─── Constants ─────────────────────────────── */
@@ -9,6 +10,7 @@ const ALL_PROJECTS = [
 ];
 
 const ALL_PROCESSES = [
+  "REWORK",
   "EPUB - QC Process","EPUB - Tagging","FIG - Croping","INDEX - Process",
   "MATH - Keying","OCR - Process","Proof Reading - Process","REF - Process",
   "TABLE - Process","VALID - Process","WORD - QC Process","WORD - Styling",
@@ -140,7 +142,7 @@ function TaskModal({ mode, task, onClose, onSave }) {
       let pagesEnd = task.pagesEnd || "";
       
       if (!pagesType && task.pages) {
-        if (task.pages === "Full Book") pagesType = "Full Book";
+        if (task.pages === "All Pages") pagesType = "All Pages";
         else if (task.pages.includes(" - ")) {
           pagesType = "Start Page - End Page";
           [pagesStart, pagesEnd] = task.pages.split(" - ");
@@ -411,7 +413,7 @@ function TaskModal({ mode, task, onClose, onSave }) {
                 onChange={e => setF("pagesType", e.target.value)}
               >
                 <option value="">-- Select --</option>
-                <option value="Full Book">Full Book</option>
+                <option value="All Pages"> All Pages</option>
                 <option value="Start Page - End Page">Start-End Page</option>
               </select>
               {form.pagesType === "Start Page - End Page" && (
@@ -478,6 +480,15 @@ export default function TaskManagement() {
 
   /* modal */
   const [modal, setModal] = useState(null); // {type:'add'|'edit'|'delete', task?}
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openAddTask) {
+      setModal({ type: "add" });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   /* ── filtered list ── */
   const filtered = useMemo(() => tasks.filter(t => {

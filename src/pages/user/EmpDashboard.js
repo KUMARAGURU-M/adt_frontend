@@ -2,30 +2,30 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import EmpHeader   from './EmpHeader';
+import EmpHeader from './EmpHeader';
 import EmpWorkwise from './EmpWorkwise';
 import EmpCalendar from './EmpCalendar';
-import EmpTask     from './EmpTask';
-import EmpLeave    from './EmpLeave';
+import EmpTask from './EmpTask';
+import EmpLeave from './EmpLeave';
 import './EmpDashboard.css';
 
 const TABS = [
-  { id: 'workwise', label: 'WorkWise', icon: '➤'  },
+  { id: 'workwise', label: 'WorkWise', icon: '➤' },
   { id: 'calendar', label: 'Calendar', icon: '📅' },
-  { id: 'tasks',    label: 'Tasks',    icon: '✅' },
-  { id: 'leaves',   label: 'Leaves',   icon: '🍃' },
+  { id: 'tasks', label: 'Tasks', icon: '✅' },
+  { id: 'leaves', label: 'Leaves', icon: '🍃' },
 ];
 
 const STATS = [
   { key: 'totalHours', label: 'Total Hours' },
-  { key: 'pages',      label: 'Pages'       },
-  { key: 'sessions',   label: 'Sessions'    },
-  { key: 'projects',   label: 'Projects'    },
-  { key: 'status',     label: 'Status', isStatus: true },
+  { key: 'pages', label: 'Pages' },
+  { key: 'sessions', label: 'Sessions' },
+  { key: 'projects', label: 'Projects' },
+  { key: 'status', label: 'Status', isStatus: true },
 ];
 
-const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function EmpDashboard() {
 
@@ -51,9 +51,9 @@ export default function EmpDashboard() {
     `${DAYS_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}, ${d.getFullYear()}`;
 
   const fmtTime = (d) => {
-    let h    = d.getHours();
-    const m  = String(d.getMinutes()).padStart(2, '0');
-    const s  = String(d.getSeconds()).padStart(2, '0');
+    let h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const s = String(d.getSeconds()).padStart(2, '0');
     const ap = h >= 12 ? 'pm' : 'am';
 
     h = h % 12 || 12;
@@ -65,9 +65,9 @@ export default function EmpDashboard() {
     switch (activeTab) {
       case 'workwise': return <EmpWorkwise />;
       case 'calendar': return <EmpCalendar />;
-      case 'tasks':    return <EmpTask />;
-      case 'leaves':   return <EmpLeave />;
-      default:         return <EmpWorkwise />;
+      case 'tasks': return <EmpTask />;
+      case 'leaves': return <EmpLeave />;
+      default: return <EmpWorkwise />;
     }
   };
 
@@ -89,12 +89,12 @@ export default function EmpDashboard() {
           </div>
 
           {/* Tagging Work Portal button */}
-          <button
+          {/* <button
             className="emp-portal-btn"
             onClick={() => navigate('/workportal')}
           >
             🏷️ Tagging Work Portal
-          </button>
+          </button> */}
 
         </div>
 
@@ -117,13 +117,12 @@ export default function EmpDashboard() {
                 {s.isStatus ? (
                   <div className="emp-stat-status">
                     <span
-                      className={`emp-status-dot ${
-                        summary.status === 'Running'
+                      className={`emp-status-dot ${summary.status === 'Running'
                           ? 'active'
                           : summary.status === 'Stopped'
-                          ? 'stopped'
-                          : ''
-                      }`}
+                            ? 'stopped'
+                            : ''
+                        }`}
                     />
                     {summary.status}
                   </div>

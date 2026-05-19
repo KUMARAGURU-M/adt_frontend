@@ -1,6 +1,7 @@
 // src/pages/admin/AdminDashboard.js
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
 
 const stats = [
@@ -11,6 +12,20 @@ const stats = [
 ];
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
+  const handleQuickAction = (action) => {
+    if (action === 'addUser') {
+      navigate('/admin/users', { state: { openAddUser: true } });
+    } else if (action === 'addProject') {
+      navigate('/admin/projects', { state: { openAddProject: true } });
+    } else if (action === 'addTask') {
+      navigate('/admin/tasks', { state: { openAddTask: true } });
+    } else if (action === 'viewReports') {
+      navigate('/admin/reports');
+    }
+  };
+
   return (
     <div className="dashboard-container">
 
@@ -36,10 +51,10 @@ const AdminDashboard = () => {
       <div className="action-card">
         <h4 className="card-label">Quick Actions</h4>
         <div className="action-buttons">
-          <button className="btn btn-primary">+ Add User</button>
-          <button className="btn btn-primary">+ Add Project</button>
-          <button className="btn btn-primary">+ Add Task</button>
-          <button className="btn btn-outline">View Reports</button>
+          <button className="btn btn-primary" onClick={() => handleQuickAction('addUser')}>+ Add User</button>
+          <button className="btn btn-primary" onClick={() => handleQuickAction('addProject')}>+ Add Project</button>
+          <button className="btn btn-primary" onClick={() => handleQuickAction('addTask')}>+ Add Task</button>
+          <button className="btn btn-outline" onClick={() => handleQuickAction('viewReports')}>View Reports</button>
         </div>
       </div>
 
