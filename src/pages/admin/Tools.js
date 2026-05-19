@@ -29,22 +29,6 @@ const SAMPLE_EMPLOYEES = [
 ];
 
 // ── Initial Data ────────────────────────────────────────────────────────────
-const INITIAL_COMMON_TOOLS = [
-  { id: 1, name: "ARtitle", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 2, name: "Ack Title", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 3, name: "Add", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 4, name: "Affl", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 5, name: "App Title", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 6, name: "Appendix", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 7, name: "Attrib", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 8, name: "Author Name", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 9, name: "Blockquote", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 10, name: "Blockquote 1", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 11, name: "Book Aff", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 12, name: "Book Author", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 13, name: "Book Subtitle", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 14, name: "Book Title", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-];
 
 const INITIAL_EMPLOYEES = [
   { id: 1, name: "Sureka", email: "sureka@arrowdatatech.com", phone: "-", role: "Employee", initial: "S", hasCommonAccess: false, hasOcrAccess: false },
@@ -54,13 +38,7 @@ const INITIAL_EMPLOYEES = [
   { id: 5, name: "Karthika", email: "karthika@arrowdatatech.com", phone: "-", role: "Employee", initial: "K", hasCommonAccess: false, hasOcrAccess: false },
 ];
 
-const INITIAL_OCR_TOOLS = [
-  { id: 1, name: "ARtitle", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 2, name: "Ack Title", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 3, name: "Add", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 4, name: "Affl", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-  { id: 5, name: "App Title", category: "-", shortcutKey: "Not set", description: "-", status: "Active" },
-];
+
 
 const ROLES = ["Admin", "Manager", "Employee", "Viewer"];
 
@@ -80,9 +58,6 @@ const avatarColor = (initial) => {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Tools() {
   const [activeTab, setActiveTab] = useState("common");
-
-  const [commonTools] = useState(INITIAL_COMMON_TOOLS);
-  const [ocrTools] = useState(INITIAL_OCR_TOOLS);
 
   // Employee state
   const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);

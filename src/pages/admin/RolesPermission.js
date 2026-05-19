@@ -80,7 +80,6 @@ const RolesPermission = () => {
   const [selectedPermissions, setSelectedPermissions] = useState([]);
 
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
-  const [permResource, setPermResource] = useState('shifts');
   const [permActions, setPermActions] = useState([]);
   const [permDescription, setPermDescription] = useState('');
   const [permActive, setPermActive] = useState(true);
@@ -147,15 +146,6 @@ const RolesPermission = () => {
     setIsAssignModalOpen(false);
   };
 
-  // Create Permission Handlers
-  const handleOpenAddPermission = () => {
-    setPermResource('shifts');
-    setPermActions([]);
-    setPermDescription('');
-    setPermActive(true);
-    setIsPermissionModalOpen(true);
-  };
-
   const handleTogglePermAction = (actionId) => {
     if (permActions.includes(actionId)) {
       setPermActions(permActions.filter(id => id !== actionId));
@@ -165,10 +155,6 @@ const RolesPermission = () => {
   };
 
   // Select All / Deselect All for Resources (Step 1)
-  const allResourceIds = resourcesList.map(r => r.id);
-  const allResourcesSelected = allResourceIds.every(id => permResource === id) === false
-    ? false
-    : true;
   // Since resource is a single-select (radio), "Select All" here means we select all via a
   // special multi-select state. We'll treat Step 1 as multi-select for Select All support.
   // Actually, based on original code permResource is a single string. We'll keep it single

@@ -155,7 +155,6 @@ const Attendance = () => {
       }
     }));
   };
-
   /* ── Days for selected month ── */
   const days = useMemo(() => buildDays(selYear, selMonth), [selYear, selMonth]);
 
