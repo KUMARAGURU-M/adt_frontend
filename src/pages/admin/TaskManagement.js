@@ -494,24 +494,32 @@ export default function TaskManagement() {
 
   /* ── filtered list ── */
   const filtered = useMemo(() => tasks.filter(t => {
-    const q = search.toLowerCase();
+    const q = searchApplied.toLowerCase();
     if (q && !t.title.toLowerCase().includes(q) && !t.jobs.join(" ").toLowerCase().includes(q)) return false;
     if (filterProject && t.project !== filterProject) return false;
     if (filterProcess && !t.processes.includes(filterProcess)) return false;
     if (filterEmployee && !t.employees.includes(filterEmployee)) return false;
     if (filterStatus && t.status !== filterStatus) return false;
     return true;
-  }), [tasks, search, filterProject, filterProcess, filterEmployee, filterStatus]);
+  }), [tasks, searchApplied, filterProject, filterProcess, filterEmployee, filterStatus]);
 
   const totalItems = filtered.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const applySearch = () => { setCurrentPage(1); };
+  const applySearch = () => {
+    setSearchApplied(search);
+    setCurrentPage(1);
+  };
 
   const clearFilters = () => {
-    setSearch(""); setFilterProject("");
-    setFilterProcess(""); setFilterEmployee(""); setFilterStatus(""); setCurrentPage(1);
+    setSearch("");
+    setSearchApplied("");
+    setFilterProject("");
+    setFilterProcess("");
+    setFilterEmployee("");
+    setFilterStatus("");
+    setCurrentPage(1);
   };
 
   const topScrollRef = React.useRef(null);

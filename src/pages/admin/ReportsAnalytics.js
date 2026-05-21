@@ -82,18 +82,18 @@ const ReportsAnalytics = () => {
 
   /* ── Filtered logs ── */
   const filteredLogs = useMemo(() => seedLogs.filter(log => {
-    if (fEmployee && log.employee !== fEmployee) return false;
-    if (fProject  && log.project  !== fProject)  return false;
-    if (startDate) {
+    if (applied.employee && log.employee !== applied.employee) return false;
+    if (applied.project  && log.project  !== applied.project)  return false;
+    if (applied.startDate) {
       const logDate = new Date(log.startTime);
-      if (logDate < new Date(startDate)) return false;
+      if (logDate < new Date(applied.startDate)) return false;
     }
-    if (endDate) {
+    if (applied.endDate) {
       const logDate = new Date(log.startTime);
-      if (logDate > new Date(endDate + 'T23:59:59')) return false;
+      if (logDate > new Date(applied.endDate + 'T23:59:59')) return false;
     }
     return true;
-  }), [startDate, endDate, fEmployee, fProject]);
+  }), [applied]);
 
   const topScrollRef = React.useRef(null);
   const bottomScrollRef = React.useRef(null);

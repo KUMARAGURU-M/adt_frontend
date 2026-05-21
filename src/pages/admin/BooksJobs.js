@@ -612,25 +612,25 @@ const BooksJobs = () => {
 
   /* Filtered rows */
   const rows = useMemo(() => jobs.filter(j => {
-    if (filters.project && j.project !== filters.project) return false;
-    if (filters.isbn && !j.isbn.toLowerCase().includes(filters.isbn.toLowerCase())) return false;
+    if (applied.project && j.project !== applied.project) return false;
+    if (applied.isbn && !j.isbn.toLowerCase().includes(applied.isbn.toLowerCase())) return false;
     
     // Start Month filter (calendar date)
-    if (filters.startMonth && j.startMonth) {
-      if (new Date(j.startMonth) < new Date(filters.startMonth)) return false;
+    if (applied.startMonth && j.startMonth) {
+      if (new Date(j.startMonth) < new Date(applied.startMonth)) return false;
     }
     // End Month filter (calendar date)
-    if (filters.endMonth && j.endMonth) {
-      if (new Date(j.endMonth) > new Date(filters.endMonth)) return false;
+    if (applied.endMonth && j.endMonth) {
+      if (new Date(j.endMonth) > new Date(applied.endMonth)) return false;
     }
 
-    if (filters.status && j.status !== filters.status) return false;
-    if (filters.billing && j.billing !== filters.billing) return false;
-    if (filters.jobId && !j.jobId.toLowerCase().includes(filters.jobId.toLowerCase())) return false;
-    if (filters.complexity && j.complexity !== filters.complexity) return false;
-    if (filters.fileStatus && j.fileStatus !== filters.fileStatus) return false;
+    if (applied.status && j.status !== applied.status) return false;
+    if (applied.billing && j.billing !== applied.billing) return false;
+    if (applied.jobId && !j.jobId.toLowerCase().includes(applied.jobId.toLowerCase())) return false;
+    if (applied.complexity && j.complexity !== applied.complexity) return false;
+    if (applied.fileStatus && j.fileStatus !== applied.fileStatus) return false;
     return true;
-  }), [jobs, filters]);
+  }), [jobs, applied]);
 
   const topScrollRef = React.useRef(null);
   const bottomScrollRef = React.useRef(null);
