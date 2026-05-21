@@ -77,6 +77,11 @@
   text-align: center;
 }
 
+.user-table th.th-name,
+.user-table td.td-name {
+  text-align: left;
+}
+
 .user-table tbody tr:last-child td { border-bottom: none; }
 .user-table tbody tr:hover { background-color: #f8fafc; }
 
@@ -104,9 +109,12 @@
 .role-badge.employee { background: #e0e7ff; color: #4338ca; }
 .role-badge.manager  { background: #dcfce7; color: #15803d; }
 .role-badge.admin    { background: #fee2e2; color: #b91c1c; }
-
-.status-badge.active   { color: #38a169; font-weight: 600; }
-.status-badge.inactive { color: #e53e3e; font-weight: 600; }
+.status-badge {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.status-badge.active   { color: #38a169; text-transform: uppercase; }
+.status-badge.inactive { color: #e53e3e; }
 
 .top-performer {
   background: #fef3c7;
@@ -453,4 +461,42 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+/* Double scrollbar styles */
+.double-scroll-top {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  height: 8px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.double-scroll-top-inner {
+  height: 1px;
+}
+
+/* Custom small, light scrollbars */
+.double-scroll-top::-webkit-scrollbar,
+.table-wrapper::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.double-scroll-top::-webkit-scrollbar-track,
+.table-wrapper::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.double-scroll-top::-webkit-scrollbar-thumb,
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.double-scroll-top::-webkit-scrollbar-thumb:hover,
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

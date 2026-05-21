@@ -7,10 +7,10 @@ import './UserManagement.css';
 /* ─── Static seed data ─────────────────────────────────────────── */
 const initialUsers = [
   { id: 1, initial: 'S', name: 'Sureka',         email: 'sureka@arrowdatatech.com',   phone: '-',          role: 'employee', shift: 'General Shift', top: false, status: 'Active' },
-  { id: 2, initial: 'A', name: 'Ayeesha M',       email: 'vimala@arrowdatatech.com',   phone: '9791778036', role: 'manager',  shift: '-',             top: false, status: 'Active' },
-  { id: 3, initial: 'S', name: 'Shakina A',       email: 'shakina@arrowdatatech.com',  phone: '9944732344', role: 'manager',  shift: '-',             top: false, status: 'Active' },
-  { id: 4, initial: 'T', name: 'T. Mohamed Usen', email: 'usen@arrowdatatech.com',     phone: '9894562152', role: 'admin',    shift: '-',             top: false, status: 'Active' },
-  { id: 5, initial: 'K', name: 'Karthika',        email: 'karthika@arrowdatatech.com', phone: '-',          role: 'employee', shift: '-',             top: true,  status: 'Active' },
+  { id: 2, initial: 'A', name: 'Ayeesha M',       email: 'vimala@arrowdatatech.com',   phone: '9791778036', role: 'manager',  shift: '1st Shift',     top: false, status: 'Active' },
+  { id: 3, initial: 'S', name: 'Shakina A',       email: 'shakina@arrowdatatech.com',  phone: '9944732344', role: 'manager',  shift: '2nd Shift',     top: false, status: 'Active' },
+  { id: 4, initial: 'T', name: 'T. Mohamed Usen', email: 'usen@arrowdatatech.com',     phone: '9894562152', role: 'admin',    shift: 'Night Shift',   top: false, status: 'Active' },
+  { id: 5, initial: 'K', name: 'Karthika',        email: 'karthika@arrowdatatech.com', phone: '-',          role: 'employee', shift: 'General Shift', top: true,  status: 'Active' },
 ];
 
 const ALL_PROJECTS = [
@@ -23,7 +23,7 @@ const ALL_PROCESSES = [
   'Proof Reading - Process', 'REF - Process', 'TABLE - Process',
 ];
 const ALL_ROLES  = ['Employee', 'Manager', 'Admin'];
-const ALL_SHIFTS = ['General Shift', 'Morning Shift', 'Night Shift'];
+const ALL_SHIFTS = ['1st Shift', '2nd Shift', 'General Shift', 'Night Shift'];
 
 /* ─── Overlay wrapper ───────────────────────────────────────────── */
 const Modal = ({ onClose, children }) => (
@@ -39,6 +39,7 @@ const Modal = ({ onClose, children }) => (
 ══════════════════════════════════════════════════════════════════ */
 const AddUserModal = ({ onClose, onAdd }) => {
   const [form, setForm] = useState({
+    id:       '',
     name:     '',
     email:    '',
     phone:    '',
@@ -58,6 +59,7 @@ const AddUserModal = ({ onClose, onAdd }) => {
 
   const validate = () => {
     const e = {};
+    if (!form.id.trim())    e.id    = 'ID is required.';
     if (!form.name.trim())  e.name  = 'Name is required.';
     if (!form.email.trim()) e.email = 'Email is required.';
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email.';
@@ -68,7 +70,7 @@ const AddUserModal = ({ onClose, onAdd }) => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
     onAdd({
-      id:      Date.now(),
+      id:      Number(form.id.trim()) || form.id.trim(),
       initial: form.name.charAt(0).toUpperCase(),
       name:    form.name.trim(),
       email:   form.email.trim(),
@@ -84,6 +86,18 @@ const AddUserModal = ({ onClose, onAdd }) => {
   return (
     <Modal onClose={onClose}>
       <h2 className="modal-title">Add New User</h2>
+
+      {/* ID */}
+      <div className="form-group">
+        <label className="form-label">ID <span className="req">*</span></label>
+        <input
+          className="form-input"
+          placeholder="e.g. 6"
+          value={form.id}
+          onChange={e => set('id', e.target.value)}
+        />
+        {errors.id && <p className="form-error">{errors.id}</p>}
+      </div>
 
       {/* Name */}
       <div className="form-group">
@@ -635,6 +649,56 @@ const UserManagement = () => {
   const handleAdd = (newUser) =>
     setUsers(prev => [...prev, newUser]);
 
+  const topScrollRef = React.useRef(null);
+  const bottomScrollRef = React.useRef(null);
+
+  useEffect(() => {
+    const topEl = topScrollRef.current;
+    const bottomEl = bottomScrollRef.current;
+    if (!topEl || !bottomEl) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const firstChild = bottomEl.firstElementChild;
+      if (firstChild) {
+        const tableWidth = firstChild.offsetWidth;
+        const innerDummy = topEl.firstElementChild;
+        if (innerDummy) {
+          innerDummy.style.width = `${tableWidth}px`;
+        }
+      }
+    });
+
+    resizeObserver.observe(bottomEl);
+
+    let isSyncingTop = false;
+    let isSyncingBottom = false;
+
+    const handleTopScroll = () => {
+      if (!isSyncingBottom) {
+        isSyncingTop = true;
+        bottomEl.scrollLeft = topEl.scrollLeft;
+        isSyncingTop = false;
+      }
+    };
+
+    const handleBottomScroll = () => {
+      if (!isSyncingTop) {
+        isSyncingBottom = true;
+        topEl.scrollLeft = bottomEl.scrollLeft;
+        isSyncingBottom = false;
+      }
+    };
+
+    topEl.addEventListener('scroll', handleTopScroll);
+    bottomEl.addEventListener('scroll', handleBottomScroll);
+
+    return () => {
+      resizeObserver.disconnect();
+      topEl.removeEventListener('scroll', handleTopScroll);
+      bottomEl.removeEventListener('scroll', handleBottomScroll);
+    };
+  }, [users]);
+
   return (
     <div className="user-mgmt-container">
 
@@ -649,13 +713,18 @@ const UserManagement = () => {
         </button>
       </div>
 
+      {/* ── Table Top Scrollbar ── */}
+      <div className="double-scroll-top" ref={topScrollRef}>
+        <div className="double-scroll-top-inner"></div>
+      </div>
+
       {/* ── Table ── */}
-      <div className="table-wrapper">
+      <div className="table-wrapper" ref={bottomScrollRef}>
         <table className="user-table">
           <thead>
             <tr>
               <th>Photo</th>
-              <th>Name</th>
+              <th className="th-name">Name</th>
               <th>Email</th>
               <th>Phone</th>
               <th>Role</th>
@@ -669,7 +738,7 @@ const UserManagement = () => {
             {users.map((user) => (
               <tr key={user.id}>
                 <td><div className="avatar-circle">{user.initial}</div></td>
-                <td>{user.name}</td>
+                <td className="td-name">{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.phone}</td>
                 <td>
@@ -678,7 +747,9 @@ const UserManagement = () => {
                 <td>{user.shift}</td>
                 <td>{user.top && <span className="top-performer">⭐ Top Performer</span>}</td>
                 <td>
-                  <span className={`status-badge ${user.status.toLowerCase()}`}>{user.status}</span>
+                  <span className={`status-badge ${user.status.toLowerCase()}`}>
+                    {user.status?.toLowerCase() === 'active' ? 'ACTIVE' : (user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : '')}
+                  </span>
                 </td>
 
                 {/* ── ACTION DROPDOWN ── */}

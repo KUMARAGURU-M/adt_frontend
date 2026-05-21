@@ -115,15 +115,34 @@ const EmpLeave = () => {
           <div className="el-modal">
             <h2 className="el-modal-title">Apply for Leave</h2>
             
-            <div className="el-form-group">
-              <label>Leave Type *</label>
-              <div className="el-select-wrapper">
-                <select className="el-select">
-                  <option>Select Leave Type</option>
-                </select>
-                <span className="el-select-arrow">▾</span>
-              </div>
-            </div>
+            {/* Leave Type */}
+<div className="el-form-group">
+  <label>Leave Type *</label>
+  <div className="el-select-wrapper">
+    <select className="el-select">
+      <option>Select Leave Type</option>
+      <option>Annual Leave</option>
+      <option>Sick Leave</option>
+      <option>Casual Leave</option>
+      <option>Maternity Leave</option>
+      <option>Emergency Leave</option>
+    </select>
+    <span className="el-select-arrow">▾</span>
+  </div>
+</div>
+
+{/* Request To */}
+<div className="el-form-group">
+  <label>Request To *</label>
+  <div className="el-select-wrapper">
+    <select className="el-select">
+      <option>Select Approver</option>
+      <option>Admin</option>
+      <option>HR</option>
+    </select>
+    <span className="el-select-arrow">▾</span>
+  </div>
+</div>
             
             <div className="el-form-group">
               <label>Start Date *</label>

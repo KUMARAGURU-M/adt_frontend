@@ -82,18 +82,68 @@ const ReportsAnalytics = () => {
 
   /* ── Filtered logs ── */
   const filteredLogs = useMemo(() => seedLogs.filter(log => {
-    if (applied.employee && log.employee !== applied.employee) return false;
-    if (applied.project  && log.project  !== applied.project)  return false;
-    if (applied.startDate) {
+    if (fEmployee && log.employee !== fEmployee) return false;
+    if (fProject  && log.project  !== fProject)  return false;
+    if (startDate) {
       const logDate = new Date(log.startTime);
-      if (logDate < new Date(applied.startDate)) return false;
+      if (logDate < new Date(startDate)) return false;
     }
-    if (applied.endDate) {
+    if (endDate) {
       const logDate = new Date(log.startTime);
-      if (logDate > new Date(applied.endDate + 'T23:59:59')) return false;
+      if (logDate > new Date(endDate + 'T23:59:59')) return false;
     }
     return true;
-  }), [applied]);
+  }), [startDate, endDate, fEmployee, fProject]);
+
+  const topScrollRef = React.useRef(null);
+  const bottomScrollRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const topEl = topScrollRef.current;
+    const bottomEl = bottomScrollRef.current;
+    if (!topEl || !bottomEl) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const firstChild = bottomEl.firstElementChild;
+      if (firstChild) {
+        const tableWidth = firstChild.offsetWidth;
+        const innerDummy = topEl.firstElementChild;
+        if (innerDummy) {
+          innerDummy.style.width = `${tableWidth}px`;
+        }
+      }
+    });
+
+    resizeObserver.observe(bottomEl);
+
+    let isSyncingTop = false;
+    let isSyncingBottom = false;
+
+    const handleTopScroll = () => {
+      if (!isSyncingBottom) {
+        isSyncingTop = true;
+        bottomEl.scrollLeft = topEl.scrollLeft;
+        isSyncingTop = false;
+      }
+    };
+
+    const handleBottomScroll = () => {
+      if (!isSyncingTop) {
+        isSyncingBottom = true;
+        topEl.scrollLeft = bottomEl.scrollLeft;
+        isSyncingBottom = false;
+      }
+    };
+
+    topEl.addEventListener('scroll', handleTopScroll);
+    bottomEl.addEventListener('scroll', handleBottomScroll);
+
+    return () => {
+      resizeObserver.disconnect();
+      topEl.removeEventListener('scroll', handleTopScroll);
+      bottomEl.removeEventListener('scroll', handleBottomScroll);
+    };
+  }, [filteredLogs]);
 
   /* ── Summary stats ── */
   const totalHours = useMemo(() =>
@@ -134,13 +184,13 @@ const ReportsAnalytics = () => {
 
   /* ── Export CSV ── */
   const exportCSV = () => {
-    const headers = ['Employee','Project','Task','Start Time','End Time','Duration (hrs)','Pages','Status'];
+    const headers = ['ID', 'Employee', 'Project', 'Task', 'Start Time', 'End Time', 'Duration (hrs)', 'Pages', 'Status'];
     const rows = filteredLogs.map(l => [
-      `"${l.employee}"`, `"${l.project}"`, `"${l.task}"`,
+      l.id, `"${l.employee}"`, `"${l.project}"`, `"${l.task}"`,
       fmtDateTime(l.startTime), fmtDateTime(l.endTime),
       l.durationHrs, l.pages ?? '', `"${l.status || '-'}"`
     ].join(','));
-    const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type:'text/csv' });
+    const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv' });
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(blob), download: 'reports.csv',
     });
@@ -297,10 +347,17 @@ const ReportsAnalytics = () => {
       <div className="ra-section-card">
         <h3 className="ra-section-title">Detailed Time Logs</h3>
 
-        <div className="ra-table-wrapper">
+      {/* ── Table Top Scrollbar ── */}
+      <div className="double-scroll-top" ref={topScrollRef}>
+        <div className="double-scroll-top-inner"></div>
+      </div>
+
+      {/* ── Detailed Time Logs Table ── */}
+      <div className="ra-table-wrapper" ref={bottomScrollRef}>
           <table className="ra-table">
             <thead>
               <tr>
+                <th>ID</th>
                 <th>Employee</th>
                 <th>Project</th>
                 <th>Task</th>
@@ -314,12 +371,13 @@ const ReportsAnalytics = () => {
             <tbody>
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="ra-table-empty">
+                  <td colSpan="9" className="ra-table-empty">
                     No time logs found for selected filters.
                   </td>
                 </tr>
               ) : filteredLogs.map(log => (
                 <tr key={log.id}>
+                  <td className="td-id">{log.id}</td>
                   <td className="td-employee">{log.employee}</td>
                   <td className="td-project">
                     <span className="ra-project-tag">{log.project}</span>

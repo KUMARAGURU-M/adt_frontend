@@ -4,19 +4,19 @@ import "./Project.css";
 
 const initialProjects = [
   { id: 1, name: "LDM - Hanser", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
-  { id: 2, name: "ING - Usen", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 3, name: "ING - OUP", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 4, name: "LDM - T&F", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 5, name: "LDM - WILEY", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 6, name: "CNT", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 7, name: "IMP - EPUB", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 8, name: "CMT - JATS", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 9, name: "ING - ACDC", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
-  { id: 10, name: "LDM - ASS_EPUB3", description: "", billingType: "Per Page", complexity: "Intermediate", rate: "", status: "Active" },
+  { id: 2, name: "ING - Usen", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 3, name: "ING - OUP", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 4, name: "LDM - T&F", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 5, name: "LDM - WILEY", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 6, name: "CNT", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 7, name: "IMP - EPUB", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 8, name: "CMT - JATS", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 9, name: "ING - ACDC", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
+  { id: 10, name: "LDM - ASS_EPUB3", description: "", billingType: "Per Page", complexity: "Medium", rate: "", status: "Active" },
 ];
 
 const BILLING_TYPES = ["Per Page", "Per Article", "Per KB"];
-const COMPLEXITY_LEVELS = ["Simple", "Medium", "Intermediate", "Complex", "Expert"];
+const COMPLEXITY_LEVELS = ["Simple", "Medium", "Complex", "Heavy Complex"];
 
 const emptyForm = {
   name: "",
@@ -32,11 +32,10 @@ const complexityClass = (level) => {
   const map = {
     Simple: "badge--simple",
     Medium: "badge--medium",
-    Intermediate: "badge--intermediate",
     Complex: "badge--complex",
-    Expert: "badge--expert",
+    "Heavy Complex": "badge--heavy-complex",
   };
-  return map[level] || "badge--intermediate";
+  return map[level] || "badge--medium";
 };
 
 export default function Projects() {

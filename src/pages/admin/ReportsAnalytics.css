@@ -269,6 +269,13 @@
 .ra-table tbody tr:hover          { background: #f8fafc; }
 
 /* Column-specific */
+.td-id {
+  font-weight: 600;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .td-employee {
   font-weight: 600;
   color: #2d3748;
@@ -367,9 +374,43 @@
   font-size: 0.88rem;
 }
 
-/* Scrollbars */
-.ra-table-wrapper::-webkit-scrollbar        { height: 5px; }
-.ra-table-wrapper::-webkit-scrollbar-thumb  { background: #e2e8f0; border-radius: 6px; }
+/* Double scrollbar styles */
+.double-scroll-top {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  height: 8px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.double-scroll-top-inner {
+  height: 1px;
+}
+
+/* Custom small, light scrollbars */
+.double-scroll-top::-webkit-scrollbar,
+.ra-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.double-scroll-top::-webkit-scrollbar-track,
+.ra-table-wrapper::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.double-scroll-top::-webkit-scrollbar-thumb,
+.ra-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.double-scroll-top::-webkit-scrollbar-thumb:hover,
+.ra-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
 /* ══════════════════════════════════════════════
    RESPONSIVE

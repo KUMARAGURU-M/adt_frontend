@@ -15,10 +15,10 @@ const PDF_TYPES = [
 ];
 
 const COMPLEXITY_OPTIONS = [
-  { label: 'SIMPLE',        color: '#22c55e' },
-  { label: 'MEDIUM',        color: '#f59e0b' },
-  { label: 'COMPLEX',       color: '#ef4444' },
-  { label: 'HEAVY COMPLEX', color: '#7c3aed' },
+  { label: 'Simple', color: '#22c55e' },
+  { label: 'Medium', color: '#f59e0b' },
+  { label: 'Complex', color: '#ef4444' },
+  { label: 'Heavy Complex', color: '#7c3aed' },
 ];
 
 const STATUS_OPTIONS = [
@@ -26,7 +26,7 @@ const STATUS_OPTIONS = [
   'RTU', 'UPLOADED', 'PENDING', 'HOLD', 'QUERY',
 ];
 
-const FILE_STATUS_OPTIONS = ['UPLOADED', 'READY TO UPLOAD', 'QUERY', 'HOLD'];
+const FILE_STATUS_OPTIONS = ['UPLOADED', 'RTU', 'QUERY', 'HOLD'];
 
 const BILLING_STATUS_OPTIONS = ['CREDITED', 'PENDING', 'INVOICED'];
 
@@ -35,14 +35,13 @@ const REF_TYPES = [
   'PE-REF', 'CH_BE-REF',
 ];
 
-const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-
 const ALL_BULK_FIELDS = [
   { key: "receiveDate", label: "RECIEVED DATE", mandatory: true },
   { key: "jobId", label: "JOB ID", mandatory: true },
   { key: "title", label: "TITLE NAME", mandatory: true },
   { key: "pageCount", label: "PAGE COUNT", mandatory: true },
-  { key: "month", label: "MONTH" },
+  { key: "startMonth", label: "START MONTH" },
+  { key: "endMonth", label: "END MONTH" },
   { key: "isbn", label: "XML ISBN" },
   { key: "chapters", label: "NUMBER OF CHAPTERS" },
   { key: "pdfType", label: "PDF INPUT TYPE" },
@@ -56,15 +55,15 @@ const ALL_BULK_FIELDS = [
 
 /* ─── Seed data ─────────────────────────────────────────────────── */
 const seedJobs = [
-  { id: 1, project: 'ING - ACDC',  month: 'FEB', receiveDate: '2026-02-01', jobId: 'ACDC-001',   isbn: '',                    title: 'The Author',                              pageCount: '',  pdfType: '',          complexity: '',        refType: '',                          status: '',          fileStatus: '',        uploadDate: '', billing: '' },
-  { id: 2, project: 'CMT - JATS',  month: 'AUG', receiveDate: '2026-01-31', jobId: 'JATX0001',   isbn: 'is_v30_i2_d1767629676', title: 'is_v30_i2_d1767629676',               pageCount: '251', pdfType: 'PRINT-PDF',  complexity: 'Simple',  refType: 'Non reference',             status: 'PENDING',   fileStatus: 'NOT_UPLOADED', uploadDate: '2026-02-01', billing: '' },
-  { id: 3, project: 'LDM - Hanser',month: 'JAN', receiveDate: '2026-01-29', jobId: 'HANS-0001',  isbn: '9783446480438',         title: 'TP25-0386_chv9783446477629_Joebstl',  pageCount: '161', pdfType: 'PRINT-PDF',  complexity: 'Simple',  refType: '',                          status: '',          fileStatus: '',        uploadDate: '', billing: '' },
-  { id: 4, project: '',             month: 'OCT', receiveDate: '2001-10-21', jobId: 'CUP1793',    isbn: '9780521878739',         title: 'Strategic Legal Writing',             pageCount: '242', pdfType: 'PRINT-PDF',  complexity: 'Medium',  refType: '',                          status: '',          fileStatus: '',        uploadDate: '', billing: '' },
-  { id: 5, project: '',             month: 'OCT', receiveDate: '2001-10-21', jobId: 'CUP1788',    isbn: '9780521875981',         title: 'The War for Palestine',               pageCount: '310', pdfType: 'PRINT-PDF',  complexity: 'Medium',  refType: '',                          status: '',          fileStatus: '',        uploadDate: '', billing: '' },
+  { id: 1, project: 'ING - ACDC', startMonth: '2026-02-01', endMonth: '2026-02-28', receiveDate: '2026-02-01', jobId: 'ACDC-001', isbn: '', title: 'The Author', pageCount: '10', pdfType: '', complexity: '', refType: '', status: '', fileStatus: '', uploadDate: '', billing: '' },
+  { id: 2, project: 'CMT - JATS', startMonth: '2026-08-01', endMonth: '2026-08-31', receiveDate: '2026-01-31', jobId: 'JATX0001', isbn: 'is_v30_i2_d1767629676', title: 'is_v30_i2_d1767629676', pageCount: '251', pdfType: 'PRINT-PDF', complexity: 'Simple', refType: 'Non reference', status: 'PENDING', fileStatus: 'NOT_UPLOADED', uploadDate: '2026-02-01', billing: '' },
+  { id: 3, project: 'LDM - Hanser', startMonth: '2026-01-01', endMonth: '2026-01-31', receiveDate: '2026-01-29', jobId: 'HANS-0001', isbn: '9783446480438', title: 'TP25-0386_chv9783446477629_Joebstl', pageCount: '161', pdfType: 'PRINT-PDF', complexity: 'Simple', refType: '', status: '', fileStatus: '', uploadDate: '', billing: '' },
+  { id: 4, project: '', startMonth: '2001-10-01', endMonth: '2001-10-31', receiveDate: '2001-10-21', jobId: 'CUP1793', isbn: '9780521878739', title: 'Strategic Legal Writing', pageCount: '242', pdfType: 'PRINT-PDF', complexity: 'Medium', refType: '', status: '', fileStatus: '', uploadDate: '', billing: '' },
+  { id: 5, project: '', startMonth: '2001-10-01', endMonth: '2001-10-31', receiveDate: '2001-10-21', jobId: 'CUP1788', isbn: '9780521875981', title: 'The War for Palestine', pageCount: '310', pdfType: 'PRINT-PDF', complexity: 'Medium', refType: '', status: '', fileStatus: '', uploadDate: '', billing: '' },
 ];
 
 const EMPTY_FORM = {
-  project: '', month: '', receiveDate: '', jobId: '', isbn: '',
+  project: '', startMonth: '', endMonth: '', receiveDate: '', jobId: '', isbn: '',
   title: '', pageCount: '', chapters: '', pdfType: '', complexity: '',
   refType: '', status: '', fileStatus: '', uploadDate: '', billing: '',
 };
@@ -110,19 +109,22 @@ const JobForm = ({ form, onChange, isEdit }) => (
       </select>
     </div>
 
-    {/* Month + Receive Date */}
+    {/* Start Month & End Month */}
     <div className="bj-form-row">
       <div className="bj-form-group">
-        <label>Month</label>
-        <select value={form.month} onChange={e => onChange('month', e.target.value)}>
-          <option value="">-- Select Month --</option>
-          {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
+        <label>Start Month <span className="req">*</span></label>
+        <input type="date" value={form.startMonth} onChange={e => onChange('startMonth', e.target.value)} />
       </div>
       <div className="bj-form-group">
-        <label>Receive Date <span className="req">*</span></label>
-        <input type="date" value={form.receiveDate} onChange={e => onChange('receiveDate', e.target.value)} />
+        <label>End Month <span className="req">*</span></label>
+        <input type="date" value={form.endMonth} onChange={e => onChange('endMonth', e.target.value)} />
       </div>
+    </div>
+
+    {/* Receive Date */}
+    <div className="bj-form-group full">
+      <label>Receive Date <span className="req">*</span></label>
+      <input type="date" value={form.receiveDate} onChange={e => onChange('receiveDate', e.target.value)} />
     </div>
 
     {/* Job ID + XML ISBN */}
@@ -223,8 +225,8 @@ const AddJobModal = ({ onClose, onAdd }) => {
   const change = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleCreate = () => {
-    if (!form.project || !form.receiveDate || !form.jobId || !form.title || !form.pageCount) {
-      alert('Please fill in required fields: Project, Receive Date, Job ID, Title Name, Page Count.'); return;
+    if (!form.project || !form.receiveDate || !form.jobId || !form.title || !form.pageCount || !form.startMonth || !form.endMonth) {
+      alert('Please fill in required fields: Project, Receive Date, Start Month, End Month, Job ID, Title Name, Page Count.'); return;
     }
     onAdd({ ...form, id: Date.now() });
     onClose();
@@ -245,7 +247,7 @@ const AddJobModal = ({ onClose, onAdd }) => {
 /* ─── Edit Job Modal ─────────────────────────────────────────────── */
 const EditJobModal = ({ job, onClose, onUpdate }) => {
   const [form, setForm] = useState({
-    project: job.project, month: job.month, receiveDate: job.receiveDate,
+    project: job.project, startMonth: job.startMonth || '', endMonth: job.endMonth || '', receiveDate: job.receiveDate,
     jobId: job.jobId, isbn: job.isbn, title: job.title,
     pageCount: job.pageCount, chapters: job.chapters || '',
     pdfType: job.pdfType, complexity: job.complexity,
@@ -255,8 +257,8 @@ const EditJobModal = ({ job, onClose, onUpdate }) => {
   const change = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleUpdate = () => {
-    if (!form.project || !form.receiveDate || !form.jobId || !form.title || !form.pageCount) {
-      alert('Please fill in required fields: Project, Receive Date, Job ID, Title Name, Page Count.'); return;
+    if (!form.project || !form.receiveDate || !form.jobId || !form.title || !form.pageCount || !form.startMonth || !form.endMonth) {
+      alert('Please fill in required fields: Project, Receive Date, Start Month, End Month, Job ID, Title Name, Page Count.'); return;
     }
     onUpdate({ ...job, ...form });
     onClose();
@@ -286,17 +288,60 @@ const DeleteJobModal = ({ job, onClose, onDelete }) => (
       </p>
       <div className="bj-modal-actions centered">
         <button className="bj-btn-cancel" onClick={onClose}>Cancel</button>
-        <button className="bj-btn-danger" onClick={() => { onDelete(job.id); onClose(); }}>Delete</button>
+        <button className="bj-btn-danger" onClick={onDelete}>Delete</button>
       </div>
     </div>
   </Modal>
 );
 
+/* ─── Reconfirm Delete Modal ─────────────────────────────────────── */
+const ReconfirmDeleteModal = ({ job, onClose, onDelete }) => {
+  const [inputText, setInputText] = useState('');
+
+  const isValid = inputText.trim().toUpperCase() === 'DELETE' || inputText.trim().toUpperCase() === 'YES';
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="bj-reconfirm-modal">
+        <div className="bj-warning-icon">⚠️</div>
+        <h2 className="bj-modal-title">Final Confirmation</h2>
+        <p className="bj-reconfirm-msg">
+          You are about to delete job <strong>{job.jobId}</strong>.
+        </p>
+        <p className="bj-reconfirm-submsg">
+          To confirm, please type <code className="bj-code-confirm">DELETE</code> in the box below:
+        </p>
+        <div className="bj-form-group full" style={{ margin: '14px 0' }}>
+          <input
+            type="text"
+            className="bj-confirm-input"
+            placeholder="Type DELETE to confirm"
+            value={inputText}
+            onChange={e => setInputText(e.target.value)}
+            autoFocus
+          />
+        </div>
+        <div className="bj-modal-actions centered">
+          <button className="bj-btn-cancel" onClick={onClose}>Cancel</button>
+          <button
+            className="bj-btn-danger"
+            disabled={!isValid}
+            onClick={() => { onDelete(job.id); onClose(); }}
+            style={{ opacity: isValid ? 1 : 0.5, cursor: isValid ? 'pointer' : 'not-allowed' }}
+          >
+            Delete Permanently
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
 const BulkImportModal = ({ onClose, onAdd }) => {
   const [view, setView] = useState('main');
   const [selectedProject, setSelectedProject] = useState('');
   const [orderedFields, setOrderedFields] = useState([]);
-  
+
   const [pasteText, setPasteText] = useState("");
   const [parsedJobs, setParsedJobs] = useState([]);
 
@@ -340,7 +385,7 @@ const BulkImportModal = ({ onClose, onAdd }) => {
     }
     const rows = text.split(/\r?\n/).filter(r => r.trim());
     const effectiveFields = getEffectiveFields();
-    
+
     const newJobs = rows.map((row, idx) => {
       const cols = row.split('\t');
       const job = { ...EMPTY_FORM, id: Date.now() + idx, project: selectedProject };
@@ -367,7 +412,7 @@ const BulkImportModal = ({ onClose, onAdd }) => {
       alert("Please paste some data first.");
       return;
     }
-    
+
     let hasError = false;
     for (let i = 0; i < parsedJobs.length; i++) {
       const job = parsedJobs[i];
@@ -376,12 +421,12 @@ const BulkImportModal = ({ onClose, onAdd }) => {
         break;
       }
     }
-    
+
     if (hasError) {
       alert("Some rows are missing mandatory fields (Receive Date, Job ID, Title, Page Count). Please correct them in the grid.");
       return;
     }
-    
+
     onAdd(parsedJobs);
     onClose();
   };
@@ -393,9 +438,9 @@ const BulkImportModal = ({ onClose, onAdd }) => {
           <div className="bj-bulk-header-bar">
             <h2 className="bj-modal-title" style={{ margin: 0 }}>Bulk Import</h2>
             {parsedJobs.length > 0 && (
-               <button className="bj-btn-cancel" onClick={() => { setParsedJobs([]); setPasteText(''); }} style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
-                 🔄 Clear & Repaste
-               </button>
+              <button className="bj-btn-cancel" onClick={() => { setParsedJobs([]); setPasteText(''); }} style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
+                🔄 Clear & Repaste
+              </button>
             )}
           </div>
 
@@ -407,8 +452,8 @@ const BulkImportModal = ({ onClose, onAdd }) => {
                   <option value="">-- Select Publisher --</option>
                   {ALL_PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
-                <button 
-                  className="bj-settings-btn" 
+                <button
+                  className="bj-settings-btn"
                   disabled={!selectedProject}
                   onClick={() => setView('settings')}
                   title="Configure Fields for this Project"
@@ -441,8 +486,8 @@ const BulkImportModal = ({ onClose, onAdd }) => {
                     {parsedJobs.length === 0 ? (
                       <tr>
                         <td colSpan={getEffectiveFields().length} className="bj-paste-td">
-                          <textarea 
-                            className="bj-paste-textarea" 
+                          <textarea
+                            className="bj-paste-textarea"
                             placeholder={`Paste your data for ${selectedProject} here...`}
                             value={pasteText}
                             onChange={e => handleTextPaste(e.target.value)}
@@ -454,17 +499,17 @@ const BulkImportModal = ({ onClose, onAdd }) => {
                       parsedJobs.map((job, i) => (
                         <tr key={i}>
                           {getEffectiveFields().map(f => {
-                             const isError = f.mandatory && !job[f.key];
-                             return (
-                               <td key={f.key} className="bj-grid-td">
-                                 <input 
-                                   className={`bj-grid-input ${isError ? 'error-input' : ''}`}
-                                   value={job[f.key] || ''} 
-                                   onChange={e => handleJobChange(i, f.key, e.target.value)} 
-                                   placeholder={f.mandatory ? 'Required' : ''}
-                                 />
-                               </td>
-                             );
+                            const isError = f.mandatory && !job[f.key];
+                            return (
+                              <td key={f.key} className="bj-grid-td">
+                                <input
+                                  className={`bj-grid-input ${isError ? 'error-input' : ''}`}
+                                  value={job[f.key] || ''}
+                                  onChange={e => handleJobChange(i, f.key, e.target.value)}
+                                  placeholder={f.mandatory ? 'Required' : ''}
+                                />
+                              </td>
+                            );
                           })}
                         </tr>
                       ))
@@ -492,7 +537,7 @@ const BulkImportModal = ({ onClose, onAdd }) => {
       {view === 'settings' && (
         <>
           <h2 className="bj-modal-title">Field Settings: {selectedProject}</h2>
-          
+
           <div className="bj-paste-instruction">
             💡 <strong>Tip:</strong> Toggle fields ON in the exact sequence they appear in your spreadsheet. The number badge shows their column order. Mandatory fields will be auto-appended if left unselected.
           </div>
@@ -511,10 +556,10 @@ const BulkImportModal = ({ onClose, onAdd }) => {
                       {f.label} {f.mandatory && <span className="req">*</span>}
                     </span>
                   </div>
-                  
+
                   <label className="bj-toggle-switch">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleField(f.key)}
                     />
@@ -545,12 +590,13 @@ const BulkImportModal = ({ onClose, onAdd }) => {
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════════ */
 const BooksJobs = () => {
-  const [jobs,   setJobs]   = useState(seedJobs);
-  const [modal,  setModal]  = useState(null);
+  const [jobs, setJobs] = useState(seedJobs);
+  const [modal, setModal] = useState(null);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   /* Filter state */
   const [filters, setFilters] = useState({
-    project: '', isbn: '', month: '', status: '', billing: '',
+    project: '', isbn: '', startMonth: '', endMonth: '', status: '', billing: '',
     jobId: '', complexity: '', fileStatus: '',
   });
   const [applied, setApplied] = useState({ ...filters });
@@ -558,29 +604,88 @@ const BooksJobs = () => {
   const setF = (k, v) => setFilters(p => ({ ...p, [k]: v }));
 
   const handleSearch = () => setApplied({ ...filters });
-  const handleClear  = () => {
-    const blank = { project:'', isbn:'', month:'', status:'', billing:'', jobId:'', complexity:'', fileStatus:'' };
+  const handleClear = () => {
+    const blank = { project: '', isbn: '', startMonth: '', endMonth: '', status: '', billing: '', jobId: '', complexity: '', fileStatus: '' };
     setFilters(blank);
     setApplied(blank);
   };
 
   /* Filtered rows */
   const rows = useMemo(() => jobs.filter(j => {
-    if (applied.project    && j.project    !== applied.project)                              return false;
-    if (applied.isbn       && !j.isbn.toLowerCase().includes(applied.isbn.toLowerCase()))    return false;
-    if (applied.month      && j.month.toUpperCase() !== applied.month.toUpperCase())         return false;
-    if (applied.status     && j.status     !== applied.status)                               return false;
-    if (applied.billing    && j.billing    !== applied.billing)                              return false;
-    if (applied.jobId      && !j.jobId.toLowerCase().includes(applied.jobId.toLowerCase()))  return false;
-    if (applied.complexity && j.complexity !== applied.complexity)                           return false;
-    if (applied.fileStatus && j.fileStatus !== applied.fileStatus)                           return false;
-    return true;
-  }), [jobs, applied]);
+    if (filters.project && j.project !== filters.project) return false;
+    if (filters.isbn && !j.isbn.toLowerCase().includes(filters.isbn.toLowerCase())) return false;
+    
+    // Start Month filter (calendar date)
+    if (filters.startMonth && j.startMonth) {
+      if (new Date(j.startMonth) < new Date(filters.startMonth)) return false;
+    }
+    // End Month filter (calendar date)
+    if (filters.endMonth && j.endMonth) {
+      if (new Date(j.endMonth) > new Date(filters.endMonth)) return false;
+    }
 
-  const open  = (type, job = null) => setModal({ type, job });
+    if (filters.status && j.status !== filters.status) return false;
+    if (filters.billing && j.billing !== filters.billing) return false;
+    if (filters.jobId && !j.jobId.toLowerCase().includes(filters.jobId.toLowerCase())) return false;
+    if (filters.complexity && j.complexity !== filters.complexity) return false;
+    if (filters.fileStatus && j.fileStatus !== filters.fileStatus) return false;
+    return true;
+  }), [jobs, filters]);
+
+  const topScrollRef = React.useRef(null);
+  const bottomScrollRef = React.useRef(null);
+
+  useEffect(() => {
+    const topEl = topScrollRef.current;
+    const bottomEl = bottomScrollRef.current;
+    if (!topEl || !bottomEl) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      const firstChild = bottomEl.firstElementChild;
+      if (firstChild) {
+        const tableWidth = firstChild.offsetWidth;
+        const innerDummy = topEl.firstElementChild;
+        if (innerDummy) {
+          innerDummy.style.width = `${tableWidth}px`;
+        }
+      }
+    });
+
+    resizeObserver.observe(bottomEl);
+
+    let isSyncingTop = false;
+    let isSyncingBottom = false;
+
+    const handleTopScroll = () => {
+      if (!isSyncingBottom) {
+        isSyncingTop = true;
+        bottomEl.scrollLeft = topEl.scrollLeft;
+        isSyncingTop = false;
+      }
+    };
+
+    const handleBottomScroll = () => {
+      if (!isSyncingTop) {
+        isSyncingBottom = true;
+        topEl.scrollLeft = bottomEl.scrollLeft;
+        isSyncingBottom = false;
+      }
+    };
+
+    topEl.addEventListener('scroll', handleTopScroll);
+    bottomEl.addEventListener('scroll', handleBottomScroll);
+
+    return () => {
+      resizeObserver.disconnect();
+      topEl.removeEventListener('scroll', handleTopScroll);
+      bottomEl.removeEventListener('scroll', handleBottomScroll);
+    };
+  }, [rows]);
+
+  const open = (type, job = null) => setModal({ type, job });
   const close = () => setModal(null);
 
-  const handleAdd    = (jobOrJobs) => {
+  const handleAdd = (jobOrJobs) => {
     if (Array.isArray(jobOrJobs)) {
       setJobs(p => [...jobOrJobs, ...p]);
     } else {
@@ -588,9 +693,100 @@ const BooksJobs = () => {
     }
   };
   const handleUpdate = (updated) => setJobs(p => p.map(j => j.id === updated.id ? updated : j));
-  const handleDelete = (id)      => setJobs(p => p.filter(j => j.id !== id));
+  const handleDelete = (id) => setJobs(p => p.filter(j => j.id !== id));
 
-  const fmt = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '-';
+  const fmt = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+
+  const exportPDF = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Job Management Report</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 30px; color: #333; }
+            h2 { color: #7c3aed; margin-bottom: 5px; }
+            p { color: #666; margin-top: 0; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
+            th, td { border: 1px solid #e2e8f0; padding: 10px 8px; text-align: left; }
+            th { background-color: #f8fafc; color: #475569; font-weight: 700; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+          </style>
+        </head>
+        <body>
+          <h2>Job Management Report</h2>
+          <p>Generated on: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Project</th>
+                <th>Start Month</th>
+                <th>End Month</th>
+                <th>Receive Date</th>
+                <th>Job ID</th>
+                <th>XML ISBN</th>
+                <th>Title Name</th>
+                <th>Page Count</th>
+                <th>Complexity</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map(j => `
+                <tr>
+                  <td>${j.project || '-'}</td>
+                  <td>${fmt(j.startMonth)}</td>
+                  <td>${fmt(j.endMonth)}</td>
+                  <td>${fmt(j.receiveDate)}</td>
+                  <td><strong>${j.jobId || '-'}</strong></td>
+                  <td>${j.isbn || '-'}</td>
+                  <td>${j.title || '-'}</td>
+                  <td>${j.pageCount || '-'}</td>
+                  <td>${j.complexity || '-'}</td>
+                  <td>${j.status || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const exportExcel = () => {
+    const headers = ['Project', 'Start Month', 'End Month', 'Receive Date', 'Job ID', 'XML ISBN', 'Title Name', 'Page Count', 'PDF Type', 'Complexity', 'Ref Type', 'Status', 'File Status', 'Upload Date', 'Billing Status'];
+    const csvRows = rows.map(j => [
+      `"${j.project || ''}"`,
+      j.startMonth ? fmt(j.startMonth) : '',
+      j.endMonth ? fmt(j.endMonth) : '',
+      j.receiveDate ? fmt(j.receiveDate) : '',
+      `"${j.jobId || ''}"`,
+      `"${j.isbn || ''}"`,
+      `"${j.title || ''}"`,
+      j.pageCount || '',
+      `"${j.pdfType || ''}"`,
+      `"${j.complexity || ''}"`,
+      `"${j.refType || ''}"`,
+      `"${j.status || ''}"`,
+      `"${j.fileStatus || ''}"`,
+      j.uploadDate ? fmt(j.uploadDate) : '',
+      `"${j.billing || ''}"`
+    ].join(','));
+    const blob = new Blob(["\\ufeff" + [headers.join(','), ...csvRows].join('\\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "jobs_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="bj-container">
@@ -604,6 +800,21 @@ const BooksJobs = () => {
         <div className="bj-header-btns">
           <button className="bj-bulk-btn" onClick={() => open('bulk')}>📥 Bulk Import</button>
           <button className="bj-add-btn" onClick={() => open('add')}>＋ Add Job</button>
+          <div className="bj-export-dropdown-container">
+            <button className="bj-export-btn" onClick={() => setShowExportDropdown(!showExportDropdown)}>
+              📤 Export Report
+            </button>
+            {showExportDropdown && (
+              <div className="bj-export-dropdown-menu">
+                <button className="bj-export-item" onClick={() => { exportPDF(); setShowExportDropdown(false); }}>
+                  📄 Export PDF
+                </button>
+                <button className="bj-export-item" onClick={() => { exportExcel(); setShowExportDropdown(false); }}>
+                  📊 Export Excel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -630,11 +841,13 @@ const BooksJobs = () => {
           </div>
 
           <div className="bj-filter-group">
-            <label><span className="flt-icon">📅</span> Month</label>
-            <select value={filters.month} onChange={e => setF('month', e.target.value)}>
-              <option value="">All Months</option>
-              {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
+            <label><span className="flt-icon">📅</span> Start Month</label>
+            <input type="date" value={filters.startMonth} onChange={e => setF('startMonth', e.target.value)} />
+          </div>
+
+          <div className="bj-filter-group">
+            <label><span className="flt-icon">📅</span> End Month</label>
+            <input type="date" value={filters.endMonth} onChange={e => setF('endMonth', e.target.value)} />
           </div>
 
           <div className="bj-filter-group">
@@ -679,17 +892,21 @@ const BooksJobs = () => {
         {/* Search / Clear */}
         <div className="bj-filter-actions">
           <button className="bj-search-btn" onClick={handleSearch}>🔍 Search</button>
-          <button className="bj-clear-btn"  onClick={handleClear}>✕ Clear</button>
+          <button className="bj-clear-btn" onClick={handleClear}>✕ Clear</button>
         </div>
       </div>
 
+      {/* ── Table Top Scrollbar ── */}
+      <div className="double-scroll-top" ref={topScrollRef}>
+        <div className="double-scroll-top-inner"></div>
+      </div>
+
       {/* ── Table ── */}
-      <div className="bj-table-wrapper">
+      <div className="bj-table-wrapper" ref={bottomScrollRef}>
         <table className="bj-table">
           <thead>
             <tr>
               <th>Project</th>
-              <th>Month</th>
               <th>Receive Date </th>
               <th>Job ID </th>
               <th>XML ISBN </th>
@@ -708,7 +925,7 @@ const BooksJobs = () => {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan="15" className="bj-empty">No records found.</td>
+                <td colSpan="14" className="bj-empty">No records found.</td>
               </tr>
             ) : rows.map(job => (
               <tr key={job.id}>
@@ -717,7 +934,6 @@ const BooksJobs = () => {
                     ? <span className="bj-project-link">{job.project}</span>
                     : <span className="cell-dash">-</span>}
                 </td>
-                <td>{job.month || <span className="cell-dash">-</span>}</td>
                 <td className="td-date">{fmt(job.receiveDate)}</td>
                 <td><strong>{job.jobId}</strong></td>
                 <td>
@@ -744,8 +960,8 @@ const BooksJobs = () => {
                 </td>
                 <td>
                   <div className="bj-action-btns">
-                    <button className="bj-act-edit" title="Edit Job"    onClick={() => open('edit',   job)}>✏️</button>
-                    <button className="bj-act-del"  title="Delete Job"  onClick={() => open('delete', job)}>🗑️</button>
+                    <button className="bj-act-edit" title="Edit Job" onClick={() => open('edit', job)}>✏️</button>
+                    <button className="bj-act-del" title="Delete Job" onClick={() => open('delete', job)}>🗑️</button>
                   </div>
                 </td>
               </tr>
@@ -755,10 +971,11 @@ const BooksJobs = () => {
       </div>
 
       {/* ── Modals ── */}
-      {modal?.type === 'add'    && <AddJobModal    onClose={close} onAdd={handleAdd} />}
-      {modal?.type === 'edit'   && <EditJobModal    job={modal.job} onClose={close} onUpdate={handleUpdate} />}
-      {modal?.type === 'delete' && <DeleteJobModal  job={modal.job} onClose={close} onDelete={handleDelete} />}
-      {modal?.type === 'bulk'   && <BulkImportModal onClose={close} onAdd={handleAdd} />}
+      {modal?.type === 'add' && <AddJobModal onClose={close} onAdd={handleAdd} />}
+      {modal?.type === 'edit' && <EditJobModal job={modal.job} onClose={close} onUpdate={handleUpdate} />}
+      {modal?.type === 'delete' && <DeleteJobModal job={modal.job} onClose={close} onDelete={() => open('reconfirm_delete', modal.job)} />}
+      {modal?.type === 'reconfirm_delete' && <ReconfirmDeleteModal job={modal.job} onClose={close} onDelete={handleDelete} />}
+      {modal?.type === 'bulk' && <BulkImportModal onClose={close} onAdd={handleAdd} />}
 
     </div>
   );

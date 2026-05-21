@@ -328,12 +328,12 @@ function EmployeeTable({
 
   {showEmpDropdown && (
     <div className="tm-dropdown-menu">
-      <button
+      {/* <button
         className="tm-dropdown-item"
         onClick={onAdd}
       >
         + Create New Employee
-      </button>
+      </button> */}
 
       {sampleEmployees.map((emp, index) => (
         <button

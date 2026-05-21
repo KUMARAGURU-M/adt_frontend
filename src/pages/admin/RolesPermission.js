@@ -39,6 +39,7 @@ const initialPermissions = [
 
 const resourcesList = [
   { id: 'employees', label: 'Users/Employees', icon: '👥' },
+  { id: 'attendance', label: 'Attendance', icon: '📅' },
   { id: 'projects', label: 'Projects', icon: '📁' },
   { id: 'jobs', label: 'Jobs', icon: '🗂️' },
   { id: 'leaves', label: 'Leaves', icon: '🏖️' },
@@ -50,6 +51,7 @@ const resourcesList = [
   { id: 'reports', label: 'Reports', icon: '📈' },
   { id: 'activitylogs', label: 'Activity Logs', icon: '📋' },
   { id: 'roles', label: 'Roles & Permissions', icon: '🔐' },
+  { id: 'invoices', label: 'Invoices', icon: '💰' },
 ];
 
 const actionsList = [

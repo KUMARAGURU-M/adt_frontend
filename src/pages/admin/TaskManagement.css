@@ -139,7 +139,7 @@
 /* ── Status Badges ── */
 .status-badge {
   display: inline-block; padding: 3px 10px;
-  border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: lowercase;
+  border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase;
 }
 .status-badge.pending    { background: #fef3c7; color: #92400e; }
 .status-badge.completed  { background: #dcfce7; color: #15803d; }
@@ -358,4 +358,42 @@ input[type="date"].tm-form-input { color: #4a5568; }
   .tm-filter-row { grid-template-columns: 1fr 1fr; }
   .tm-three-col  { grid-template-columns: 1fr; }
   .tm-two-col    { grid-template-columns: 1fr; }
+}
+
+/* Double scrollbar styles */
+.double-scroll-top {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  height: 8px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.double-scroll-top-inner {
+  height: 1px;
+}
+
+/* Custom small, light scrollbars */
+.double-scroll-top::-webkit-scrollbar,
+.tm-table-wrapper::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.double-scroll-top::-webkit-scrollbar-track,
+.tm-table-wrapper::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.double-scroll-top::-webkit-scrollbar-thumb,
+.tm-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.double-scroll-top::-webkit-scrollbar-thumb:hover,
+.tm-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

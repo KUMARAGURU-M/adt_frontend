@@ -1,6 +1,6 @@
 // src/pages/admin/Attendance.js
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import './Attendance.css';
 
 /* ─── Constants ─────────────────────────────────────────── */
@@ -61,14 +61,14 @@ function buildDays(year, month) {
   });
 }
 
-/* Auto-set Sundays to WO */
+/* Auto-set Sundays to PH */
 function initMonthRecord(year, month, employees) {
   const days = buildDays(year, month);
   const record = {};
   employees.forEach(emp => {
     record[emp.id] = {};
     days.forEach(({ day, isSunday }) => {
-      record[emp.id][day] = isSunday ? 'WO' : '';
+      record[emp.id][day] = isSunday ? 'PH' : '';
     });
   });
   return record;
@@ -85,7 +85,7 @@ function computeSummary(empRecord, year, month) {
   const days = buildDays(year, month);
   let present = 0, absent = 0, half = 0, ph = 0, wo = 0;
   days.forEach(({ day, isSunday }) => {
-    const s = empRecord[day] || (isSunday ? 'WO' : '');
+    const s = empRecord[day] || (isSunday ? 'PH' : '');
     if (s === 'P') present++;
     else if (s === 'A') absent++;
     else if (s === 'H') { present += 0.5; half++; }
@@ -110,18 +110,20 @@ const Modal = ({ onClose, children, wide }) => (
 );
 
 /* ─── Status Cell ────────────────────────────────────────── */
-const StatusCell = ({ value, onChange, disabled }) => {
-  const cycle = { '': 'P', 'P': 'A', 'A': 'H', 'H': 'PH', 'PH': '' };
+const StatusCell = ({ value, onChange, disabled, isSunday }) => {
+  const cycle = isSunday
+    ? { 'PH': 'WO', 'WO': 'P', 'P': 'A', 'A': 'H', 'H': 'PH', '': 'PH' }
+    : { '': 'P', 'P': 'A', 'A': 'H', 'H': 'PH', 'PH': '' };
   const s = STATUS[value] || STATUS['-'];
   return (
     <button
       className={`att-cell att-cell-${(value || 'empty').toLowerCase()}`}
       style={{ color: s.color, borderColor: s.color + '40' }}
-      onClick={() => !disabled && onChange(cycle[value] ?? '')}
+      onClick={() => !disabled && onChange(cycle[value] ?? (isSunday ? 'PH' : ''))}
       disabled={disabled}
       title={s.label}
     >
-      {value === 'WO' ? 'WO' : value || '·'}
+      {value || '·'}
     </button>
   );
 };
@@ -139,10 +141,48 @@ const Attendance = () => {
   const [activeView, setActiveView] = useState('monthly'); // 'monthly' | 'summary' | 'yearly'
   const [modal, setModal] = useState(null);
   const [salaryDetails, setSalaryDetails] = useState({});
+  const [hiddenEmpIds, setHiddenEmpIds] = useState(new Set());
+
+  // Refs for synchronized scrollbars
+  const monthlyTopScrollRef = useRef(null);
+  const monthlyTableScrollRef = useRef(null);
+  const summaryTopScrollRef = useRef(null);
+  const summaryTableScrollRef = useRef(null);
+
+  const [monthlyScrollWidth, setMonthlyScrollWidth] = useState(0);
+  const [summaryScrollWidth, setSummaryScrollWidth] = useState(0);
+
+  const syncMonthlyScroll = (source, target) => {
+    if (source.current && target.current) {
+      target.current.scrollLeft = source.current.scrollLeft;
+    }
+  };
+
+  const syncSummaryScroll = (source, target) => {
+    if (source.current && target.current) {
+      target.current.scrollLeft = source.current.scrollLeft;
+    }
+  };
+
+
+
+  const toggleHideEmployee = (empId) => {
+    setHiddenEmpIds(prev => {
+      const next = new Set(prev);
+      if (next.has(empId)) {
+        next.delete(empId);
+      } else {
+        next.add(empId);
+      }
+      return next;
+    });
+  };
 
   const getSalaryDetail = (empId, field, fallback = '') => {
     const key = `${selYear}-${selMonth}-${empId}`;
-    return salaryDetails[key]?.[field] ?? fallback;
+    const val = salaryDetails[key]?.[field];
+    if (val === undefined || val === null || val === '') return fallback;
+    return val;
   };
 
   const updateSalaryDetail = (empId, field, val) => {
@@ -150,7 +190,7 @@ const Attendance = () => {
     setSalaryDetails(prev => ({
       ...prev,
       [key]: {
-        ...(prev[key] || { overtime: '', travel: '', status: 'pending' }),
+        ...prev[key],
         [field]: val
       }
     }));
@@ -197,18 +237,7 @@ const Attendance = () => {
     }));
   };
 
-  /* ── Mark all present for full month ── */
-  const markMonthAllPresent = () => {
-    setAttendance(prev => {
-      const next = { ...prev };
-      employees.forEach(emp => {
-        days.forEach(({ day, isSunday }) => {
-          if (!isSunday) next[emp.id] = { ...next[emp.id], [day]: next[emp.id][day] || 'P' };
-        });
-      });
-      return next;
-    });
-  };
+
 
   /* ── Summary for current month ── */
   const summaries = useMemo(() =>
@@ -216,6 +245,30 @@ const Attendance = () => {
       emp,
       ...computeSummary(attendance[emp.id] || {}, selYear, selMonth),
     })), [employees, attendance, selYear, selMonth]);
+
+  useEffect(() => {
+    if (activeView === 'monthly' && monthlyTableScrollRef.current) {
+      const el = monthlyTableScrollRef.current;
+      setMonthlyScrollWidth(el.scrollWidth);
+      const observer = new ResizeObserver(() => {
+        setMonthlyScrollWidth(el.scrollWidth);
+      });
+      observer.observe(el);
+      return () => observer.disconnect();
+    }
+  }, [activeView, filtered]);
+
+  useEffect(() => {
+    if (activeView === 'summary' && summaryTableScrollRef.current) {
+      const el = summaryTableScrollRef.current;
+      setSummaryScrollWidth(el.scrollWidth);
+      const observer = new ResizeObserver(() => {
+        setSummaryScrollWidth(el.scrollWidth);
+      });
+      observer.observe(el);
+      return () => observer.disconnect();
+    }
+  }, [activeView, filtered, hiddenEmpIds]);
 
   /* ── Yearly summary ── */
   const yearlySummary = useMemo(() =>
@@ -324,6 +377,69 @@ const Attendance = () => {
     );
   };
 
+  /* ── Edit Employee Modal ── */
+  const EditEmpModal = ({ emp }) => {
+    const [name, setName] = useState(emp.name);
+    const [category, setCategory] = useState(emp.category);
+    const currentBaseSalary = getSalaryDetail(emp.id, 'baseSalary', emp.salary || 5000);
+    const [salary, setSalary] = useState(currentBaseSalary);
+
+    const submit = () => {
+      if (!name.trim()) { alert('Name is required'); return; }
+      setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, name: name.trim(), category: category, salary: Number(salary) } : e));
+      updateSalaryDetail(emp.id, 'baseSalary', Number(salary));
+      setModal(null);
+    };
+
+    return (
+      <Modal onClose={() => setModal(null)}>
+        <h2 className="att-modal-title">Edit Employee</h2>
+        <div className="att-form-group">
+          <label>Name <span className="att-req">*</span></label>
+          <input className="att-input" value={name} onChange={e => setName(e.target.value)} />
+        </div>
+        <div className="att-form-group">
+          <label>Role</label>
+          <select className="att-select" value={category} onChange={e => setCategory(e.target.value)}>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div className="att-form-group">
+          <label>Base Salary <span className="att-req">*</span></label>
+          <div className="att-input-with-icon">
+            <span className="att-input-icon">₹</span>
+            <input type="number" className="att-input att-input-icon-padded" value={salary} onChange={e => setSalary(e.target.value)} />
+          </div>
+        </div>
+        <div className="att-modal-actions">
+          <button className="att-btn-cancel" onClick={() => setModal(null)}>Cancel</button>
+          <button className="att-btn-primary" onClick={submit}>Save Changes</button>
+        </div>
+      </Modal>
+    );
+  };
+
+  /* ── Delete Confirmation Modal ── */
+  const DeleteConfirmModal = ({ emp }) => {
+    const confirmDelete = () => {
+      setEmployees(prev => prev.filter(e => e.id !== emp.id));
+      setModal(null);
+    };
+
+    return (
+      <Modal onClose={() => setModal(null)}>
+        <h2 className="att-modal-title">Delete Employee</h2>
+        <p className="att-modal-sub" style={{ margin: '12px 0 20px', fontSize: '0.88rem', color: '#4b5563' }}>
+          Are you sure you want to delete <strong>{emp.name}</strong>? This action cannot be undone.
+        </p>
+        <div className="att-modal-actions" style={{ marginTop: 0 }}>
+          <button className="att-btn-cancel" onClick={() => setModal(null)}>Cancel</button>
+          <button className="att-btn-primary" style={{ backgroundColor: '#dc2626' }} onClick={confirmDelete}>Delete</button>
+        </div>
+      </Modal>
+    );
+  };
+
   const workingDaysCount = useMemo(() => countWorkingDays(selYear, selMonth), [selYear, selMonth]);
 
   return (
@@ -337,7 +453,6 @@ const Attendance = () => {
         </div>
         <div className="att-header-actions">
           <button className="att-btn-add" onClick={() => setModal('add')}>+ Add Employee</button>
-          <button className="att-btn-mark" onClick={markMonthAllPresent}>✓ Mark All Present</button>
         </div>
       </div>
 
@@ -395,7 +510,18 @@ const Attendance = () => {
       ══════════════════════════════════════ */}
       {activeView === 'monthly' && (
         <div className="att-table-card">
-          <div className="att-table-scroll">
+          <div
+            ref={monthlyTopScrollRef}
+            className="att-top-scroll-wrapper"
+            onScroll={() => syncMonthlyScroll(monthlyTopScrollRef, monthlyTableScrollRef)}
+          >
+            <div style={{ width: `${monthlyScrollWidth}px`, height: '1px' }} />
+          </div>
+          <div
+            ref={monthlyTableScrollRef}
+            className="att-table-scroll"
+            onScroll={() => syncMonthlyScroll(monthlyTableScrollRef, monthlyTopScrollRef)}
+          >
             <table className="att-table">
               <thead>
                 <tr>
@@ -459,7 +585,6 @@ const Attendance = () => {
                       <td className="att-td-name">
                         <button className="att-emp-name-btn"
                           onClick={() => setModal({ type: 'detail', emp })}>
-                          <span className="att-avatar">{emp.name.charAt(0)}</span>
                           {emp.name}
                         </button>
                       </td>
@@ -471,9 +596,10 @@ const Attendance = () => {
                       {days.map(({ day, isSunday }) => (
                         <td key={day} className={isSunday ? 'att-sunday-col' : ''}>
                           <StatusCell
-                            value={attendance[emp.id]?.[day] || (isSunday ? 'WO' : '')}
+                            value={attendance[emp.id]?.[day] || (isSunday ? 'PH' : '')}
                             onChange={val => updateCell(emp.id, day, val)}
-                            disabled={isSunday}
+                            disabled={false}
+                            isSunday={isSunday}
                           />
                         </td>
                       ))}
@@ -497,27 +623,42 @@ const Attendance = () => {
       {/* ══════════════════════════════════════
           VIEW: SUMMARY TABLE
       ══════════════════════════════════════ */}
+      {/* ─── VIEW: SUMMARY TABLE ─── */}
       {activeView === 'summary' && (
         <div className="att-table-card">
           <h3 className="att-section-title">📊 Monthly Summary — {MONTHS[selMonth]} {selYear}</h3>
-          <div className="att-table-scroll">
+          
+          <div
+            ref={summaryTopScrollRef}
+            className="att-top-scroll-wrapper"
+            onScroll={() => syncSummaryScroll(summaryTopScrollRef, summaryTableScrollRef)}
+          >
+            <div style={{ width: `${summaryScrollWidth}px`, height: '1px' }} />
+          </div>
+
+          <div
+            ref={summaryTableScrollRef}
+            className="att-table-scroll"
+            onScroll={() => syncSummaryScroll(summaryTableScrollRef, summaryTopScrollRef)}
+          >
             <table className="att-summary-table">
               <thead>
                 <tr>
                   <th>#</th>
                   <th>Employee</th>
-                  <th>Category</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                  <th>Base Salary (₹)</th>
                   <th>Working Days</th>
                   <th>Present</th>
                   <th>Absent</th>
                   <th>Half Days</th>
                   <th>Paid Holidays</th>
                   <th>Days for Wages</th>
-                  <th>Basic Salary (₹)</th>
                   <th>Per Day Salary (₹)</th>
                   <th>Loss of Pay (₹)</th>
                   <th>Net Salary (₹)</th>
-                  <th>Overtime (₹)</th>
+                  <th>Incentive (₹)</th>
                   <th>Travel Allowance (₹)</th>
                   <th>Total Salary (₹)</th>
                   <th>Salary Status</th>
@@ -528,68 +669,128 @@ const Attendance = () => {
                   .filter(s => !filterCat || s.emp.category === filterCat)
                   .filter(s => !filterName || s.emp.name.toLowerCase().includes(filterName.toLowerCase()))
                   .map((s, idx) => {
-                    const basicSalary = s.emp.salary || 5000;
+                    const basicSalary = Number(getSalaryDetail(s.emp.id, 'baseSalary', s.emp.salary || 5000));
                     const perDaySalary = basicSalary / 31;
                     const lossOfPay = perDaySalary * s.absent;
                     const netSalary = perDaySalary * s.totalForWages;
 
-                    const overtimeVal = getSalaryDetail(s.emp.id, 'overtime', '');
+                    const incentiveVal = getSalaryDetail(s.emp.id, 'incentive', '');
                     const travelVal = getSalaryDetail(s.emp.id, 'travel', '');
                     const statusVal = getSalaryDetail(s.emp.id, 'status', 'pending');
 
-                    const totalSalary = netSalary + Number(overtimeVal || 0) + Number(travelVal || 0);
+                    const totalSalary = netSalary + Number(incentiveVal || 0) + Number(travelVal || 0);
+                    const isHidden = hiddenEmpIds.has(s.emp.id);
 
                     return (
-                      <tr key={s.emp.id}>
+                      <tr key={s.emp.id} className={isHidden ? 'att-row-hidden' : ''}>
                         <td>{idx + 1}</td>
                         <td>
                           <div className="att-emp-cell">
-                            <span className="att-avatar sm">{s.emp.name.charAt(0)}</span>
                             {s.emp.name}
                           </div>
                         </td>
-                        <td><span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')}`}>{s.emp.category}</span></td>
+                        <td>
+                          <span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')}`}>
+                            {s.emp.category}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="att-actions-cell">
+                            <button
+                              className="att-action-btn edit"
+                              onClick={() => setModal({ type: 'edit', emp: s.emp })}
+                              title="Edit Role & Details"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              className="att-action-btn hide"
+                              onClick={() => toggleHideEmployee(s.emp.id)}
+                              title={isHidden ? 'Unhide Salary' : 'Hide Salary'}
+                            >
+                              {isHidden ? '👁️‍🗨️' : '👁️'}
+                            </button>
+                            <button
+                              className="att-action-btn delete"
+                              onClick={() => setModal({ type: 'delete_confirm', emp: s.emp })}
+                              title="Delete Employee"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </td>
+                        <td>
+                          {isHidden ? (
+                            <span className="att-hidden-placeholder">—</span>
+                          ) : (
+                            <input
+                              type="number"
+                              className="att-summary-input"
+                              style={{ width: '90px' }}
+                              value={getSalaryDetail(s.emp.id, 'baseSalary', s.emp.salary || 5000)}
+                              placeholder="5000"
+                              onChange={e => updateSalaryDetail(s.emp.id, 'baseSalary', e.target.value)}
+                            />
+                          )}
+                        </td>
                         <td className="td-center">{s.workingDays}</td>
                         <td className="td-center att-text-green">{s.present}</td>
                         <td className="td-center att-text-red">{s.absent}</td>
                         <td className="td-center att-text-amber">{s.half}</td>
                         <td className="td-center att-text-purple">{s.ph}</td>
                         <td className="td-center att-text-blue"><strong>{s.totalForWages}</strong></td>
-                        <td className="td-center">₹{basicSalary.toFixed(2)}</td>
-                        <td className="td-center">₹{perDaySalary.toFixed(2)}</td>
-                        <td className="td-center att-text-red">₹{lossOfPay.toFixed(2)}</td>
-                        <td className="td-center att-text-green">₹{netSalary.toFixed(2)}</td>
                         <td className="td-center">
-                          <input
-                            type="number"
-                            className="att-summary-input"
-                            value={overtimeVal}
-                            placeholder="0"
-                            onChange={e => updateSalaryDetail(s.emp.id, 'overtime', e.target.value)}
-                          />
+                          {isHidden ? <span className="att-hidden-placeholder">—</span> : `₹${perDaySalary.toFixed(2)}`}
+                        </td>
+                        <td className="td-center att-text-red">
+                          {isHidden ? <span className="att-hidden-placeholder">—</span> : `₹${lossOfPay.toFixed(2)}`}
+                        </td>
+                        <td className="td-center att-text-green">
+                          {isHidden ? <span className="att-hidden-placeholder">—</span> : `₹${netSalary.toFixed(2)}`}
                         </td>
                         <td className="td-center">
-                          <input
-                            type="number"
-                            className="att-summary-input"
-                            value={travelVal}
-                            placeholder="0"
-                            onChange={e => updateSalaryDetail(s.emp.id, 'travel', e.target.value)}
-                          />
+                          {isHidden ? (
+                            <span className="att-hidden-placeholder">—</span>
+                          ) : (
+                            <input
+                              type="number"
+                              className="att-summary-input"
+                              value={incentiveVal}
+                              placeholder="0"
+                              onChange={e => updateSalaryDetail(s.emp.id, 'incentive', e.target.value)}
+                            />
+                          )}
+                        </td>
+                        <td className="td-center">
+                          {isHidden ? (
+                            <span className="att-hidden-placeholder">—</span>
+                          ) : (
+                            <input
+                              type="number"
+                              className="att-summary-input"
+                              value={travelVal}
+                              placeholder="0"
+                              onChange={e => updateSalaryDetail(s.emp.id, 'travel', e.target.value)}
+                            />
+                          )}
                         </td>
                         <td className="td-center" style={{ fontWeight: 700, color: '#111827' }}>
-                          ₹{totalSalary.toFixed(2)}
+                          {isHidden ? <span className="att-hidden-placeholder">—</span> : `₹${totalSalary.toFixed(2)}`}
                         </td>
                         <td className="td-center">
-                          <select
-                            className={`att-summary-select status-${statusVal}`}
-                            value={statusVal}
-                            onChange={e => updateSalaryDetail(s.emp.id, 'status', e.target.value)}
-                          >
-                            <option value="credited">Credited</option>
-                            <option value="pending">Pending</option>
-                            <option value="wip">WIP</option>
-                          </select>
+                          {isHidden ? (
+                            <span className="att-hidden-placeholder">—</span>
+                          ) : (
+                            <select
+                              className={`att-summary-select status-${statusVal}`}
+                              value={statusVal}
+                              onChange={e => updateSalaryDetail(s.emp.id, 'status', e.target.value)}
+                            >
+                              <option value="credited">Credited</option>
+                              <option value="pending">Pending</option>
+                              <option value="wip">WIP</option>
+                            </select>
+                          )}
                         </td>
                       </tr>
                     );
@@ -688,6 +889,8 @@ const Attendance = () => {
       {/* ── Modals ── */}
       {modal === 'add' && <AddEmpModal />}
       {modal?.type === 'detail' && <EmpDetailModal emp={modal.emp} />}
+      {modal?.type === 'edit' && <EditEmpModal emp={modal.emp} />}
+      {modal?.type === 'delete_confirm' && <DeleteConfirmModal emp={modal.emp} />}
 
     </div>
   );

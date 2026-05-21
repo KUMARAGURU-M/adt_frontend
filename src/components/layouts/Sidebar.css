@@ -219,9 +219,20 @@
 .nav-icon {
   font-size: 1rem;
   width: 20px;
-  text-align: center;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   transition: transform 0.22s ease;
+}
+
+.sidebar-img-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 2px;
+  display: block;
 }
 
 .nav-item:hover  .nav-icon,
