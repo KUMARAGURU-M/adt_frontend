@@ -21,6 +21,16 @@ const COMPLEXITY_OPTIONS = [
   { label: 'Heavy Complex', color: '#7c3aed' },
 ];
 
+const getComplexityClass = (value) => {
+  if (!value) return '';
+  const val = value.toLowerCase().replace(/\s+/g, '');
+  if (val.includes('simple')) return 'complexity-simple';
+  if (val.includes('medium')) return 'complexity-medium';
+  if (val.includes('heavycomplex')) return 'complexity-heavycomplex';
+  if (val.includes('complex')) return 'complexity-complex';
+  return '';
+};
+
 const STATUS_OPTIONS = [
   'FINISH', 'WIP', 'YTS',
   'RTU', 'UPLOADED', 'PENDING', 'HOLD', 'QUERY',
@@ -168,9 +178,13 @@ const JobForm = ({ form, onChange, isEdit }) => (
       </div>
       <div className="bj-form-group">
         <label>Complexity</label>
-        <select value={form.complexity} onChange={e => onChange('complexity', e.target.value)}>
+        <select className={getComplexityClass(form.complexity)} value={form.complexity} onChange={e => onChange('complexity', e.target.value)}>
           <option value="">Select...</option>
-          {COMPLEXITY_OPTIONS.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
+          {COMPLEXITY_OPTIONS.map(c => (
+            <option key={c.label} value={c.label} className={getComplexityClass(c.label)}>
+              {c.label}
+            </option>
+          ))}
         </select>
       </div>
     </div>
@@ -500,14 +514,31 @@ const BulkImportModal = ({ onClose, onAdd }) => {
                         <tr key={i}>
                           {getEffectiveFields().map(f => {
                             const isError = f.mandatory && !job[f.key];
+                            const isTitle = f.key === 'title';
+                            const isComplexity = f.key === 'complexity';
                             return (
-                              <td key={f.key} className="bj-grid-td">
-                                <input
-                                  className={`bj-grid-input ${isError ? 'error-input' : ''}`}
-                                  value={job[f.key] || ''}
-                                  onChange={e => handleJobChange(i, f.key, e.target.value)}
-                                  placeholder={f.mandatory ? 'Required' : ''}
-                                />
+                              <td key={f.key} className={`bj-grid-td ${isTitle ? 'col-left' : ''}`}>
+                                {isComplexity ? (
+                                  <select
+                                    className={`bj-grid-input ${isError ? 'error-input' : ''} ${getComplexityClass(job[f.key])}`}
+                                    value={job[f.key] || ''}
+                                    onChange={e => handleJobChange(i, f.key, e.target.value)}
+                                  >
+                                    <option value="">Select Complexity</option>
+                                    {COMPLEXITY_OPTIONS.map(c => (
+                                      <option key={c.label} value={c.label} className={getComplexityClass(c.label)}>
+                                        {c.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <input
+                                    className={`bj-grid-input ${isError ? 'error-input' : ''}`}
+                                    value={job[f.key] || ''}
+                                    onChange={e => handleJobChange(i, f.key, e.target.value)}
+                                    placeholder={f.mandatory ? 'Required' : ''}
+                                  />
+                                )}
                               </td>
                             );
                           })}
@@ -883,9 +914,13 @@ const BooksJobs = () => {
 
           <div className="bj-filter-group">
             <label><span className="flt-icon">⚡</span> Complexity</label>
-            <select value={filters.complexity} onChange={e => setF('complexity', e.target.value)}>
+            <select className={getComplexityClass(filters.complexity)} value={filters.complexity} onChange={e => setF('complexity', e.target.value)}>
               <option value="">All Complexity</option>
-              {COMPLEXITY_OPTIONS.map(c => <option key={c.label} value={c.label}>{c.label}</option>)}
+              {COMPLEXITY_OPTIONS.map(c => (
+                <option key={c.label} value={c.label} className={getComplexityClass(c.label)}>
+                  {c.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -949,7 +984,7 @@ const BooksJobs = () => {
                     ? <span className="bj-isbn-link">{job.isbn}</span>
                     : <span className="cell-dash">-</span>}
                 </td>
-                <td className="td-title">{job.title || <span className="cell-dash">-</span>}</td>
+                <td className="td-title col-left">{job.title || <span className="cell-dash">-</span>}</td>
                 <td className="td-center">{job.pageCount || <span className="cell-dash">-</span>}</td>
                 <td>{job.pdfType || <span className="cell-dash">-</span>}</td>
                 <td><ComplexityBadge value={job.complexity} /></td>

@@ -577,7 +577,7 @@ function DailyTable({ filtered, total, summary, expandedId, toggleExpand }) {
                         ) : filtered.map(log => (
                             <React.Fragment key={log.id}>
                                 <tr className={`tl-row ${expandedId === log.id ? "tl-row--expanded" : ""}`}>
-                                    <td className="td-employee">
+                                    <td className="td-employee col-left">
                                         <div className="emp-cell">
                                             <div className="emp-avatar-sm" style={{ background: avatarColor(log.initial) }}>{log.initial}</div>
                                             <span className="emp-name">{log.employee}</span>
@@ -694,7 +694,7 @@ function AggrTable({ mode, rows, total, summary, expandedId, toggleExpand, perio
                             return (
                                 <React.Fragment key={idx}>
                                     <tr className={`tl-row ${expandedId === idx ? "tl-row--expanded" : ""}`}>
-                                        <td className="td-employee">
+                                        <td className="td-employee col-left">
                                             <div className="emp-cell">
                                                 <div className="emp-avatar-sm" style={{ background: avatarColor(row.initial) }}>{row.initial}</div>
                                                 <span className="emp-name">{row.employee}</span>

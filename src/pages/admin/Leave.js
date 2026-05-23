@@ -129,7 +129,7 @@ const LeaveRequests = () => {
               <tr><td colSpan={8} className="lv-empty">No leave requests found.</td></tr>
             ) : filtered.map(r => (
               <tr key={r.id} className="lv-row">
-                <td>{r.employee}</td>
+                <td className="col-left">{r.employee}</td>
                 <td>{r.leaveType}</td>
                 <td>{r.startDate}</td>
                 <td>{r.endDate}</td>
@@ -617,7 +617,7 @@ const Balances = () => {
               <tr><td colSpan={8} className="lv-empty">No leave balances found.</td></tr>
             ) : filtered.map((b, i) => (
               <tr key={i} className="lv-row">
-                <td>{b.employee}</td>
+                <td className="col-left">{b.employee}</td>
                 <td>{b.leaveType}</td>
                 <td>{b.year}</td>
                 <td>{b.totalAllocated}</td>

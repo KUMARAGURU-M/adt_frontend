@@ -387,7 +387,7 @@ function EmployeeTable({
                       </div>
                     </td>
 
-                    <td className="tm-cell-name">{emp.name}</td>
+                    <td className="tm-cell-name col-left">{emp.name}</td>
 
                     <td className="tm-cell-muted">{emp.email}</td>
 

@@ -176,10 +176,10 @@ const ActivityLogs = () => {
               ) : pageRows.map(log => (
                 <tr key={log.id}>
                   <td className="td-ts">{fmtTimestamp(log.timestamp)}</td>
-                  <td className="td-user">{log.user}</td>
+                  <td className="td-user col-left">{log.user}</td>
                   <td className="td-action"><ActionBadge action={log.action} /></td>
                   <td className="td-entity-type"><EntityBadge type={log.entityType} /></td>
-                  <td className="td-entity">{log.entity}</td>
+                  <td className="td-entity col-left">{log.entity}</td>
                   <td className="td-changes">
                     {log.changes === '-'
                       ? <span className="al-dash">-</span>

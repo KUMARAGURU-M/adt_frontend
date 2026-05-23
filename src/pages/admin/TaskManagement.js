@@ -845,7 +845,7 @@ export default function TaskManagement() {
                     {task.jobs.length ? task.jobs.map(j => j.replace("\n", " ")).join("; ") : "-"}
                   </span>
                 </td>
-                <td className="col-employee">{task.employees.join(", ") || "-"}</td>
+                <td className="col-employee col-left">{task.employees.join(", ") || "-"}</td>
                 <td className="col-chapter"><span className="cell-chapter">{task.chapter || "-"}</span></td>
                 <td className="col-pages">{task.pages || "-"}</td>
                 <td className="col-duedate">{fmtDue(task.dueDate) || "-"}</td>

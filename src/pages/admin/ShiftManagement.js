@@ -542,7 +542,7 @@ const ShiftManagement = () => {
               <tbody>
                 {pageRows.map((shift) => (
                   <tr key={shift.id}>
-                    <td className="td-name">{shift.name}</td>
+                    <td className="td-name col-left">{shift.name}</td>
                     <td className="td-time">{fmt12(shift.startTime)}</td>
                     <td className="td-time">{fmt12(shift.endTime)}</td>
                     <td className="td-desc">

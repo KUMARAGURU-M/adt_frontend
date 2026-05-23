@@ -162,6 +162,7 @@
   border-bottom: 1px solid #f1f5f9;
   color: #4a5568;
   vertical-align: middle;
+  text-align: center;
 }
 
 .lv-table tbody tr:last-child td { border-bottom: none; }

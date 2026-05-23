@@ -582,13 +582,13 @@ const Attendance = () => {
                   return (
                     <tr key={emp.id} className="att-row">
                       <td className="att-td-sno">{idx + 1}</td>
-                      <td className="att-td-name">
+                      <td className="att-td-name col-left">
                         <button className="att-emp-name-btn"
                           onClick={() => setModal({ type: 'detail', emp })}>
                           {emp.name}
                         </button>
                       </td>
-                      <td className="att-td-cat">
+                      <td className="att-td-cat col-left">
                         <span className={`att-cat-badge att-cat-${emp.category.toLowerCase().replace(/\s+/g, '-')}`}>
                           {emp.category}
                         </span>
@@ -627,7 +627,7 @@ const Attendance = () => {
       {activeView === 'summary' && (
         <div className="att-table-card">
           <h3 className="att-section-title">📊 Monthly Summary — {MONTHS[selMonth]} {selYear}</h3>
-          
+
           <div
             ref={summaryTopScrollRef}
             className="att-top-scroll-wrapper"
@@ -684,12 +684,12 @@ const Attendance = () => {
                     return (
                       <tr key={s.emp.id} className={isHidden ? 'att-row-hidden' : ''}>
                         <td>{idx + 1}</td>
-                        <td>
+                        <td className="col-left">
                           <div className="att-emp-cell">
                             {s.emp.name}
                           </div>
                         </td>
-                        <td>
+                        <td className="col-left">
                           <span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')}`}>
                             {s.emp.category}
                           </span>
@@ -854,13 +854,12 @@ const Attendance = () => {
                     return (
                       <tr key={s.emp.id}>
                         <td>{idx + 1}</td>
-                        <td>
+                        <td className="col-left">
                           <div className="att-emp-cell">
-                            <span className="att-avatar sm">{s.emp.name.charAt(0)}</span>
                             {s.emp.name}
                           </div>
                         </td>
-                        <td><span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')}`}>{s.emp.category}</span></td>
+                        <td className="col-left"><span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')}`}>{s.emp.category}</span></td>
                         <td className="td-center">{s.totalWorkingDays}</td>
                         <td className="td-center att-text-green"><strong>{s.totalPresent}</strong></td>
                         <td className="td-center att-text-red">{s.totalAbsent}</td>

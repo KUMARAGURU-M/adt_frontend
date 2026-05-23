@@ -378,7 +378,7 @@ const ReportsAnalytics = () => {
               ) : filteredLogs.map(log => (
                 <tr key={log.id}>
                   <td className="td-id">{log.id}</td>
-                  <td className="td-employee">{log.employee}</td>
+                  <td className="td-employee col-left">{log.employee}</td>
                   <td className="td-project">
                     <span className="ra-project-tag">{log.project}</span>
                   </td>

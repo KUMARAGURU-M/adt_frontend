@@ -738,7 +738,7 @@ const UserManagement = () => {
             {users.map((user) => (
               <tr key={user.id}>
                 <td><div className="avatar-circle">{user.initial}</div></td>
-                <td className="td-name">{user.name}</td>
+                <td className="td-name col-left">{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.phone}</td>
                 <td>

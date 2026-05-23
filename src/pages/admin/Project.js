@@ -28,14 +28,24 @@ const emptyForm = {
   active: true,
 };
 
+const getComplexityClass = (value) => {
+  if (!value) return '';
+  const val = value.toLowerCase().replace(/\s+/g, '');
+  if (val.includes('simple')) return 'complexity-simple';
+  if (val.includes('medium')) return 'complexity-medium';
+  if (val.includes('heavycomplex')) return 'complexity-heavycomplex';
+  if (val.includes('complex')) return 'complexity-complex';
+  return '';
+};
+
 const complexityClass = (level) => {
   const map = {
-    Simple: "badge--simple",
-    Medium: "badge--medium",
-    Complex: "badge--complex",
-    "Heavy Complex": "badge--heavy-complex",
+    Simple: "complexity-simple",
+    Medium: "complexity-medium",
+    Complex: "complexity-complex",
+    "Heavy Complex": "complexity-heavycomplex",
   };
-  return map[level] || "badge--medium";
+  return map[level] || "complexity-medium";
 };
 
 export default function Projects() {
@@ -371,11 +381,15 @@ function ProjectForm({ form, errors, onChange, showActive }) {
       <div className="form-group">
         <label className="form-label">Complexity Level <span className="required">*</span></label>
         <select
-          className={`form-select ${errors.complexity ? "form-input--error" : ""}`}
+          className={`form-select ${errors.complexity ? "form-input--error" : ""} ${getComplexityClass(form.complexity)}`}
           value={form.complexity}
           onChange={(e) => onChange("complexity", e.target.value)}
         >
-          {COMPLEXITY_LEVELS.map((c) => <option key={c}>{c}</option>)}
+          {COMPLEXITY_LEVELS.map((c) => (
+            <option key={c} value={c} className={getComplexityClass(c)}>
+              {c}
+            </option>
+          ))}
         </select>
         {errors.complexity && <span className="form-error">{errors.complexity}</span>}
       </div>

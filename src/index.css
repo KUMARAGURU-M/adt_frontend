@@ -14,3 +14,46 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Table headers centered and uppercase by default */
+th {
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+/* Left-alignment utility class for columns */
+.col-left {
+  text-align: left !important;
+}
+.col-left .att-emp-name-btn {
+  margin: 0 !important;
+  justify-content: flex-start !important;
+}
+.col-left .att-emp-cell {
+  justify-content: flex-start !important;
+}
+
+/* Complexity background/text styling for select dropdowns, options, and cells */
+select.complexity-simple, option.complexity-simple, span.complexity-simple {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+}
+
+select.complexity-medium, option.complexity-medium, span.complexity-medium {
+  background-color: #fef9c3 !important;
+  color: #854d0e !important;
+  border-color: #fde047 !important;
+}
+
+select.complexity-complex, option.complexity-complex, span.complexity-complex {
+  background-color: #fed7aa !important;
+  color: #9a3412 !important;
+  border-color: #fb923c !important;
+}
+
+select.complexity-heavycomplex, option.complexity-heavycomplex, span.complexity-heavycomplex {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #fca5a5 !important;
+}
