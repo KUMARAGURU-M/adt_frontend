@@ -337,7 +337,7 @@ export default function Invoice() {
   const exportExcel = () => {
     const headers = ["S.No", "Project Name", "Process", "Book/Batch Name", ...enabledOptCols.map(c => colHeaders[c.key] || c.label), "Order Pages", "Rate/Page (₹)", "Amount (₹)", "Deduction (₹)", "Total (₹)"];
     const dataRows = rows.map((r, i) => [i + 1, r.projectName, r.process, r.bookBatchName, ...enabledOptCols.map(c => r[c.key] || ""), r.orderPages, r.ratePage, r.amount || "", r.deductionAmount || "", r.totalAmount || ""]);
-    const summary = [[], [, , , "Sub Total", "", fmt(subTotal)], [, , `IGST (${igstPct}%)`, "", fmt(igstAmt)], [, , , "Grand Total", "", fmt(grandTotal)]];
+    const summary = [[], ["", "", "", "Sub Total", "", fmt(subTotal)], ["", "", `IGST (${igstPct}%)`, "", fmt(igstAmt)], ["", "", "", "Grand Total", "", fmt(grandTotal)]];
     const csv = [[headers, ...dataRows, ...summary]].flat().map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" })), download: `${invoiceNo}.csv` });
     a.click(); URL.revokeObjectURL(a.href);
