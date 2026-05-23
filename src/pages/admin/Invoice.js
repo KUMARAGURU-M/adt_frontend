@@ -1,7 +1,7 @@
 // ============================================================
 // Invoice.js — Arrow Data Tech Invoice Generation (Updated)
 // ============================================================
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import "./Invoice.css";
 import sign from "../../assets/images/sign.png";
 import letterpad from "../../assets/images/letterpad.png";
