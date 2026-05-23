@@ -1,10 +1,10 @@
 /* src/pages/user/EmpTask.css */
 
 .et-page {
-  padding: 24px 32px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   font-family: 'Poppins', sans-serif;
   color: #333;
 }
@@ -13,19 +13,19 @@
 .et-header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
 .et-title {
-  font-size: 1.8rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #1a1a2e;
   margin: 0;
 }
 
 .et-subtitle {
-  font-size: 0.95rem;
+  font-size: 0.80rem;
   color: #666;
   margin: 0;
 }
@@ -40,10 +40,10 @@
 }
 
 .et-filters-card {
-  padding: 20px 24px;
+  padding: 16px 16px;
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 16px;
   align-items: flex-end;
 }
 
@@ -115,18 +115,18 @@
 /* TABLE */
 .et-table-container {
   overflow-x: auto;
-  padding: 0 24px;
+  padding: 0 16px;
 }
 
 .et-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   min-width: 1200px; /* Ensure horizontal scroll on small screens */
 }
 
 .et-table th, .et-table td {
-  padding: 16px 12px;
+  padding: 12px 8px;
   text-align: center;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
@@ -135,7 +135,7 @@
 .et-table th {
   color: #64748b;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.70rem;
   text-transform: capitalize;
   white-space: nowrap;
 }
@@ -184,9 +184,9 @@
 
 /* STATUS BADGES */
 .et-status-badge {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.65rem;
   font-weight: 600;
   display: inline-block;
   text-transform: capitalize;

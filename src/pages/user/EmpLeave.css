@@ -1,7 +1,7 @@
 /* src/pages/user/EmpLeave.css */
 
 .el-page {
-  padding: 24px 32px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   font-family: 'Poppins', sans-serif;
@@ -12,12 +12,12 @@
 .el-header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 24px;
+  gap: 4px;
+  margin-bottom: 16px;
 }
 
 .el-title {
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #1a1a2e;
   margin: 0;
@@ -43,11 +43,11 @@
 }
 
 .el-tab-btn {
-  padding: 12px 24px;
+  padding: 8px 16px;
   border: none;
   background: transparent;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.80rem;
   font-weight: 600;
   color: #666;
   cursor: pointer;
@@ -101,14 +101,14 @@
 }
 
 .el-empty-card {
-  padding: 60px 24px;
+  padding: 40px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .el-empty-text {
-  font-size: 0.95rem;
+  font-size: 0.80rem;
   color: #666;
   margin: 0;
 }
@@ -121,11 +121,11 @@
 .el-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .el-table th, .el-table td {
-  padding: 16px 20px;
+  padding: 12px 14px;
   text-align: left;
 }
 
@@ -144,7 +144,7 @@
 .el-empty-row {
   text-align: center !important;
   color: #94a3b8 !important;
-  padding: 40px 20px !important;
+  padding: 28px 16px !important;
 }
 
 /* MODAL OVERLAY */
@@ -166,28 +166,28 @@
   width: 100%;
   max-width: 450px;
   border-radius: 8px;
-  padding: 24px 32px;
+  padding: 18px 24px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .el-modal-title {
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1a1a2e;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
 }
 
 .el-form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .el-form-group label {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #333;
 }
@@ -198,11 +198,11 @@
 
 .el-select, .el-input, .el-textarea {
   width: 100%;
-  padding: 10px 14px;
+  padding: 8px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.80rem;
   color: #333;
   background: #fff;
   transition: border-color 0.2s ease;
@@ -211,17 +211,12 @@
 .el-select {
   appearance: none;
   cursor: pointer;
-  padding-right: 32px;
-}
-
-.el-select:focus, .el-input:focus, .el-textarea:focus {
-  outline: none;
-  border-color: #0ea5e9;
+  padding-right: 28px;
 }
 
 .el-select-arrow {
   position: absolute;
-  right: 14px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
@@ -236,8 +231,8 @@
 .el-modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .el-btn-cancel {
@@ -245,16 +240,12 @@
   color: #fff;
   border: none;
   border-radius: 4px;
-  padding: 10px 20px;
+  padding: 8px 16px;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.80rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease;
-}
-
-.el-btn-cancel:hover {
-  background: #475569;
 }
 
 .el-btn-submit {
@@ -262,14 +253,10 @@
   color: #fff;
   border: none;
   border-radius: 4px;
-  padding: 10px 20px;
+  padding: 8px 16px;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.80rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s ease;
-}
-
-.el-btn-submit:hover {
-  background: #0284c7;
 }

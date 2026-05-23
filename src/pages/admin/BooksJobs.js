@@ -699,6 +699,11 @@ const BooksJobs = () => {
 
   const exportPDF = () => {
     const printWindow = window.open('', '_blank');
+    const getComplexityText = (val) => val || '-';
+    const getStatusText = (val) => val || '-';
+    const getFileStatusText = (val) => val || '-';
+    const getBillingText = (val) => val || '-';
+    
     printWindow.document.write(`
       <html>
         <head>
@@ -707,9 +712,9 @@ const BooksJobs = () => {
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 30px; color: #333; }
             h2 { color: #7c3aed; margin-bottom: 5px; }
             p { color: #666; margin-top: 0; font-size: 14px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
-            th, td { border: 1px solid #e2e8f0; padding: 10px 8px; text-align: left; }
-            th { background-color: #f8fafc; color: #475569; font-weight: 700; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
+            th, td { border: 1px solid #e2e8f0; padding: 8px 6px; text-align: left; }
+            th { background-color: #7c3aed; color: #fff; font-weight: 700; }
             tr:nth-child(even) { background-color: #f8fafc; }
           </style>
         </head>
@@ -720,30 +725,36 @@ const BooksJobs = () => {
             <thead>
               <tr>
                 <th>Project</th>
-                <th>Start Month</th>
-                <th>End Month</th>
                 <th>Receive Date</th>
                 <th>Job ID</th>
                 <th>XML ISBN</th>
                 <th>Title Name</th>
                 <th>Page Count</th>
+                <th>PDF Type</th>
                 <th>Complexity</th>
+                <th>Ref Type</th>
                 <th>Status</th>
+                <th>File Status</th>
+                <th>Upload Date</th>
+                <th>Billing Status</th>
               </tr>
             </thead>
             <tbody>
               ${rows.map(j => `
                 <tr>
                   <td>${j.project || '-'}</td>
-                  <td>${fmt(j.startMonth)}</td>
-                  <td>${fmt(j.endMonth)}</td>
                   <td>${fmt(j.receiveDate)}</td>
                   <td><strong>${j.jobId || '-'}</strong></td>
                   <td>${j.isbn || '-'}</td>
                   <td>${j.title || '-'}</td>
                   <td>${j.pageCount || '-'}</td>
-                  <td>${j.complexity || '-'}</td>
-                  <td>${j.status || '-'}</td>
+                  <td>${j.pdfType || '-'}</td>
+                  <td>${getComplexityText(j.complexity)}</td>
+                  <td>${j.refType || '-'}</td>
+                  <td>${getStatusText(j.status)}</td>
+                  <td>${getFileStatusText(j.fileStatus)}</td>
+                  <td>${fmt(j.uploadDate)}</td>
+                  <td>${getBillingText(j.billing)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -761,11 +772,9 @@ const BooksJobs = () => {
   };
 
   const exportExcel = () => {
-    const headers = ['Project', 'Start Month', 'End Month', 'Receive Date', 'Job ID', 'XML ISBN', 'Title Name', 'Page Count', 'PDF Type', 'Complexity', 'Ref Type', 'Status', 'File Status', 'Upload Date', 'Billing Status'];
+    const headers = ['Project', 'Receive Date', 'Job ID', 'XML ISBN', 'Title Name', 'Page Count', 'PDF Type', 'Complexity', 'Ref Type', 'Status', 'File Status', 'Upload Date', 'Billing Status'];
     const csvRows = rows.map(j => [
       `"${j.project || ''}"`,
-      j.startMonth ? fmt(j.startMonth) : '',
-      j.endMonth ? fmt(j.endMonth) : '',
       j.receiveDate ? fmt(j.receiveDate) : '',
       `"${j.jobId || ''}"`,
       `"${j.isbn || ''}"`,
@@ -896,13 +905,12 @@ const BooksJobs = () => {
         </div>
       </div>
 
-      {/* ── Table Top Scrollbar ── */}
-      <div className="double-scroll-top" ref={topScrollRef}>
-        <div className="double-scroll-top-inner"></div>
-      </div>
-
-      {/* ── Table ── */}
-      <div className="bj-table-wrapper" ref={bottomScrollRef}>
+      {/* ── Table Container with Scroll Sync ── */}
+      <div className="bj-table-container">
+        <div className="double-scroll-top" ref={topScrollRef}>
+          <div className="double-scroll-top-inner"></div>
+        </div>
+        <div className="bj-table-wrapper" ref={bottomScrollRef}>
         <table className="bj-table">
           <thead>
             <tr>
@@ -968,6 +976,7 @@ const BooksJobs = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* ── Modals ── */}

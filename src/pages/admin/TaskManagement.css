@@ -36,6 +36,50 @@
 }
 .btn-add-task:hover { opacity: 0.88; }
 
+/* ── Export Dropdown ── */
+.tm-export-dropdown-container {
+  position: relative;
+}
+
+.tm-export-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  min-width: 140px;
+  margin-top: 4px;
+}
+
+.tm-export-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: #4a5568;
+  transition: background-color 0.15s;
+}
+
+.tm-export-item:hover {
+  background-color: #f1f5f9;
+  color: #2d3748;
+}
+
+.tm-export-item:first-child {
+  border-radius: 5px 5px 0 0;
+}
+
+.tm-export-item:last-child {
+  border-radius: 0 0 5px 5px;
+}
+
 /* ── Filter Box ── */
 .tm-filter-box {
   background: white; border-radius: 10px;

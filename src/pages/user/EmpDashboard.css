@@ -20,12 +20,12 @@
    BODY
 ════════════════════════════════════════════ */
 .emp-dashboard-body {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 20px 32px 56px;
+  padding: 12px 20px 32px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 /* ════════════════════════════════════════════
@@ -53,15 +53,29 @@
 }
 
 .emp-ts-date {
-  font-size: 0.95rem;
+  font-size: 0.80rem;
   font-weight: 500;
   color: #555;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 .emp-ts-time {
-  font-size: 1.05rem;
+  font-size: 0.90rem;
   font-weight: 600;
   color: #13c6df;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 768px) {
@@ -100,7 +114,7 @@
 ════════════════════════════════════════════ */
 .emp-summary-panel {
   border-radius: 16px;
-  padding: 20px 22px 22px;
+  padding: 14px 16px 14px;
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg,
@@ -124,16 +138,16 @@
 .emp-summary-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .emp-summary-title {
   font-family: 'Poppins', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #1a1a2e;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -141,18 +155,18 @@
 .emp-summary-cards {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  gap: 6px;
 }
 
 .emp-stat-card {
   background: #ffffff;
   border: 1px solid rgba(19, 198, 223, 0.15);
   border-radius: 12px;
-  padding: 14px 12px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   transition: all 0.22s ease;
   cursor: default;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
@@ -165,17 +179,17 @@
 
 .emp-stat-label {
   font-family: 'Poppins', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.55rem;
   font-weight: 700;
   color: #888;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: center;
 }
 
 .emp-stat-value {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.55rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1a1a2e;
   line-height: 1;
@@ -213,8 +227,8 @@
 ════════════════════════════════════════════ */
 .emp-tab-nav {
   display: flex;
-  gap: 4px;
-  padding: 8px 12px;
+  gap: 2px;
+  padding: 6px 8px;
   border-radius: 14px;
   
   /* Glassmorphism Dark Base like Sidebar */
@@ -243,14 +257,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 10px;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
   color: rgb(164, 161, 161);
   font-family: 'Poppins', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.70rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -360,7 +374,7 @@
 ════════════════════════════════════════════ */
 .emp-tab-panel {
   border-radius: 16px;
-  min-height: 420px;
+  min-height: 300px;
   overflow: hidden;
   background: #f8faff;
   border: 1px solid rgba(19, 198, 223, 0.12);

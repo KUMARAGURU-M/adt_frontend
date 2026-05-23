@@ -479,6 +479,7 @@ export default function TaskManagement() {
   const [filterProcess, setFilterProcess] = useState("");
   const [filterEmployee, setFilterEmployee] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   /* modal */
   const [modal, setModal] = useState(null); // {type:'add'|'edit'|'delete', task?}
@@ -590,7 +591,7 @@ export default function TaskManagement() {
 
   /* ── Export CSV ── */
   const handleExportCSV = () => {
-    const header = ["Assigned Date", "Project", "Process", "Jobs", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator"];
+    const header = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator"];
     const rows = filtered.map(t => [
       fmtDue(t.date) || "-",
       `"${t.project}"`,
@@ -609,6 +610,92 @@ export default function TaskManagement() {
     const a = document.createElement("a");
     a.href = url; a.download = "tasks.csv"; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleExportPDF = () => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Task Management Report</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 30px; color: #333; }
+            h2 { color: #7c3aed; margin-bottom: 5px; }
+            p { color: #666; margin-top: 0; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
+            th, td { border: 1px solid #e2e8f0; padding: 8px 6px; text-align: left; }
+            th { background-color: #7c3aed; color: #fff; font-weight: 700; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+          </style>
+        </head>
+        <body>
+          <h2>Task Management Report</h2>
+          <p>Generated on: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Assigned Date</th>
+                <th>Project</th>
+                <th>Process</th>
+                <th>Job (Book/ISBN)</th>
+                <th>Employee Name</th>
+                <th>Chapter/Article/Batch</th>
+                <th>Page</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Task Creator</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filtered.map(t => `
+                <tr>
+                  <td>${fmtDue(t.date) || '-'}</td>
+                  <td>${t.project || '-'}</td>
+                  <td>${t.processes.join(", ") || '-'}</td>
+                  <td>${t.jobs.length ? t.jobs.map(j => j.replace(/\n/g, " ")).join("; ") : '-'}</td>
+                  <td>${t.employees.join(", ") || '-'}</td>
+                  <td>${t.chapter || '-'}</td>
+                  <td>${t.pages || '-'}</td>
+                  <td>${fmtDue(t.dueDate) || '-'}</td>
+                  <td>${t.status || '-'}</td>
+                  <td>${t.assignedBy || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const handleExportExcel = () => {
+    const headers = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator"];
+    const csvRows = filtered.map(t => [
+      fmtDue(t.date) || "-",
+      `"${t.project}"`,
+      `"${t.processes.join("; ")}"`,
+      `"${t.jobs.join("; ").replace(/\n/g, " ")}"`,
+      `"${t.employees.join("; ")}"`,
+      `"${t.chapter || "-"}"`,
+      t.pages || "-",
+      fmtDue(t.dueDate) || "-",
+      t.status || "-",
+      `"${t.assignedBy || "-"}"`
+    ].join(','));
+    const blob = new Blob(["\ufeff" + [headers.join(','), ...csvRows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", "tasks_report.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   /* ── Remove duplicates ── */
@@ -632,7 +719,24 @@ export default function TaskManagement() {
         </div>
         <div className="tm-header-actions">
           <button className="btn-remove-dup" onClick={handleRemoveDuplicates}>🔁 Remove Duplicates</button>
-          <button className="btn-export-csv" onClick={handleExportCSV}>📥 Export CSV</button>
+          <div className="tm-export-dropdown-container">
+            <button className="btn-export-csv" onClick={() => setShowExportDropdown(!showExportDropdown)}>
+              📥 Export Report
+            </button>
+            {showExportDropdown && (
+              <div className="tm-export-dropdown-menu">
+                <button className="tm-export-item" onClick={() => { handleExportPDF(); setShowExportDropdown(false); }}>
+                  📄 Export PDF
+                </button>
+                <button className="tm-export-item" onClick={() => { handleExportExcel(); setShowExportDropdown(false); }}>
+                  📊 Export Excel
+                </button>
+                <button className="tm-export-item" onClick={() => { handleExportCSV(); setShowExportDropdown(false); }}>
+                  📋 Export CSV
+                </button>
+              </div>
+            )}
+          </div>
           <button className="btn-add-task" onClick={() => setModal({ type: "add" })}>+ Add Task</button>
         </div>
       </div>

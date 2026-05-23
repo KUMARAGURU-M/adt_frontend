@@ -32,7 +32,7 @@ import Setting from './pages/admin/Setting';
 import Tools from './pages/admin/Tools';
 import EmpWorkwise from './pages/user/EmpWorkwise';
 import TimeLog from './pages/admin/TimeLog';
-
+import Invoice from './pages/admin/Invoice';
 /* ── Admin Layout ── */
 const AdminLayout = ({ children }) => (
   <div className="app-container">
@@ -125,7 +125,7 @@ function App() {
         } />
 
         <Route path="/admin/invoices" element={
-          <AdminLayout><div style={{ padding: '20px' }}><h2>Invoices Page</h2><p>Content coming soon...</p></div></AdminLayout>
+          <AdminLayout><Invoice /></AdminLayout>
         } />
 
         <Route path="/admin/settings" element={

@@ -1,7 +1,7 @@
 /* src/pages/user/EmpCalendar.css */
 
 .ec-page {
-  padding: 24px 32px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -15,7 +15,7 @@
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  padding: 32px;
+  padding: 20px;
   border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
@@ -24,18 +24,18 @@
   display: flex;
   background: #f8f9fa;
   border-radius: 12px;
-  padding: 6px;
-  margin-bottom: 32px;
+  padding: 4px;
+  margin-bottom: 20px;
 }
 
 .ec-tab-btn {
   flex: 1;
-  padding: 12px 0;
+  padding: 8px 0;
   border: none;
   background: transparent;
   border-radius: 8px;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.80rem;
   font-weight: 600;
   color: #666;
   cursor: pointer;
@@ -58,7 +58,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .ec-header-left {
@@ -68,30 +68,30 @@
 }
 
 .ec-title {
-  font-size: 1.5rem;
+  font-size: 1.20rem;
   font-weight: 600;
   margin: 0;
   color: #222;
 }
 
 .ec-subtitle {
-  font-size: 0.85rem;
+  font-size: 0.70rem;
   color: #666;
   margin: 0;
 }
 
 .ec-header-right {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 
 .ec-nav-btn {
-  padding: 8px 16px;
+  padding: 6px 12px;
   border: none;
   border-radius: 6px;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -130,31 +130,31 @@
 .ec-grid-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .ec-grid-hd {
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.70rem;
   font-weight: 600;
   color: #555;
   background: #f8f9fa;
-  padding: 8px 0;
+  padding: 6px 0;
   border-radius: 4px;
 }
 
 .ec-grid-body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .ec-cell {
   background: #f4f5f7;
   border-radius: 8px;
-  min-height: 110px;
-  padding: 12px;
+  min-height: 80px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -168,7 +168,7 @@
 }
 
 .ec-day-number {
-  font-size: 0.95rem;
+  font-size: 0.80rem;
   font-weight: 500;
   color: #444;
 }
@@ -197,13 +197,13 @@
 }
 
 .ec-day-hours {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: #2e7d32;
 }
 
 .ec-day-pages, .ec-day-projects {
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   color: #555;
 }
 
@@ -211,33 +211,33 @@
 .ec-summary-view {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 20px;
 }
 
 .ec-summary-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .ec-summary-card {
   background: #f8f9fa;
   border-radius: 12px;
-  padding: 32px 24px;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .ec-card-label {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #666;
 }
 
 .ec-card-value {
-  font-size: 2rem;
+  font-size: 1.55rem;
   font-weight: 700;
   color: #222;
   line-height: 1;
@@ -247,11 +247,11 @@
 .ec-breakdown-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .ec-section-title {
-  font-size: 1.05rem;
+  font-size: 0.90rem;
   font-weight: 700;
   color: #333;
   margin: 0;
@@ -261,20 +261,15 @@
   background: #ffffff;
   border: 1px solid #e9ecef;
   border-radius: 8px;
-  padding: 16px 20px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   transition: all 0.2s ease;
 }
 
-.ec-breakdown-card:hover {
-  border-color: #dee2e6;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
-}
-
 .ec-bd-top {
-  font-size: 0.95rem;
+  font-size: 0.80rem;
   font-weight: 600;
   color: #333;
 }
@@ -286,13 +281,13 @@
 }
 
 .ec-bd-hours {
-  font-size: 0.8rem;
+  font-size: 0.70rem;
   color: #555;
   font-weight: 500;
 }
 
 .ec-bd-pages {
-  font-size: 0.8rem;
+  font-size: 0.70rem;
   color: #6a74db;
   font-weight: 600;
 }

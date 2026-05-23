@@ -82,11 +82,8 @@ export default function EmpDashboard() {
         {/* Top bar */}
         <div className="emp-topbar">
 
-          {/* Timestamp */}
-          <div className="emp-ts-box">
-            <span className="emp-ts-date">{fmtDate(now)}</span>
-            <span className="emp-ts-time">{fmtTime(now)}</span>
-          </div>
+          {/* Timestamp - Date on left */}
+          <span className="emp-ts-date">{fmtDate(now)}</span>
 
           {/* Tagging Work Portal button */}
           {/* <button
@@ -95,6 +92,9 @@ export default function EmpDashboard() {
           >
             🏷️ Tagging Work Portal
           </button> */}
+
+          {/* Timestamp - Time on right */}
+          <span className="emp-ts-time">{fmtTime(now)}</span>
 
         </div>
 
