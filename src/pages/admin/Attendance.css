@@ -236,6 +236,30 @@
   color: #2d3748;
   border-bottom: 1px solid #edf2f7;
   background: #f8fafc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.att-overall-salary {
+  font-size: 0.92rem;
+  color: #1e293b;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(124, 58, 237, 0.04));
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #7c3aed;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.15);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.att-overall-salary strong {
+  color: #7c3aed;
+  font-weight: 800;
+  font-size: 1.05rem;
 }
 
 .att-table-scroll {
@@ -649,7 +673,115 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  min-width: 900px;
+  min-width: 1700px;
+}
+
+/* Sticky styles for first 5 columns in summary table */
+.att-summary-table th.att-sum-sticky-id,
+.att-summary-table td.att-sum-sticky-id {
+  position: sticky;
+  left: 0;
+  min-width: 50px;
+  max-width: 50px;
+  width: 50px;
+}
+
+.att-summary-table th.att-sum-sticky-emp,
+.att-summary-table td.att-sum-sticky-emp {
+  position: sticky;
+  left: 50px;
+  min-width: 180px;
+  max-width: 180px;
+  width: 180px;
+}
+
+.att-summary-table th.att-sum-sticky-role,
+.att-summary-table td.att-sum-sticky-role {
+  position: sticky;
+  left: 230px;
+  min-width: 130px;
+  max-width: 130px;
+  width: 130px;
+}
+
+.att-summary-table th.att-sum-sticky-gpay,
+.att-summary-table td.att-sum-sticky-gpay {
+  position: sticky;
+  left: 360px;
+  min-width: 130px;
+  max-width: 130px;
+  width: 130px;
+}
+
+.att-summary-table th.att-sum-sticky-salary,
+.att-summary-table td.att-sum-sticky-salary {
+  position: sticky;
+  left: 490px;
+  min-width: 160px;
+  max-width: 160px;
+  width: 160px;
+}
+
+/* Base sticky container backgrounds to cover items sliding behind them */
+.att-summary-table th.att-sum-sticky-id,
+.att-summary-table th.att-sum-sticky-emp,
+.att-summary-table th.att-sum-sticky-role,
+.att-summary-table th.att-sum-sticky-gpay,
+.att-summary-table th.att-sum-sticky-salary {
+  background: #f8fafc !important;
+  z-index: 3;
+}
+
+.att-summary-table td.att-sum-sticky-id,
+.att-summary-table td.att-sum-sticky-emp,
+.att-summary-table td.att-sum-sticky-role,
+.att-summary-table td.att-sum-sticky-gpay,
+.att-summary-table td.att-sum-sticky-salary {
+  background: #ffffff;
+  z-index: 1;
+}
+
+/* Right shadow separator for the last sticky column to prevent overlay overlap look */
+.att-summary-table th.att-sum-sticky-salary,
+.att-summary-table td.att-sum-sticky-salary {
+  border-right: 2px solid #cbd5e1 !important;
+}
+
+.att-summary-table th.att-sum-sticky-salary::after,
+.att-summary-table td.att-sum-sticky-salary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -6px;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+
+/* Hover background logic for sticky columns */
+.att-summary-table tbody tr:hover td.att-sum-sticky-id,
+.att-summary-table tbody tr:hover td.att-sum-sticky-emp,
+.att-summary-table tbody tr:hover td.att-sum-sticky-role,
+.att-summary-table tbody tr:hover td.att-sum-sticky-gpay,
+.att-summary-table tbody tr:hover td.att-sum-sticky-salary {
+  background: #f8fafc;
+}
+
+/* Hidden row background logic for sticky columns */
+.att-summary-table tbody tr.att-row-hidden td.att-sum-sticky-id,
+.att-summary-table tbody tr.att-row-hidden td.att-sum-sticky-emp,
+.att-summary-table tbody tr.att-row-hidden td.att-sum-sticky-role,
+.att-summary-table tbody tr.att-row-hidden td.att-sum-sticky-gpay,
+.att-summary-table tbody tr.att-row-hidden td.att-sum-sticky-salary {
+  background: #f8fafc;
+}
+
+/* Enforce width on the Actions column to keep icons spaced cleanly */
+.att-summary-table th:nth-child(6),
+.att-summary-table td:nth-child(6) {
+  min-width: 140px;
+  width: 140px;
 }
 
 .att-summary-table th {
@@ -668,12 +800,6 @@
   color: #4a5568;
   vertical-align: middle;
   text-align: center;
-}
-
-.att-summary-table th:nth-child(2),
-.att-summary-table td:nth-child(2) {
-  min-width: 200px;
-  white-space: nowrap;
 }
 
 .att-summary-table th,

@@ -215,7 +215,10 @@
 .col-desc    { width: 25%; }
 .col-status  { width: 12%; }
 .col-created { width: 14%; }
-.col-actions { width: 14%; }
+.col-actions {
+  width: 14%;
+  text-align: center;
+}
 
 .pm-table td {
   padding: 11px 16px;
@@ -231,6 +234,7 @@
   font-weight: 600;
   color: #2d3748;
   font-size: 13px;
+  text-align: left;
 }
 
 .td-desc {
@@ -268,6 +272,7 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  justify-content: center;
 }
 
 .pm-act-edit,

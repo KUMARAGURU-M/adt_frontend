@@ -72,6 +72,7 @@ const DUMMY_PROJECTS = [
 ];
 
 const OPTIONAL_COLUMNS = [
+  // { key: "nextReceiveDate", label: "Next Receive Date" },
   { key: "receivedDate", label: "Received Date" },
   { key: "jobId", label: "Job ID" },
   { key: "titleName", label: "Title Name" },
@@ -85,6 +86,7 @@ const OPTIONAL_COLUMNS = [
   { key: "fileStatus", label: "File Status" },
   { key: "uploadedDate", label: "Uploaded Date" },
   { key: "billingStatus", label: "Billing Status" },
+  { key: "articleCount", label: "Article Count" },
 ];
 
 // Default bank accounts
@@ -129,6 +131,7 @@ const EMPTY_ROW = (o = {}) => ({
   startDate: "", endDate: "", xmlIsbn: "", chapters: "",
   pdfInputType: "", complexity: "", referenceType: "",
   fileStatus: "", uploadedDate: "", billingStatus: "",
+  articleCount: "",
   orderPages: "", ratePage: "", amount: "", deductionAmount: "", totalAmount: "",
   ...o,
 });
@@ -191,6 +194,8 @@ export default function Invoice() {
   const [colHeaders, setColHeaders] = useState(() =>
     OPTIONAL_COLUMNS.reduce((acc, c) => { acc[c.key] = c.label; return acc; }, {})
   );
+  const [showQr, setShowQr] = useState(true);
+  const [showSignature, setShowSignature] = useState(true);
 
   // ── Rows ─────────────────────────────────────────────────
   const [rows, setRows] = useState([EMPTY_ROW(), EMPTY_ROW()]);
@@ -335,8 +340,32 @@ export default function Invoice() {
   // ── Exports ───────────────────────────────────────────────
   const exportPDF = () => { setShowPreview(true); setTimeout(() => window.print(), 600); };
   const exportExcel = () => {
-    const headers = ["S.No", "Project Name", "Process", "Book/Batch Name", ...enabledOptCols.map(c => colHeaders[c.key] || c.label), "Order Pages", "Rate/Page (₹)", "Amount (₹)", "Deduction (₹)", "Total (₹)"];
-    const dataRows = rows.map((r, i) => [i + 1, r.projectName, r.process, r.bookBatchName, ...enabledOptCols.map(c => r[c.key] || ""), r.orderPages, r.ratePage, r.amount || "", r.deductionAmount || "", r.totalAmount || ""]);
+    const headers = [
+      "S.No",
+      "Project Name",
+      "Process",
+      "Book/Batch Name",
+      ...enabledOptCols.map(c => colHeaders[c.key] || c.label),
+      "Order Pages",
+      "Rate/Page (₹)",
+      "Amount (₹)",
+      "Deduction (₹)",
+      "Total (₹)"
+    ];
+
+    const dataRows = rows.map((r, i) => [
+      i + 1,
+      r.projectName,
+      r.process,
+      r.bookBatchName,
+      ...enabledOptCols.map(c => r[c.key] || ""),
+      r.orderPages,
+      r.ratePage,
+      r.amount || "",
+      r.deductionAmount || "",
+      r.totalAmount || ""
+    ]);
+
     const summary = [[], ["", "", "", "Sub Total", "", fmt(subTotal)], ["", "", `IGST (${igstPct}%)`, "", fmt(igstAmt)], ["", "", "", "Grand Total", "", fmt(grandTotal)]];
     const csv = [[headers, ...dataRows, ...summary]].flat().map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" })), download: `${invoiceNo}.csv` });
@@ -562,7 +591,7 @@ export default function Invoice() {
             </div>
             <div className="inv-fixed-cols">
               <span className="inv-fixed-cols-label">Always shown:</span>
-              {["S.No", "Project Name", "Process", "Book/Batch Name", "Order Pages", "Rate/Page", "Amount", "Deduction", "Total"].map(c => <span key={c} className="inv-fixed-col-chip">{c}</span>)}
+              {["S.No", "Project Name", "Process", "File/Batch/Article", "Pages", "Rate/Page", "Amount", "Deduction", "Total"].map(c => <span key={c} className="inv-fixed-col-chip">{c}</span>)}
             </div>
           </div>
         )}
@@ -678,6 +707,10 @@ export default function Invoice() {
             </div>
           </div>
 
+          <div style={{ marginBottom: "16px", padding: "10px 14px", background: "#f8fafc", border: "1px solid var(--inv-border)", borderRadius: "var(--inv-radius-sm)" }}>
+            <Toggle checked={showQr} onChange={setShowQr} label="Show QR in Invoice" />
+          </div>
+
           {editingBank ? (
             <div className="inv-bank-edit-grid">
               {[["label", "Account Label", "text"], ["bankName", "Bank Name", "text"], ["acNo", "Account Number", "text"], ["branch", "Branch", "text"], ["ifsc", "IFSC Code", "text"], ["type", "Account Type", "text"]].map(([key, lbl, type]) => (
@@ -745,6 +778,9 @@ export default function Invoice() {
       <div className="inv-card">
         <div className="inv-card-header"><span className="inv-card-icon">✍</span><h2 className="inv-card-title">Authorized Signature</h2></div>
         <div className="inv-card-body">
+          <div style={{ marginBottom: "16px", padding: "10px 14px", background: "#f8fafc", border: "1px solid var(--inv-border)", borderRadius: "var(--inv-radius-sm)" }}>
+            <Toggle checked={showSignature} onChange={setShowSignature} label="Show Signature in Invoice" />
+          </div>
           <div className="inv-sig-layout">
             <div className="inv-sig-fields">
               <div className="inv-field-block"><label className="inv-label">Authorized Person Name</label><input className="inv-input" value={sigName} onChange={e => setSigName(e.target.value)} /></div>
@@ -931,7 +967,7 @@ export default function Invoice() {
                     </tr>
                     <tr>
                       <td className="inv-doc-meta-lbl-r"><strong>GSTIN No:</strong></td>
-                      <td className="inv-doc-meta-val-r">{gstinNo || "—"}</td>
+                      <td className="inv-doc-meta-val-r">{gstinNo || " "}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1010,38 +1046,43 @@ export default function Invoice() {
                     <div className="inv-doc-bank-title">BANK DETAILS:</div>
                     <table className="inv-doc-bank-table">
                       <tbody>
-                        <tr><td><strong>Name in Bank A/c :</strong></td><td>{(currentBank.nameOnAccount || "").toUpperCase()}</td></tr>
-                        <tr><td><strong>Bank Name :</strong></td>        <td>{currentBank.bankName}</td></tr>
-                        <tr><td><strong>Bank A/c No :</strong></td>      <td>{currentBank.acNo}</td></tr>
-                        <tr><td><strong>BRANCH :</strong></td>           <td>{currentBank.branch}</td></tr>
-                        <tr><td><strong>IFSC CODE :</strong></td>        <td>{currentBank.ifsc}</td></tr>
-                        <tr><td><strong>GPAY :</strong></td>             <td>{currentBank.gpay || ""}</td></tr>
-                        <tr>
-                          <td><strong>QR :</strong></td>
-                          <td>
-                            <div className="inv-doc-qr">
-                              {currentBank.qrImage ? (
-                                <img src={currentBank.qrImage} alt="Payment QR" className="inv-doc-qr-img" />
-                              ) : (
-                                <div className="inv-doc-qr-placeholder">
-                                  <span className="inv-doc-qr-placeholder-icon">📱</span>
-                                  <span className="inv-doc-qr-placeholder-text">QR Code</span>
-                                </div>
-                              )}
-                              <div className="inv-doc-qr-label">Scan to Pay</div>
-                            </div>
-                          </td>
-                        </tr>
+                        <tr><td><strong>NAME IN BANK A/C</strong></td><td><strong>:</strong></td><td>{(currentBank.nameOnAccount || "").toUpperCase()}</td></tr>
+                        <tr><td><strong>BANK NAME</strong></td>        <td><strong>:</strong></td><td>{currentBank.bankName}</td></tr>
+                        <tr><td><strong>BANK A/C NO</strong></td>      <td><strong>:</strong></td><td>{currentBank.acNo}</td></tr>
+                        <tr><td><strong>BRANCH</strong></td>           <td><strong>:</strong></td><td>{currentBank.branch}</td></tr>
+                        <tr><td><strong>IFSC CODE</strong></td>        <td><strong>:</strong></td><td>{currentBank.ifsc}</td></tr>
+                        <tr><td><strong>GPAY</strong></td>             <td><strong>:</strong></td><td>{currentBank.gpay || ""}</td></tr>
+                        {showQr && (
+                          <tr>
+                            <td><strong>E-Pay QR</strong></td>
+                            <td><strong>:</strong></td>
+                            <td>
+                              <div className="inv-doc-qr">
+                                {currentBank.qrImage ? (
+                                  <img src={currentBank.qrImage} alt="Payment QR" className="inv-doc-qr-img" />
+                                ) : (
+                                  <div className="inv-doc-qr-placeholder">
+                                    <span className="inv-doc-qr-placeholder-icon">📱</span>
+                                    <span className="inv-doc-qr-placeholder-text">E-Pay QR</span>
+                                  </div>
+                                )}
+                                {/* <div className="inv-doc-qr-label">Scan to Pay</div> */}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
 
-                  <div className="inv-doc-sig">
-                    {sigImage && <div className="inv-doc-sig-img-wrap"><img src={sigImage} alt="Signature" className="inv-doc-sig-img" /></div>}
-                    <div className="inv-doc-sig-label"><strong>AUTHORISED SIGNATORY</strong></div>
-                    <div className="inv-doc-sig-name"><strong>Name:</strong> {sigName}</div>
-                    <div className="inv-doc-sig-desig"><strong>Designation:</strong> {sigDesig}</div>
-                  </div>
+                  {showSignature && (
+                    <div className="inv-doc-sig">
+                      {sigImage && <div className="inv-doc-sig-img-wrap"><img src={sigImage} alt="Signature" className="inv-doc-sig-img" /></div>}
+                      <div className="inv-doc-sig-label"><strong>AUTHORISED SIGNATORY</strong></div>
+                      <div className="inv-doc-sig-name"><strong>Name:</strong> {sigName}</div>
+                      <div className="inv-doc-sig-desig"><strong>Designation:</strong> {sigDesig}</div>
+                    </div>
+                  )}
                 </div>
 
                 {useLetterPad && <div className="inv-doc-letterpad-footer-spacer" />}

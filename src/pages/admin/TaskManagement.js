@@ -35,13 +35,29 @@ const JOBS_BY_PROJECT = {
   "LDM - ASS_EPUB3": ["ASS-EPUB3-Job-001\n(ISBN: 9780006789012)"],
 };
 
+const DUMMY_JOB_PAGES = {
+  "TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)": 240,
+  "TP25-0387_LDM_Sample\n(ISBN: 9783446480001)": 150,
+  "ING-Usen-Job-001\n(ISBN: 9798881870973)": 320,
+  "ING-Usen-Job-002\n(ISBN: 9798881870001)": 180,
+  "French\n(ISBN: 9780521821445)": 412,
+  "OUP-Job-002\n(ISBN: 9780521821001)": 295,
+  "TF-Job-001\n(ISBN: 9780001234567)": 124,
+  "WILEY-Job-001\n(ISBN: 9780002345678)": 380,
+  "CNT-Job-001\n(ISBN: 9780003456789)": 215,
+  "IMP-EPUB-Job-001\n(ISBN: 9780004567890)": 98,
+  "is_v30_i2_d1767629676\n(ISBN: is_v30_i2_d1767629676)": 288,
+  "ACDC-Job-001\n(ISBN: 9780005678901)": 174,
+  "ASS-EPUB3-Job-001\n(ISBN: 9780006789012)": 310,
+};
+
 /* ─── Seed data ─────────────────────────────── */
 const initialTasks = [
-  { id: 1, title: "EPUB - Tagging - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["EPUB - Tagging"], employees: ["Employee"], status: "PENDING", dueDate: "2026-05-12", pages: "50", chapter: "1", estimateHours: "0.0", description: "" },
-  { id: 2, title: "Proof Reading - Process - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["Proof Reading - Process"], employees: ["Employee"], status: "PENDING", dueDate: "", pages: "", chapter: "", estimateHours: "0.0", description: "" },
-  { id: 3, title: "CUP1645", project: "ING - OUP", jobs: ["French\n(ISBN: 9780521821445)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "PENDING", dueDate: "2026-02-03", pages: "", chapter: "", estimateHours: "0.0", description: "" },
-  { id: 4, title: "FIG - Croping - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "FINISH", dueDate: "2026-02-01", pages: "10", chapter: "Plaintiffs-Original-Petition_202447383...", estimateHours: "0.0", description: "" },
-  { id: 5, title: "XML - Tagging - is_v30_i2_d1767629676 - CMT - JATS", project: "CMT - JATS", jobs: ["is_v30_i2_d1767629676\n(ISBN: is_v30_i2_d1767629676)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "FINISH", dueDate: "2026-01-29", pages: "251", chapter: "1-15", estimateHours: "0.0", description: "" },
+  { id: 1, title: "EPUB - Tagging - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["EPUB - Tagging"], employees: ["Employee"], status: "PENDING", dueDate: "2026-05-12", pages: "50", chapter: "1", estimateHours: "0.0", description: "", totalPages: 240 },
+  { id: 2, title: "Proof Reading - Process - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["Proof Reading - Process"], employees: ["Employee"], status: "PENDING", dueDate: "", pages: "", chapter: "", estimateHours: "0.0", description: "", totalPages: 240 },
+  { id: 3, title: "CUP1645", project: "ING - OUP", jobs: ["French\n(ISBN: 9780521821445)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "PENDING", dueDate: "2026-02-03", pages: "", chapter: "", estimateHours: "0.0", description: "", totalPages: 412 },
+  { id: 4, title: "FIG - Croping - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "FINISH", dueDate: "2026-02-01", pages: "10", chapter: "Plaintiffs-Original-Petition_202447383...", estimateHours: "0.0", description: "", totalPages: 240 },
+  { id: 5, title: "XML - Tagging - is_v30_i2_d1767629676 - CMT - JATS", project: "CMT - JATS", jobs: ["is_v30_i2_d1767629676\n(ISBN: is_v30_i2_d1767629676)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "FINISH", dueDate: "2026-01-29", pages: "251", chapter: "1-15", estimateHours: "0.0", description: "", totalPages: 288 },
 ];
 
 const emptyForm = {
@@ -49,7 +65,8 @@ const emptyForm = {
   status: "PENDING", date: "", dueDate: "", estimateHours: "0.0", description: "",
   pagesType: "", pagesStart: "", pagesEnd: "",
   chapterType: "", chapterStart: "", chapterEnd: "",
-  pages: "", chapter: "", assignedBy: ""
+  pages: "", chapter: "", assignedBy: "",
+  path: "", complexity: "", totalPages: ""
 };
 
 /* ─── Helpers ───────────────────────────────── */
@@ -69,8 +86,17 @@ const badgeClass = (s) => {
   return "pending";
 };
 
+const getJobIdentifier = (job) => {
+  if (!job) return "";
+  const isbnMatch = job.match(/\(ISBN:\s*([^)]+)\)/i);
+  if (isbnMatch) return isbnMatch[1].trim();
+  return job.split("\n")[0].trim();
+};
+
 const autoTitle = (f) => {
-  const parts = [f.processes[0], f.jobs[0]?.split("\n")[0], f.project].filter(Boolean);
+  const processPart = f.processes.join(", ");
+  const jobPart = f.jobs.map(getJobIdentifier).join(", ");
+  const parts = [processPart, jobPart, f.project].filter(Boolean);
   return parts.join(" - ");
 };
 
@@ -180,10 +206,21 @@ function TaskModal({ mode, task, onClose, onSave }) {
     return { ...emptyForm };
   });
   const [errors, setErrors] = useState({});
+  const [showComplexity, setShowComplexity] = useState(!!form.complexity);
 
   const setF = (k, v) => {
     setForm(p => {
       const next = { ...p, [k]: v };
+      if (k === "project") {
+        next.jobs = [];
+        next.totalPages = "";
+      } else if (k === "jobs") {
+        if (v && v.length > 0) {
+          next.totalPages = DUMMY_JOB_PAGES[v[0]] || "";
+        } else {
+          next.totalPages = "";
+        }
+      }
       /* auto-generate title if it's blank or auto-generated */
       if (k !== "title") {
         const auto = autoTitle(next);
@@ -246,20 +283,6 @@ function TaskModal({ mode, task, onClose, onSave }) {
         {/* Body */}
         <div className="tm-modal-body">
 
-          {/* Task Title */}
-          <div>
-            <div className="tm-field-label">
-              <span>🏷️</span> Task Title
-              <span className="tm-field-hint">(Optional · Auto-generated if empty)</span>
-            </div>
-            <input
-              className="tm-form-input"
-              placeholder="Enter task title or select Process, Job, and Project"
-              value={form.title}
-              onChange={e => setF("title", e.target.value)}
-            />
-          </div>
-
           {/* Project */}
           <div>
             <div className="tm-field-label">
@@ -270,7 +293,6 @@ function TaskModal({ mode, task, onClose, onSave }) {
               value={form.project}
               onChange={e => {
                 setF("project", e.target.value);
-                setForm(p => ({ ...p, jobs: [] })); // reset jobs when project changes
               }}
             >
               <option value="">Select Publisher</option>
@@ -323,6 +345,63 @@ function TaskModal({ mode, task, onClose, onSave }) {
             )}
           </div>
 
+          {/* Pages & Complexity */}
+          <div className="tm-two-col">
+            <div>
+              <div className="tm-field-label"><span>📄</span> Pages</div>
+              <input
+                type="number"
+                className="tm-form-input"
+                placeholder="Job pages"
+                value={form.totalPages || ""}
+                onChange={e => setF("totalPages", e.target.value)}
+              />
+            </div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", height: "24px" }}>
+                <label className="tm-checkbox-item" style={{ borderBottom: "none", padding: 0, background: "none" }}>
+                  <input
+                    type="checkbox"
+                    checked={showComplexity}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      setShowComplexity(checked);
+                      if (!checked) {
+                        setF("complexity", "");
+                      } else {
+                        setF("complexity", "Simple");
+                      }
+                    }}
+                  />
+                  <span style={{ fontWeight: 600, color: "#4a5568", fontSize: "0.82rem" }}>Add Complexity</span>
+                </label>
+              </div>
+              <div style={{ marginTop: "5px" }}>
+                {showComplexity ? (
+                  <select
+                    className="tm-form-select"
+                    value={form.complexity || "Simple"}
+                    onChange={e => setF("complexity", e.target.value)}
+                  >
+                    <option value="Simple">Simple</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Complex">Complex</option>
+                    <option value="Heavy Complex">Heavy Complex</option>
+                  </select>
+                ) : (
+                  <select
+                    className="tm-form-select"
+                    disabled
+                    value=""
+                    style={{ opacity: 0.5, backgroundColor: "#f8fafc", cursor: "not-allowed" }}
+                  >
+                    <option value="">Complexity Not Added</option>
+                  </select>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Process (Stage) */}
           <div>
             <div className="tm-field-label">
@@ -337,6 +416,20 @@ function TaskModal({ mode, task, onClose, onSave }) {
               allowDeselect={false}
             />
             {errors.processes && <span className="tm-form-error">{errors.processes}</span>}
+          </div>
+
+          {/* Task Title */}
+          <div>
+            <div className="tm-field-label">
+              <span>🏷️</span> Task Title
+              <span className="tm-field-hint">(Optional · Auto-generated if empty)</span>
+            </div>
+            <input
+              className="tm-form-input"
+              placeholder="Enter task title or select Process, Job, and Project"
+              value={form.title}
+              onChange={e => setF("title", e.target.value)}
+            />
           </div>
 
           {/* Assigned Employees */}
@@ -448,6 +541,18 @@ function TaskModal({ mode, task, onClose, onSave }) {
               )}
             </div>
           </div>
+
+          {/* Path */}
+          <div>
+            <div className="tm-field-label"><span>🔗</span> Path</div>
+            <input
+              className="tm-form-input"
+              placeholder="Enter file/folder path (e.g. \\server\share\file.pdf)"
+              value={form.path || ""}
+              onChange={e => setF("path", e.target.value)}
+            />
+          </div>
+
 
         </div>{/* end body */}
 
@@ -591,7 +696,7 @@ export default function TaskManagement() {
 
   /* ── Export CSV ── */
   const handleExportCSV = () => {
-    const header = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator"];
+    const header = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator", "Path"];
     const rows = filtered.map(t => [
       fmtDue(t.date) || "-",
       `"${t.project}"`,
@@ -602,7 +707,8 @@ export default function TaskManagement() {
       t.pages || "-",
       fmtDue(t.dueDate) || "-",
       t.status,
-      `"${t.assignedBy || "-"}"`
+      `"${t.assignedBy || "-"}"`,
+      `"${t.path || "-"}"`
     ]);
     const csv = [header, ...rows].map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -644,6 +750,7 @@ export default function TaskManagement() {
                 <th>Due Date</th>
                 <th>Status</th>
                 <th>Task Creator</th>
+                <th>Path</th>
               </tr>
             </thead>
             <tbody>
@@ -659,6 +766,7 @@ export default function TaskManagement() {
                   <td>${fmtDue(t.dueDate) || '-'}</td>
                   <td>${t.status || '-'}</td>
                   <td>${t.assignedBy || '-'}</td>
+                  <td>${t.path || '-'}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -676,7 +784,7 @@ export default function TaskManagement() {
   };
 
   const handleExportExcel = () => {
-    const headers = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator"];
+    const headers = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator", "Path"];
     const csvRows = filtered.map(t => [
       fmtDue(t.date) || "-",
       `"${t.project}"`,
@@ -687,7 +795,8 @@ export default function TaskManagement() {
       t.pages || "-",
       fmtDue(t.dueDate) || "-",
       t.status || "-",
-      `"${t.assignedBy || "-"}"`
+      `"${t.assignedBy || "-"}"`,
+      `"${t.path || "-"}"`
     ].join(','));
     const blob = new Blob(["\ufeff" + [headers.join(','), ...csvRows].join('\n')], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
@@ -829,12 +938,13 @@ export default function TaskManagement() {
               <th className="col-duedate">Due Date</th>
               <th className="col-status">Status <span className="sort-icon">↕</span></th>
               <th className="col-creator">Task Creator <span className="sort-icon">↕</span></th>
+              <th className="col-path">Path</th>
               <th className="col-actions">Actions</th>
             </tr>
           </thead>
           <tbody>
             {paginated.length === 0 ? (
-              <tr><td colSpan={11} style={{ textAlign: "center", padding: "48px", color: "#a0aec0" }}>No tasks found.</td></tr>
+              <tr><td colSpan={12} style={{ textAlign: "center", padding: "48px", color: "#a0aec0" }}>No tasks found.</td></tr>
             ) : paginated.map(task => (
               <tr key={task.id}>
                 <td className="col-date">{fmtDue(task.date) || "-"}</td>
@@ -842,7 +952,7 @@ export default function TaskManagement() {
                 <td className="col-process"><span className="cell-process">{task.processes.join(", ") || "-"}</span></td>
                 <td className="col-job">
                   <span className="cell-job">
-                    {task.jobs.length ? task.jobs.map(j => j.replace("\n", " ")).join("; ") : "-"}
+                    {task.jobs.length ? task.jobs.map(j => j.replace(/\n/g, " ")).join("; ") : "-"}
                   </span>
                 </td>
                 <td className="col-employee col-left">{task.employees.join(", ") || "-"}</td>
@@ -853,6 +963,7 @@ export default function TaskManagement() {
                   <span className={`status-badge ${badgeClass(task.status)}`}>{task.status?.toUpperCase()}</span>
                 </td>
                 <td className="col-creator">{task.assignedBy || "-"}</td>
+                <td className="col-path" style={{ fontFamily: "monospace", fontSize: "11px", wordBreak: "break-all" }}>{task.path || "-"}</td>
                 <td className="col-actions">
                   <div className="tm-actions">
                     <button className="tm-action-btn" title="Edit" onClick={() => setModal({ type: "edit", task })}>✏️</button>

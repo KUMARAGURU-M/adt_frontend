@@ -246,6 +246,19 @@ const Attendance = () => {
       ...computeSummary(attendance[emp.id] || {}, selYear, selMonth),
     })), [employees, attendance, selYear, selMonth]);
 
+  const totalMonthlySalary = useMemo(() => {
+    return summaries.reduce((sum, s) => {
+      const key = `${selYear}-${selMonth}-${s.emp.id}`;
+      const basicSalary = Number(salaryDetails[key]?.baseSalary ?? s.emp.salary ?? 5000);
+      const perDaySalary = basicSalary / 31;
+      const netSalary = perDaySalary * s.totalForWages;
+      const incentiveVal = Number(salaryDetails[key]?.incentive ?? 0);
+      const advanceVal = Number(salaryDetails[key]?.advance ?? 0);
+      const totalSalary = netSalary + incentiveVal - advanceVal;
+      return sum + totalSalary;
+    }, 0);
+  }, [summaries, salaryDetails, selYear, selMonth]);
+
   useEffect(() => {
     if (activeView === 'monthly' && monthlyTableScrollRef.current) {
       const el = monthlyTableScrollRef.current;
@@ -287,11 +300,11 @@ const Attendance = () => {
 
   /* ── Add Employee Modal ── */
   const AddEmpModal = () => {
-    const [form, setForm] = useState({ name: '', category: CATEGORIES[0], salary: '' });
+    const [form, setForm] = useState({ name: '', category: CATEGORIES[0], salary: '', gpay: '' });
     const submit = () => {
       if (!form.name.trim()) { alert('Name is required'); return; }
       if (!form.salary.trim()) { alert('Salary is required'); return; }
-      const newEmp = { id: Date.now(), name: form.name.trim(), category: form.category, salary: Number(form.salary) };
+      const newEmp = { id: Date.now(), name: form.name.trim(), category: form.category, salary: Number(form.salary), gpay: form.gpay.trim() };
       setEmployees(p => [...p, newEmp]);
       setAttendance(prev => {
         const rec = initMonthRecord(selYear, selMonth, [newEmp]);
@@ -313,6 +326,11 @@ const Attendance = () => {
             onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
+        </div>
+        <div className="att-form-group">
+          <label>GPay Number</label>
+          <input className="att-input" placeholder="GPay Number" value={form.gpay}
+            onChange={e => setForm(p => ({ ...p, gpay: e.target.value }))} />
         </div>
         <div className="att-form-group">
           <label>Salary <span className="att-req">*</span></label>
@@ -383,10 +401,11 @@ const Attendance = () => {
     const [category, setCategory] = useState(emp.category);
     const currentBaseSalary = getSalaryDetail(emp.id, 'baseSalary', emp.salary || 5000);
     const [salary, setSalary] = useState(currentBaseSalary);
+    const [gpay, setGpay] = useState(emp.gpay || '');
 
     const submit = () => {
       if (!name.trim()) { alert('Name is required'); return; }
-      setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, name: name.trim(), category: category, salary: Number(salary) } : e));
+      setEmployees(prev => prev.map(e => e.id === emp.id ? { ...e, name: name.trim(), category: category, salary: Number(salary), gpay: gpay.trim() } : e));
       updateSalaryDetail(emp.id, 'baseSalary', Number(salary));
       setModal(null);
     };
@@ -403,6 +422,10 @@ const Attendance = () => {
           <select className="att-select" value={category} onChange={e => setCategory(e.target.value)}>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
+        </div>
+        <div className="att-form-group">
+          <label>GPay Number</label>
+          <input className="att-input" placeholder="GPay Number" value={gpay} onChange={e => setGpay(e.target.value)} />
         </div>
         <div className="att-form-group">
           <label>Base Salary <span className="att-req">*</span></label>
@@ -476,7 +499,7 @@ const Attendance = () => {
             value={filterName} onChange={e => setFilterName(e.target.value)} />
           <select className="att-select-ctrl" value={filterCat}
             onChange={e => setFilterCat(e.target.value)}>
-            <option value="">All Categories</option>
+            <option value="">All Roles</option>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
@@ -525,9 +548,9 @@ const Attendance = () => {
             <table className="att-table">
               <thead>
                 <tr>
-                  <th className="att-th-sticky att-th-sno">#</th>
+                  <th className="att-th-sticky att-th-sno">ID</th>
                   <th className="att-th-sticky att-th-name">Employee</th>
-                  <th className="att-th-sticky att-th-cat">Category</th>
+                  <th className="att-th-sticky att-th-cat">Role</th>
                   {days.map(({ day, dow, isSunday }) => (
                     <th key={day}
                       className={`att-th-day${isSunday ? ' att-th-sunday' : ''}`}
@@ -626,7 +649,12 @@ const Attendance = () => {
       {/* ─── VIEW: SUMMARY TABLE ─── */}
       {activeView === 'summary' && (
         <div className="att-table-card">
-          <h3 className="att-section-title">📊 Monthly Summary — {MONTHS[selMonth]} {selYear}</h3>
+          <h3 className="att-section-title">
+            <span>📊 Monthly Summary — {MONTHS[selMonth]} {selYear}</span>
+            <span className="att-overall-salary">
+              Total Overall Salary: <strong>₹{totalMonthlySalary.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            </span>
+          </h3>
 
           <div
             ref={summaryTopScrollRef}
@@ -644,11 +672,12 @@ const Attendance = () => {
             <table className="att-summary-table">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Employee</th>
-                  <th>Role</th>
+                  <th className="att-sum-sticky-id">ID</th>
+                  <th className="att-sum-sticky-emp">Employee</th>
+                  <th className="att-sum-sticky-role">Role</th>
+                  <th className="att-sum-sticky-gpay">GPay Number</th>
+                  <th className="att-sum-sticky-salary">Base Salary (₹)</th>
                   <th>Actions</th>
-                  <th>Base Salary (₹)</th>
                   <th>Working Days</th>
                   <th>Present</th>
                   <th>Absent</th>
@@ -659,7 +688,7 @@ const Attendance = () => {
                   <th>Loss of Pay (₹)</th>
                   <th>Net Salary (₹)</th>
                   <th>Incentive (₹)</th>
-                  <th>Travel Allowance (₹)</th>
+                  <th>Advance (₹)</th>
                   <th>Total Salary (₹)</th>
                   <th>Salary Status</th>
                 </tr>
@@ -675,24 +704,41 @@ const Attendance = () => {
                     const netSalary = perDaySalary * s.totalForWages;
 
                     const incentiveVal = getSalaryDetail(s.emp.id, 'incentive', '');
-                    const travelVal = getSalaryDetail(s.emp.id, 'travel', '');
+                    const advanceVal = getSalaryDetail(s.emp.id, 'advance', '');
                     const statusVal = getSalaryDetail(s.emp.id, 'status', 'pending');
 
-                    const totalSalary = netSalary + Number(incentiveVal || 0) + Number(travelVal || 0);
+                    const totalSalary = netSalary + Number(incentiveVal || 0) - Number(advanceVal || 0);
                     const isHidden = hiddenEmpIds.has(s.emp.id);
 
                     return (
-                      <tr key={s.emp.id} className={isHidden ? 'att-row-hidden' : ''}>
-                        <td>{idx + 1}</td>
-                        <td className="col-left">
+                      <tr key={s.emp.id} className={`${isHidden ? 'att-row-hidden' : ''} att-summary-row`}>
+                        <td className="att-sum-sticky-id">{idx + 1}</td>
+                        <td className="col-left att-sum-sticky-emp">
                           <div className="att-emp-cell">
                             {s.emp.name}
                           </div>
                         </td>
-                        <td className="col-left">
+                        <td className="col-left att-sum-sticky-role">
                           <span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')}`}>
                             {s.emp.category}
                           </span>
+                        </td>
+                        <td className="att-sum-sticky-gpay">
+                          {s.emp.gpay || '—'}
+                        </td>
+                        <td className="att-sum-sticky-salary">
+                          {isHidden ? (
+                            <span className="att-hidden-placeholder">—</span>
+                          ) : (
+                            <input
+                              type="number"
+                              className="att-summary-input"
+                              style={{ width: '90px' }}
+                              value={getSalaryDetail(s.emp.id, 'baseSalary', s.emp.salary || 5000)}
+                              placeholder="5000"
+                              onChange={e => updateSalaryDetail(s.emp.id, 'baseSalary', e.target.value)}
+                            />
+                          )}
                         </td>
                         <td>
                           <div className="att-actions-cell">
@@ -718,20 +764,6 @@ const Attendance = () => {
                               🗑️
                             </button>
                           </div>
-                        </td>
-                        <td>
-                          {isHidden ? (
-                            <span className="att-hidden-placeholder">—</span>
-                          ) : (
-                            <input
-                              type="number"
-                              className="att-summary-input"
-                              style={{ width: '90px' }}
-                              value={getSalaryDetail(s.emp.id, 'baseSalary', s.emp.salary || 5000)}
-                              placeholder="5000"
-                              onChange={e => updateSalaryDetail(s.emp.id, 'baseSalary', e.target.value)}
-                            />
-                          )}
                         </td>
                         <td className="td-center">{s.workingDays}</td>
                         <td className="td-center att-text-green">{s.present}</td>
@@ -768,9 +800,9 @@ const Attendance = () => {
                             <input
                               type="number"
                               className="att-summary-input"
-                              value={travelVal}
+                              value={advanceVal}
                               placeholder="0"
-                              onChange={e => updateSalaryDetail(s.emp.id, 'travel', e.target.value)}
+                              onChange={e => updateSalaryDetail(s.emp.id, 'advance', e.target.value)}
                             />
                           )}
                         </td>
@@ -836,9 +868,9 @@ const Attendance = () => {
             <table className="att-summary-table">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>ID</th>
                   <th>Employee</th>
-                  <th>Category</th>
+                  <th>Role</th>
                   <th>Total Working Days ({selYear})</th>
                   <th>Total Present</th>
                   <th>Total Absent</th>

@@ -172,6 +172,7 @@
 .col-pages    { min-width: 110px;  width: 120px; }
 .col-chapter  { min-width: 160px; }
 .col-creator  { min-width: 90px;  width: 100px; }
+.col-path     { min-width: 150px; max-width: 250px; }
 .col-actions  { min-width: 80px;  width: 80px; }
 
 .cell-title   { font-weight: 500; color: #2d3748; line-height: 1.4; word-break: break-word; }

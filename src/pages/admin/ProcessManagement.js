@@ -5,20 +5,20 @@ import './ProcessManagement.css';
 
 /* ─── Seed Data ─────────────────────────────────────────────────── */
 const seedProcesses = [
-  { id: 1,  name: 'EPUB - QC Process',       description: '', active: true,  created: '2025-12-06' },
-  { id: 2,  name: 'EPUB - Tagging',           description: '', active: true,  created: '2025-12-06' },
-  { id: 3,  name: 'FIG - Croping',            description: '', active: true,  created: '2025-12-06' },
-  { id: 4,  name: 'INDEX - Process',          description: '', active: true,  created: '2025-12-06' },
-  { id: 5,  name: 'MATH - Keying',            description: '', active: true,  created: '2025-12-06' },
-  { id: 6,  name: 'OCR - Process',            description: '', active: true,  created: '2026-02-01' },
-  { id: 7,  name: 'Proof Reading - Process',  description: '', active: true,  created: '2026-02-01' },
-  { id: 8,  name: 'REF - Process',            description: '', active: true,  created: '2025-12-06' },
-  { id: 9,  name: 'TABLE - Process',          description: '', active: true,  created: '2025-12-06' },
-  { id: 10, name: 'VALID - Process',          description: '', active: true,  created: '2025-12-06' },
-  { id: 11, name: 'WORD - QC Process',        description: '', active: true,  created: '2025-12-06' },
-  { id: 12, name: 'WORD - Styling',           description: '', active: true,  created: '2025-12-06' },
-  { id: 13, name: 'XML - QC Process',         description: '', active: true,  created: '2025-12-06' },
-  { id: 14, name: 'XML - Tagging',            description: '', active: true,  created: '2025-12-06' },
+  { id: 1, name: 'EPUB - QC Process', description: '', active: true, created: '2025-12-06' },
+  { id: 2, name: 'EPUB - Tagging', description: '', active: true, created: '2025-12-06' },
+  { id: 3, name: 'FIG - Croping', description: '', active: true, created: '2025-12-06' },
+  { id: 4, name: 'INDEX - Process', description: '', active: true, created: '2025-12-06' },
+  { id: 5, name: 'MATH - Keying', description: '', active: true, created: '2025-12-06' },
+  { id: 6, name: 'OCR - Process', description: '', active: true, created: '2026-02-01' },
+  { id: 7, name: 'Proof Reading - Process', description: '', active: true, created: '2026-02-01' },
+  { id: 8, name: 'REF - Process', description: '', active: true, created: '2025-12-06' },
+  { id: 9, name: 'TABLE - Process', description: '', active: true, created: '2025-12-06' },
+  { id: 10, name: 'VALID - Process', description: '', active: true, created: '2025-12-06' },
+  { id: 11, name: 'WORD - QC Process', description: '', active: true, created: '2025-12-06' },
+  { id: 12, name: 'WORD - Styling', description: '', active: true, created: '2025-12-06' },
+  { id: 13, name: 'XML - QC Process', description: '', active: true, created: '2025-12-06' },
+  { id: 14, name: 'XML - Tagging', description: '', active: true, created: '2025-12-06' },
 ];
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
@@ -34,10 +34,10 @@ const Modal = ({ onClose, children }) => (
 
 /* ─── Edit Process Modal ─────────────────────────────────────────── */
 const EditModal = ({ process, onClose, onUpdate }) => {
-  const [name,   setName]   = useState(process.name);
-  const [desc,   setDesc]   = useState(process.description);
+  const [name, setName] = useState(process.name);
+  const [desc, setDesc] = useState(process.description);
   const [active, setActive] = useState(process.active);
-  const [err,    setErr]    = useState('');
+  const [err, setErr] = useState('');
 
   const handleUpdate = () => {
     if (!name.trim()) { setErr('Process name is required.'); return; }
@@ -85,7 +85,7 @@ const EditModal = ({ process, onClose, onUpdate }) => {
       </div>
 
       <div className="pm-modal-actions">
-        <button className="pm-btn-cancel"  onClick={onClose}>Cancel</button>
+        <button className="pm-btn-cancel" onClick={onClose}>Cancel</button>
         <button className="pm-btn-primary" onClick={handleUpdate}>Update Process</button>
       </div>
     </Modal>
@@ -119,26 +119,26 @@ const DeleteModal = ({ process, onClose, onDelete }) => (
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════════ */
 const ProcessManagement = () => {
-  const [processes,   setProcesses]   = useState(seedProcesses);
-  const [modal,       setModal]       = useState(null); // { type, process }
+  const [processes, setProcesses] = useState(seedProcesses);
+  const [modal, setModal] = useState(null); // { type, process }
 
   /* Add-form state */
   const [showAddForm, setShowAddForm] = useState(true);
-  const [newName,     setNewName]     = useState('');
-  const [newDesc,     setNewDesc]     = useState('');
-  const [newActive,   setNewActive]   = useState(true);
-  const [addErr,      setAddErr]      = useState('');
+  const [newName, setNewName] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newActive, setNewActive] = useState(true);
+  const [addErr, setAddErr] = useState('');
 
   /* Pagination */
-  const [perPage,  setPerPage]  = useState(25);
-  const [page,     setPage]     = useState(1);
+  const [perPage, setPerPage] = useState(25);
+  const [page, setPage] = useState(1);
 
   /* ── Helpers ── */
   const fmt = (d) =>
     d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : '-';
 
-  const open  = (type, process) => setModal({ type, process });
-  const close = ()               => setModal(null);
+  const open = (type, process) => setModal({ type, process });
+  const close = () => setModal(null);
 
   /* ── Add ── */
   const handleCreate = () => {
@@ -161,10 +161,10 @@ const ProcessManagement = () => {
   };
 
   /* ── Pagination ── */
-  const totalItems  = processes.length;
-  const totalPages  = Math.ceil(totalItems / perPage);
-  const startIdx    = (page - 1) * perPage;
-  const pageRows    = useMemo(
+  const totalItems = processes.length;
+  const totalPages = Math.ceil(totalItems / perPage);
+  const startIdx = (page - 1) * perPage;
+  const pageRows = useMemo(
     () => processes.slice(startIdx, startIdx + perPage),
     [processes, startIdx, perPage]
   );
@@ -246,7 +246,7 @@ const ProcessManagement = () => {
           <table className="pm-table">
             <thead>
               <tr>
-                <th className="col-name">Name</th>
+                <th className="col-name">Process</th>
                 <th className="col-desc">Description</th>
                 <th className="col-status">Status</th>
                 <th className="col-created">Created</th>
@@ -344,7 +344,7 @@ const ProcessManagement = () => {
       </div>
 
       {/* ── Modals ── */}
-      {modal?.type === 'edit'   && (
+      {modal?.type === 'edit' && (
         <EditModal
           process={modal.process}
           onClose={close}
