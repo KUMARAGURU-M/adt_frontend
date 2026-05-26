@@ -14,6 +14,7 @@ const MOCK_LOGS = [
     process: 'EPUB - Tagging',
     isbn: '978812345001',
     pages: '45',
+    completed: '40',
     dueDate: '15 May 2026',
     status: 'Stopped'
   },
@@ -24,6 +25,7 @@ const MOCK_LOGS = [
     process: 'XML - Tagging',
     isbn: '978812345002',
     pages: '80',
+    completed: '80',
     dueDate: '18 May 2026',
     status: 'Completed'
   },
@@ -34,6 +36,7 @@ const MOCK_LOGS = [
     process: 'WORD - Styling',
     isbn: '978812345003',
     pages: '20',
+    completed: '15',
     dueDate: '20 May 2026',
     status: 'Running'
   },
@@ -44,6 +47,7 @@ const MOCK_LOGS = [
     process: 'VALID - Process',
     isbn: '978812345004',
     pages: '55',
+    completed: '55',
     dueDate: '22 May 2026',
     status: 'Completed'
   },
@@ -141,7 +145,7 @@ export default function EmpWorkwise() {
 
   const handleStopSubmit = () => {
     if (!pagesCompleted.trim()) {
-      alert('Please enter the number of pages completed.');
+      alert('Please enter the number of completed page/article/math/fig/table/ref');
       return;
     }
 
@@ -161,7 +165,8 @@ export default function EmpWorkwise() {
       project: selProject,
       process: selProcess,
       isbn: selJob || 'N/A',
-      pages: pagesCompleted || '0',
+      pages: '50',
+      completed: pagesCompleted || '0',
       dueDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       status: stopStatus === 'completed' ? 'Completed' : stopStatus === 'on-hold' ? 'On-Hold' : 'Stopped'
     };
@@ -210,7 +215,7 @@ export default function EmpWorkwise() {
             {/* Number of Pages Completed */}
             <div className="ww-popup-field">
               <label className="ww-popup-label">
-                📄 Number of Pages Completed <span className="ww-req">*</span>
+                📄 Number of Completed Page/Article/Math/Fig/Table/Ref<span className="ww-req">*</span>
               </label>
               <input
                 type="text"
@@ -506,7 +511,7 @@ export default function EmpWorkwise() {
             </div>
           ) : (
             <div className="ww-dynamic-running-section">
-              <h2 className="ww-working-title"><span className="ww-working-icon">➡️</span> Working...</h2>
+              {/* <h2 className="ww-working-title"><span className="ww-working-icon">➡️</span> Working...</h2> */}
 
               <div className="ww-timer-banner ww-timer-running">
                 <div className="ww-timer-display">{formatTime(elapsed)}</div>
@@ -563,7 +568,7 @@ export default function EmpWorkwise() {
                 <div className="ww-run-card border-teal">
                   <div className="ww-run-card-header">
                     <span className="ww-run-icon bg-teal">📄</span>
-                    <span className="ww-run-label">PAGES & CHAPTER</span>
+                    <span className="ww-run-label">ASSIGNED PAGES & CHAPTER</span>
                   </div>
                   <div className="ww-run-value">50 pages • Chapter 1</div>
                 </div>
@@ -575,6 +580,24 @@ export default function EmpWorkwise() {
                     <span className="ww-run-label">SHIFT</span>
                   </div>
                   <div className="ww-run-value">1st Shift</div>
+                </div>
+
+                {/* COMPLEXITY */}
+                <div className="ww-run-card border-orange">
+                  <div className="ww-run-card-header">
+                    <span className="ww-run-icon bg-orange">🧩</span>
+                    <span className="ww-run-label">COMPLEXITY</span>
+                  </div>
+                  <div className="ww-run-value">Medium</div>
+                </div>
+
+                {/* TOTAL PAGES */}
+                <div className="ww-run-card border-teal">
+                  <div className="ww-run-card-header">
+                    <span className="ww-run-icon bg-teal">📄</span>
+                    <span className="ww-run-label">TOTAL PAGES</span>
+                  </div>
+                  <div className="ww-run-value">50</div>
                 </div>
               </div>
 
@@ -654,6 +677,7 @@ export default function EmpWorkwise() {
                 <th>Process</th>
                 <th>ISBN</th>
                 <th>Pages</th>
+                <th>Completed P/A/M/F/T/R</th>
                 <th>Due Date</th>
                 <th>Status</th>
               </tr>
@@ -666,6 +690,7 @@ export default function EmpWorkwise() {
                   <td>{log.process}</td>
                   <td>{log.isbn}</td>
                   <td>{log.pages}</td>
+                  <td>{log.completed || '0'}</td>
                   <td>{log.dueDate}</td>
                   <td>
                     <span className={`ww-status-chip ${log.status.toLowerCase()}`}>

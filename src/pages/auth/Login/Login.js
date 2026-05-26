@@ -6,7 +6,7 @@ import "./Login.css";
 
 // ── Generates a random 6-char alphanumeric CAPTCHA string ──
 function generateCaptcha() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const chars = "abcdefghjkmnpqrstuvwxyz23456789";
   return Array.from({ length: 6 }, () =>
     chars[Math.floor(Math.random() * chars.length)]
   ).join("");
@@ -96,8 +96,8 @@ function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    // CAPTCHA validation
-    if (userCaptcha.trim() !== captchaText) {
+    // CAPTCHA validation (optional)
+    if (userCaptcha.trim() && userCaptcha.trim().toLowerCase() !== captchaText.toLowerCase()) {
       setCaptchaError("Incorrect CAPTCHA. Please try again.");
       refreshCaptcha();
       return;

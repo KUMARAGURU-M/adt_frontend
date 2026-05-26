@@ -286,7 +286,7 @@ function TaskModal({ mode, task, onClose, onSave }) {
           {/* Project */}
           <div>
             <div className="tm-field-label">
-              <span>📁</span> Project (Publisher) <span className="req">*</span>
+              <span>📁</span> Project <span className="req">*</span>
             </div>
             <select
               className={`tm-form-select ${errors.project ? "tm-form-input--error" : ""}`}
@@ -928,17 +928,17 @@ export default function TaskManagement() {
         <table className="tm-table">
           <thead>
             <tr>
-              <th className="col-date">Assigned Date <span className="sort-icon">↕</span></th>
-              <th className="col-project">Project (Publisher) <span className="sort-icon">↕</span></th>
-              <th className="col-process">Process <span className="sort-icon">↕</span></th>
-              <th className="col-job">Job (Book/ISBN) <span className="sort-icon">↕</span></th>
-              <th className="col-employee">Employee Name <span className="sort-icon">↕</span></th>
-              <th className="col-chapter">Chapter / Article / Batch</th>
+              <th className="col-date">Assigned Date <span className="sort-icon"></span></th>
+              <th className="col-project">Project <span className="sort-icon"></span></th>
+              <th className="col-process">Process <span className="sort-icon"></span></th>
+              <th className="col-job">Title / ISBN <span className="sort-icon"></span></th>
+              <th className="col-employee">Employee Name <span className="sort-icon"></span></th>
+              <th className="col-chapter">A.Chapter / A.Article / A.Batch</th>
               <th className="col-pages">Page</th>
-              <th className="col-duedate">Due Date</th>
-              <th className="col-status">Status <span className="sort-icon">↕</span></th>
-              <th className="col-creator">Task Creator <span className="sort-icon">↕</span></th>
-              <th className="col-path">Path</th>
+              <th className="col-duedate">Date</th>
+              <th className="col-status">Status <span className="sort-icon"></span></th>
+              <th className="col-creator">Task Creator <span className="sort-icon"></span></th>
+              <th className="col-path">Server Path</th>
               <th className="col-actions">Actions</th>
             </tr>
           </thead>

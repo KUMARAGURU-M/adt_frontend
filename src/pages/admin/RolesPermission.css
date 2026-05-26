@@ -435,14 +435,43 @@
 }
 
 .rp-form-group input[type="text"],
-.rp-form-group textarea,
-.rp-filter-select {
+.rp-form-group textarea {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
   font-size: 14px;
   box-sizing: border-box;
+}
+
+.rp-filter-select {
+  width: 180px;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #434343;
+  background-color: #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%238c8c8c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+.rp-filter-select:hover {
+  border-color: #1890ff;
+  background-color: #fafafa;
+}
+
+.rp-filter-select:focus {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
 .rp-form-group input:focus,
