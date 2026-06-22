@@ -13,9 +13,16 @@ const EmpHeader = ({ userName = 'Employee' }) => {
         {/* LEFT: Production Report + Employee badge */}
         <div className="emp-header-left">
           <p className="emp-prod-label">Production<br />Report</p>
-          <div className="emp-user-badge">
-            <span className="emp-badge-dot" />
-            <span className="emp-badge-text">{userName}</span>
+          <div className="emp-badge-row" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="emp-user-badge">
+              <span className="emp-badge-dot" />
+              <span className="emp-badge-text">{userName}</span>
+            </div>
+            {sessionStorage.getItem('isImpersonating') === 'true' && (
+              <div className="emp-impersonate-badge">
+                Impersonating
+              </div>
+            )}
           </div>
         </div>
 

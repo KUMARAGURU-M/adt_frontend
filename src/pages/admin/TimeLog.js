@@ -1,70 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./TimeLog.css";
+import { apiCall } from "../../utils/api";
 
 // ── View Modes ────────────────────────────────────────────────────────────────
 const VIEW_MODES = [
     { key: "daily", label: "Daily", icon: "📅" },
     { key: "weekly", label: "Weekly", icon: "🗓" },
     { key: "monthly", label: "Monthly", icon: "📆" },
-];
-
-// ── Mock Data ─────────────────────────────────────────────────────────────────
-const EMPLOYEES = ["All", "Sureka", "Ayeesha M", "Shakina A", "T. Mohamed Usen", "Karthika"];
-const PROJECTS = ["All", "Arrow Data-Tech Portal", "WorkWise App", "Client Dashboard", "API Module"];
-
-const MOCK_LOGS = [
-    {
-        id: 1, employee: "Sureka", initial: "S", date: "2026-05-21", project: "Arrow Data-Tech Portal", checkIn: "09:02", checkOut: "18:05", workedHrs: "7h 48m", breakCount: 3, breakHrs: "0h 45m", lunchIn: "13:00", lunchOut: "13:45", lunchHrs: "0h 45m", pages: 42, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:02", label: "Check In" }, { type: "break-start", time: "10:30", label: "Break" }, { type: "break-end", time: "10:45", label: "Resume" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:45", label: "Resume" }, { type: "break-start", time: "15:30", label: "Break" }, { type: "break-end", time: "15:45", label: "Resume" }, { type: "check-out", time: "18:05", label: "Check Out" }]
-    },
-    {
-        id: 2, employee: "Ayeesha M", initial: "A", date: "2026-05-21", project: "WorkWise App", checkIn: "08:55", checkOut: "17:58", workedHrs: "8h 18m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:15", lunchOut: "14:00", lunchHrs: "0h 45m", pages: 58, status: "Complete",
-        timeline: [{ type: "check-in", time: "08:55", label: "Check In" }, { type: "break-start", time: "11:00", label: "Break" }, { type: "break-end", time: "11:15", label: "Resume" }, { type: "lunch-start", time: "13:15", label: "Lunch" }, { type: "lunch-end", time: "14:00", label: "Resume" }, { type: "break-start", time: "16:00", label: "Break" }, { type: "break-end", time: "16:15", label: "Resume" }, { type: "check-out", time: "17:58", label: "Check Out" }]
-    },
-    {
-        id: 3, employee: "Shakina A", initial: "S", date: "2026-05-21", project: "Client Dashboard", checkIn: "09:10", checkOut: "—", workedHrs: "5h 12m", breakCount: 1, breakHrs: "0h 15m", lunchIn: "13:00", lunchOut: "13:50", lunchHrs: "0h 50m", pages: 27, status: "Active",
-        timeline: [{ type: "check-in", time: "09:10", label: "Check In" }, { type: "break-start", time: "11:30", label: "Break" }, { type: "break-end", time: "11:45", label: "Resume" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:50", label: "Resume" }]
-    },
-    {
-        id: 4, employee: "T. Mohamed Usen", initial: "T", date: "2026-05-21", project: "API Module", checkIn: "09:00", checkOut: "18:00", workedHrs: "8h 00m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:00", lunchOut: "13:30", lunchHrs: "0h 30m", pages: 64, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:00", label: "Check In" }, { type: "break-start", time: "10:45", label: "Break" }, { type: "break-end", time: "11:00", label: "Resume" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:30", label: "Resume" }, { type: "break-start", time: "15:45", label: "Break" }, { type: "break-end", time: "16:00", label: "Resume" }, { type: "check-out", time: "18:00", label: "Check Out" }]
-    },
-    {
-        id: 5, employee: "Karthika", initial: "K", date: "2026-05-20", project: "Arrow Data-Tech Portal", checkIn: "09:05", checkOut: "17:50", workedHrs: "7h 30m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:05", lunchOut: "13:50", lunchHrs: "0h 45m", pages: 39, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:05", label: "Check In" }, { type: "break-start", time: "11:00", label: "Break" }, { type: "break-end", time: "11:15", label: "Resume" }, { type: "lunch-start", time: "13:05", label: "Lunch" }, { type: "lunch-end", time: "13:50", label: "Resume" }, { type: "break-start", time: "15:30", label: "Break" }, { type: "break-end", time: "15:45", label: "Resume" }, { type: "check-out", time: "17:50", label: "Check Out" }]
-    },
-    {
-        id: 6, employee: "Sureka", initial: "S", date: "2026-05-20", project: "WorkWise App", checkIn: "09:00", checkOut: "18:10", workedHrs: "8h 25m", breakCount: 3, breakHrs: "0h 45m", lunchIn: "13:00", lunchOut: "13:45", lunchHrs: "0h 45m", pages: 51, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:00", label: "Check In" }, { type: "break-start", time: "10:30", label: "Break" }, { type: "break-end", time: "10:45", label: "Resume" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:45", label: "Resume" }, { type: "break-start", time: "15:30", label: "Break" }, { type: "break-end", time: "15:45", label: "Resume" }, { type: "break-start", time: "17:00", label: "Break" }, { type: "break-end", time: "17:15", label: "Resume" }, { type: "check-out", time: "18:10", label: "Check Out" }]
-    },
-    {
-        id: 7, employee: "Ayeesha M", initial: "A", date: "2026-05-20", project: "Client Dashboard", checkIn: "09:00", checkOut: "18:00", workedHrs: "8h 00m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:00", lunchOut: "13:45", lunchHrs: "0h 45m", pages: 44, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:00", label: "Check In" }, { type: "break-start", time: "11:00", label: "Break" }, { type: "break-end", time: "11:15", label: "Resume" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:45", label: "Resume" }, { type: "break-start", time: "16:00", label: "Break" }, { type: "break-end", time: "16:15", label: "Resume" }, { type: "check-out", time: "18:00", label: "Check Out" }]
-    },
-    {
-        id: 8, employee: "T. Mohamed Usen", initial: "T", date: "2026-05-19", project: "API Module", checkIn: "09:00", checkOut: "17:45", workedHrs: "7h 45m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:00", lunchOut: "13:30", lunchHrs: "0h 30m", pages: 55, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:00", label: "Check In" }, { type: "break-start", time: "10:45", label: "Break" }, { type: "break-end", time: "11:00", label: "Resume" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:30", label: "Resume" }, { type: "check-out", time: "17:45", label: "Check Out" }]
-    },
-    {
-        id: 9, employee: "Karthika", initial: "K", date: "2026-05-19", project: "Arrow Data-Tech Portal", checkIn: "09:10", checkOut: "18:00", workedHrs: "7h 50m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:10", lunchOut: "13:55", lunchHrs: "0h 45m", pages: 47, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:10", label: "Check In" }, { type: "lunch-start", time: "13:10", label: "Lunch" }, { type: "lunch-end", time: "13:55", label: "Resume" }, { type: "check-out", time: "18:00", label: "Check Out" }]
-    },
-    {
-        id: 10, employee: "Shakina A", initial: "S", date: "2026-05-19", project: "Client Dashboard", checkIn: "09:05", checkOut: "17:55", workedHrs: "8h 05m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:00", lunchOut: "13:45", lunchHrs: "0h 45m", pages: 36, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:05", label: "Check In" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:45", label: "Resume" }, { type: "check-out", time: "17:55", label: "Check Out" }]
-    },
-    {
-        id: 11, employee: "Sureka", initial: "S", date: "2026-05-19", project: "Arrow Data-Tech Portal", checkIn: "09:00", checkOut: "18:00", workedHrs: "8h 00m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:00", lunchOut: "13:45", lunchHrs: "0h 45m", pages: 48, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:00", label: "Check In" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:45", label: "Resume" }, { type: "check-out", time: "18:00", label: "Check Out" }]
-    },
-    {
-        id: 12, employee: "Ayeesha M", initial: "A", date: "2026-05-15", project: "WorkWise App", checkIn: "08:50", checkOut: "17:50", workedHrs: "8h 15m", breakCount: 2, breakHrs: "0h 30m", lunchIn: "13:00", lunchOut: "13:45", lunchHrs: "0h 45m", pages: 61, status: "Complete",
-        timeline: [{ type: "check-in", time: "08:50", label: "Check In" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:45", label: "Resume" }, { type: "check-out", time: "17:50", label: "Check Out" }]
-    },
-    {
-        id: 13, employee: "T. Mohamed Usen", initial: "T", date: "2026-05-14", project: "API Module", checkIn: "09:00", checkOut: "18:10", workedHrs: "8h 25m", breakCount: 3, breakHrs: "0h 45m", lunchIn: "13:00", lunchOut: "13:30", lunchHrs: "0h 30m", pages: 70, status: "Complete",
-        timeline: [{ type: "check-in", time: "09:00", label: "Check In" }, { type: "lunch-start", time: "13:00", label: "Lunch" }, { type: "lunch-end", time: "13:30", label: "Resume" }, { type: "check-out", time: "18:10", label: "Check Out" }]
-    },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -106,13 +48,7 @@ function getMonthName(date) {
     return new Date(date).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
 
-function isSameDay(dateStr, ref) { return dateStr === ref; }
 
-function isSameWeek(dateStr, refDate) {
-    const { start, end } = getWeekRange(refDate);
-    const d = new Date(dateStr);
-    return d >= start && d <= end;
-}
 
 function isSameMonth(dateStr, refDate) {
     const d = new Date(dateStr), r = new Date(refDate);
@@ -141,30 +77,246 @@ function addMonths(dateStr, n) {
 }
 
 // ── Aggregation helpers ───────────────────────────────────────────────────────
+function buildDailyAggrRows(mappedLogs) {
+    const map = {};
+    mappedLogs.forEach(log => {
+        const empKey = log.employee;
+        if (!map[empKey]) {
+            map[empKey] = {
+                id: log.id,
+                userId: log.userId,
+                employee: log.employee,
+                initial: log.initial,
+                date: log.date,
+                projects: new Set(),
+                checkInRaw: null,
+                checkOutRaw: null,
+                manualCheckInRaw: null,
+                manualCheckOutRaw: null,
+                hasActive: false,
+                workingSeconds: 0,
+                breakCount: 0,
+                breakSeconds: 0,
+                lunchSeconds: 0,
+                pages: 0,
+                timeline: [],
+            };
+        }
+        const e = map[empKey];
+        
+        if (log.project && log.project !== "No Project") {
+            e.projects.add(log.project);
+        }
+        
+        e.workingSeconds += log.workingSecondsRaw || 0;
+        e.breakCount += log.breakCount || 0;
+        e.breakSeconds += log.breakSecondsRaw || 0;
+        e.lunchSeconds += log.lunchSecondsRaw || 0;
+        e.pages += log.pages || 0;
+        
+        if (log.status === "Active") {
+            e.hasActive = true;
+        }
+        
+        const currentStartTime = log.startTimeRaw ? new Date(log.startTimeRaw) : null;
+        if (currentStartTime) {
+            if (!e.checkInRaw || currentStartTime < e.checkInRaw) {
+                e.checkInRaw = currentStartTime;
+            }
+        }
+        
+        const currentEndTime = log.endTimeRaw ? new Date(log.endTimeRaw) : null;
+        if (log.status === "Active") {
+            e.checkOutRaw = null; // Still active
+        } else if (currentEndTime && e.checkOutRaw !== null) {
+            if (!e.checkOutRaw || currentEndTime > e.checkOutRaw) {
+                e.checkOutRaw = currentEndTime;
+            }
+        }
+
+        if (log.manualCheckInRaw) {
+            const mci = new Date(log.manualCheckInRaw);
+            if (!e.manualCheckInRaw || mci < e.manualCheckInRaw) {
+                e.manualCheckInRaw = mci;
+            }
+        }
+
+        if (log.manualCheckOutRaw) {
+            const mco = new Date(log.manualCheckOutRaw);
+            if (!e.manualCheckOutRaw || mco > e.manualCheckOutRaw) {
+                e.manualCheckOutRaw = mco;
+            }
+        }
+        
+        if (log.timeline) {
+            e.timeline = [...e.timeline, ...log.timeline];
+        }
+    });
+
+    return Object.values(map).map(e => {
+        const formatTime = (dateObj) => {
+            if (!dateObj) return "—";
+            return dateObj.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+        };
+        
+        const formatSecondsToHrsStr = (totalSecs) => {
+            if (!totalSecs) return "0h 00m";
+            const mins = Math.floor(totalSecs / 60);
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return `${h}h ${String(m).padStart(2, "0")}m`;
+        };
+
+        e.timeline.sort((a, b) => a.rawTime - b.rawTime);
+
+        const lunchStarts = e.timeline.filter(t => t.type === "lunch-start").map(t => t.rawTime);
+        const lunchEnds = e.timeline.filter(t => t.type === "lunch-end").map(t => t.rawTime);
+        
+        const earliestLunchStart = lunchStarts.length ? new Date(Math.min(...lunchStarts)) : null;
+        const latestLunchEnd = lunchEnds.length ? new Date(Math.max(...lunchEnds)) : null;
+
+        return {
+            id: e.id,
+            userId: e.userId,
+            employee: e.employee,
+            initial: e.initial,
+            date: e.date,
+            project: Array.from(e.projects).join(", ") || "No Project",
+            checkIn: formatTime(e.manualCheckInRaw || e.checkInRaw),
+            checkOut: e.manualCheckOutRaw ? formatTime(e.manualCheckOutRaw) : (e.hasActive ? "—" : formatTime(e.checkOutRaw)),
+            workedHrs: formatSecondsToHrsStr(e.workingSeconds),
+            breakCount: e.breakCount,
+            breakHrs: formatSecondsToHrsStr(e.breakSeconds),
+            lunchIn: formatTime(earliestLunchStart),
+            lunchOut: formatTime(latestLunchEnd),
+            lunchHrs: formatSecondsToHrsStr(e.lunchSeconds),
+            pages: e.pages,
+            status: e.hasActive ? "Active" : "Complete",
+            timeline: e.timeline
+        };
+    });
+}
+
+function groupLogsByDate(logs) {
+    const map = {};
+    logs.forEach(log => {
+        const dateKey = log.date;
+        if (!map[dateKey]) {
+            map[dateKey] = {
+                id: log.id,
+                date: log.date,
+                projectSet: new Set(),
+                checkInRaw: null,
+                checkOutRaw: null,
+                manualCheckInRaw: null,
+                manualCheckOutRaw: null,
+                hasActive: false,
+                workingSeconds: 0,
+                breakCount: 0,
+                breakSeconds: 0,
+                lunchSeconds: 0,
+                pages: 0,
+                timeline: [],
+            };
+        }
+        const e = map[dateKey];
+        if (log.project && log.project !== "No Project") e.projectSet.add(log.project);
+        e.workingSeconds += log.workingSecondsRaw || 0;
+        e.breakCount += log.breakCount || 0;
+        e.breakSeconds += log.breakSecondsRaw || 0;
+        e.lunchSeconds += log.lunchSecondsRaw || 0;
+        e.pages += log.pages || 0;
+        if (log.status === "Active") e.hasActive = true;
+
+        const currentStartTime = log.startTimeRaw ? new Date(log.startTimeRaw) : null;
+        if (currentStartTime && (!e.checkInRaw || currentStartTime < e.checkInRaw)) {
+            e.checkInRaw = currentStartTime;
+        }
+
+        const currentEndTime = log.endTimeRaw ? new Date(log.endTimeRaw) : null;
+        if (log.status === "Active") {
+            e.checkOutRaw = null;
+        } else if (currentEndTime && e.checkOutRaw !== null) {
+            if (!e.checkOutRaw || currentEndTime > e.checkOutRaw) {
+                e.checkOutRaw = currentEndTime;
+            }
+        }
+
+        if (log.manualCheckInRaw) {
+            const mci = new Date(log.manualCheckInRaw);
+            if (!e.manualCheckInRaw || mci < e.manualCheckInRaw) {
+                e.manualCheckInRaw = mci;
+            }
+        }
+
+        if (log.manualCheckOutRaw) {
+            const mco = new Date(log.manualCheckOutRaw);
+            if (!e.manualCheckOutRaw || mco > e.manualCheckOutRaw) {
+                e.manualCheckOutRaw = mco;
+            }
+        }
+
+        if (log.timeline) {
+            e.timeline = [...e.timeline, ...log.timeline];
+        }
+    });
+
+    return Object.values(map).map(e => {
+        const formatTime = (dateObj) => {
+            if (!dateObj) return "—";
+            return dateObj.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+        };
+        const formatSecondsToHrsStr = (totalSecs) => {
+            if (!totalSecs) return "0h 00m";
+            const mins = Math.floor(totalSecs / 60);
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return `${h}h ${String(m).padStart(2, "0")}m`;
+        };
+
+        e.timeline.sort((a, b) => a.rawTime - b.rawTime);
+
+        return {
+            id: e.id,
+            date: e.date,
+            project: Array.from(e.projectSet).join(", ") || "No Project",
+            checkIn: formatTime(e.manualCheckInRaw || e.checkInRaw),
+            checkOut: e.manualCheckOutRaw ? formatTime(e.manualCheckOutRaw) : (e.hasActive ? "—" : formatTime(e.checkOutRaw)),
+            workedHrs: formatSecondsToHrsStr(e.workingSeconds),
+            breakCount: e.breakCount,
+            pages: e.pages,
+            status: e.hasActive ? "Active" : "Complete",
+            timeline: e.timeline
+        };
+    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
 function buildAggrRows(logs) {
     const map = {};
     logs.forEach(log => {
         if (!map[log.employee]) map[log.employee] = {
-            employee: log.employee, initial: log.initial, project: log.project,
-            totalDays: 0, totalWorkedMin: 0, totalBreakMin: 0, totalLunchMin: 0,
+            employee: log.employee, initial: log.initial, projects: new Set(),
+            uniqueDates: new Set(), totalWorkedMin: 0, totalBreakMin: 0, totalLunchMin: 0,
             totalBreakCount: 0, totalPages: 0,
         };
         const e = map[log.employee];
-        e.totalDays++;
+        e.uniqueDates.add(log.date);
+        if (log.project && log.project !== "No Project") e.projects.add(log.project);
         e.totalWorkedMin += parseHrsToMin(log.workedHrs);
         e.totalBreakMin += parseHrsToMin(log.breakHrs);
         e.totalLunchMin += parseHrsToMin(log.lunchHrs);
         e.totalBreakCount += log.breakCount;
         e.totalPages += log.pages;
-        e.project = log.project;
     });
     return Object.values(map).map(e => ({
         ...e,
+        project: Array.from(e.projects).join(", ") || "No Project",
+        totalDays: e.uniqueDates.size,
         workedHrs: minsToHrsStr(e.totalWorkedMin),
         breakHrs: minsToHrsStr(e.totalBreakMin),
         lunchHrs: minsToHrsStr(e.totalLunchMin),
-        avgWorkedHrs: minsToHrsStr(Math.round(e.totalWorkedMin / e.totalDays)),
-        avgPages: Math.round(e.totalPages / e.totalDays),
+        avgWorkedHrs: minsToHrsStr(e.uniqueDates.size ? Math.round(e.totalWorkedMin / e.uniqueDates.size) : 0),
+        avgPages: e.uniqueDates.size ? Math.round(e.totalPages / e.uniqueDates.size) : 0,
     }));
 }
 
@@ -194,7 +346,7 @@ function buildAggrSummary(rows) {
 // ── Calendar Component ────────────────────────────────────────────────────────
 function CalendarPicker({ currentDate, viewMode, onSelect, onClose }) {
     const [calDate, setCalDate] = useState(() => new Date(currentDate));
-    const today = new Date("2026-05-21");
+    const today = new Date();
 
     const year = calDate.getFullYear();
     const month = calDate.getMonth();
@@ -298,7 +450,7 @@ function CalendarPicker({ currentDate, viewMode, onSelect, onClose }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function TimeLog() {
-    const TODAY = "2026-05-21";
+    const TODAY = new Date().toISOString().slice(0, 10);
 
     const [viewMode, setViewMode] = useState("daily");
     const [periodDate, setPeriodDate] = useState(TODAY);
@@ -310,6 +462,26 @@ export default function TimeLog() {
     const [showCal, setShowCal] = useState(false);
     const calRef = useRef(null);
 
+    // Dynamic data states
+    const [employees, setEmployees] = useState([]);
+    const [projects, setProjects] = useState([]);
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Format Date to YYYY-MM-DD
+    const formatDateStr = (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        let month = "" + (d.getMonth() + 1),
+            day = "" + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = "0" + month;
+        if (day.length < 2) day = "0" + day;
+
+        return [year, month, day].join("-");
+    };
+
     // Close calendar on outside click
     useEffect(() => {
         const handler = (e) => {
@@ -318,6 +490,220 @@ export default function TimeLog() {
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, []);
+
+    // Load filter dropdown data on mount
+    useEffect(() => {
+        const loadDropdowns = async () => {
+            try {
+                const [usersData, projectsData] = await Promise.all([
+                    apiCall("/users"),
+                    apiCall("/projects"),
+                ]);
+                setEmployees(usersData || []);
+                setProjects(projectsData || []);
+            } catch (e) {
+                console.error("Failed to load users/projects", e);
+            }
+        };
+        loadDropdowns();
+    }, []);
+
+    // Load logs from backend API
+    useEffect(() => {
+        const fetchLogs = async () => {
+            try {
+                setLoading(true);
+                let startStr = "";
+                let endStr = "";
+
+                if (viewMode === "daily") {
+                    startStr = periodDate;
+                    endStr = periodDate;
+                } else if (viewMode === "weekly") {
+                    const { start, end } = getWeekRange(periodDate);
+                    startStr = formatDateStr(start);
+                    endStr = formatDateStr(end);
+                } else if (viewMode === "monthly") {
+                    const d = new Date(periodDate);
+                    const start = new Date(d.getFullYear(), d.getMonth(), 1);
+                    const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+                    startStr = formatDateStr(start);
+                    endStr = formatDateStr(end);
+                }
+
+                const params = new URLSearchParams();
+                if (startStr) params.set("startDate", startStr);
+                if (endStr) params.set("endDate", endStr);
+                
+                if (filterEmp && filterEmp !== "All") params.set("userId", filterEmp);
+                if (filterProj && filterProj !== "All") params.set("projectId", filterProj);
+
+                let checkInsList = [];
+                try {
+                    if (viewMode === "daily") {
+                        checkInsList = await apiCall(`/attendance/check-ins?date=${startStr}`);
+                    }
+                } catch (e) {
+                    console.warn("Could not fetch daily check-ins for merging", e);
+                }
+
+                const data = await apiCall(`/workwise/admin/logs?${params.toString()}`);
+                
+                const mappedLogs = (data || []).map(log => {
+                    const formatTime = (isoStr) => {
+                        if (!isoStr) return "—";
+                        return new Date(isoStr).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                    };
+
+                    const formatTimeOrNull = (isoStr) => {
+                        if (!isoStr) return null;
+                        return new Date(isoStr).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                    };
+
+                    const formatSecondsToHrsStr = (totalSecs) => {
+                        if (!totalSecs) return "0h 00m";
+                        const mins = Math.floor(totalSecs / 60);
+                        const h = Math.floor(mins / 60);
+                        const m = mins % 60;
+                        return `${h}h ${String(m).padStart(2, "0")}m`;
+                    };
+
+                    const lunchLogs = log.breakLogs ? log.breakLogs.filter(b => b.breakReason === "Lunch Break") : [];
+                    const otherBreakLogs = log.breakLogs ? log.breakLogs.filter(b => b.breakReason !== "Lunch Break") : [];
+
+                    const lunchSeconds = lunchLogs.reduce((sum, b) => sum + (b.durationSeconds || 0), 0);
+                    const otherBreakSeconds = otherBreakLogs.reduce((sum, b) => sum + (b.durationSeconds || 0), 0);
+
+                    const activeLunch = lunchLogs.find(b => b.breakStart);
+                    const lunchIn = activeLunch ? formatTime(activeLunch.breakStart) : "—";
+                    const lunchOut = activeLunch && activeLunch.breakEnd ? formatTime(activeLunch.breakEnd) : "—";
+
+                    // Build timeline events
+                    const timeline = [];
+                    if (log.startTime) {
+                        timeline.push({
+                            type: "check-in",
+                            time: formatTime(log.startTime),
+                            label: "Check In",
+                            rawTime: new Date(log.startTime)
+                        });
+                    }
+
+                    if (log.breakLogs) {
+                        log.breakLogs.forEach(b => {
+                            const isLunch = b.breakReason === "Lunch Break";
+                            const labelBase = isLunch ? "Lunch" : (b.customReason || b.breakReason || "Break");
+
+                            if (b.breakStart) {
+                                timeline.push({
+                                    type: isLunch ? "lunch-start" : "break-start",
+                                    time: formatTime(b.breakStart),
+                                    label: labelBase,
+                                    rawTime: new Date(b.breakStart)
+                                });
+                            }
+                            if (b.breakEnd) {
+                                timeline.push({
+                                    type: isLunch ? "lunch-end" : "break-end",
+                                    time: formatTime(b.breakEnd),
+                                    label: "Resume",
+                                    rawTime: new Date(b.breakEnd)
+                                });
+                            }
+                        });
+                    }
+
+                    if (log.endTime) {
+                        timeline.push({
+                            type: "check-out",
+                            time: formatTime(log.endTime),
+                            label: "Check Out",
+                            rawTime: new Date(log.endTime)
+                        });
+                    }
+
+                    timeline.sort((a, b) => a.rawTime - b.rawTime);
+
+                    let status = "Complete";
+                    if (log.status === "Running" || log.status === "On Break") {
+                        status = "Active";
+                    }
+
+                    return {
+                        id: log.id,
+                        userId: log.userId,
+                        employee: log.employeeName,
+                        initial: log.employeeName ? log.employeeName.charAt(0).toUpperCase() : "?",
+                        date: log.logDate,
+                        projectId: log.projectId,
+                        project: log.projectName || "No Project",
+                        checkIn: formatTime(log.startTime),
+                        checkOut: formatTimeOrNull(log.endTime) || "—",
+                        workedHrs: formatSecondsToHrsStr(log.workingSeconds),
+                        breakCount: otherBreakLogs.length,
+                        breakHrs: formatSecondsToHrsStr(otherBreakSeconds),
+                        lunchIn,
+                        lunchOut,
+                        lunchHrs: formatSecondsToHrsStr(lunchSeconds),
+                        pages: log.pagesCompleted || 0,
+                        status,
+                        timeline,
+                        workingSecondsRaw: log.workingSeconds,
+                        breakSecondsRaw: otherBreakSeconds,
+                        lunchSecondsRaw: lunchSeconds,
+                        startTimeRaw: log.startTime,
+                        endTimeRaw: log.endTime,
+                        manualCheckInRaw: log.manualCheckIn,
+                        manualCheckOutRaw: log.manualCheckOut
+                    };
+                });
+
+                const loggedUserIds = new Set(mappedLogs.map(l => l.userId).filter(Boolean));
+                const mergedLogs = [...mappedLogs];
+
+                checkInsList.forEach(ci => {
+                    const hasUser = ci.userId ? loggedUserIds.has(ci.userId) : false;
+                    if (ci.checkInTime && !hasUser) {
+                        mergedLogs.push({
+                            id: ci.id || ci.employeeId,
+                            userId: ci.userId,
+                            employee: ci.employeeName,
+                            initial: ci.employeeName ? ci.employeeName.charAt(0).toUpperCase() : "?",
+                            date: startStr,
+                            projectId: null,
+                            project: "No Active Task",
+                            checkIn: "—",
+                            checkOut: "—",
+                            workedHrs: "0h 00m",
+                            breakCount: 0,
+                            breakHrs: "0h 00m",
+                            lunchIn: "—",
+                            lunchOut: "—",
+                            lunchHrs: "0h 00m",
+                            pages: 0,
+                            status: ci.checkOutTime ? "Complete" : "Active",
+                            timeline: [],
+                            workingSecondsRaw: 0,
+                            breakSecondsRaw: 0,
+                            lunchSecondsRaw: 0,
+                            startTimeRaw: null,
+                            endTimeRaw: null,
+                            manualCheckInRaw: ci.checkInTime,
+                            manualCheckOutRaw: ci.checkOutTime
+                        });
+                    }
+                });
+
+                setLogs(mergedLogs);
+            } catch (err) {
+                console.error("Failed to fetch logs", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLogs();
+    }, [viewMode, periodDate, filterEmp, filterProj]);
 
     // Period navigation
     const navigatePeriod = (dir) => {
@@ -345,24 +731,16 @@ export default function TimeLog() {
         return isSameMonth(periodDate, TODAY);
     };
 
-    // Filter data
-    const periodLogs = MOCK_LOGS.filter(l => {
-        if (viewMode === "daily") return isSameDay(l.date, periodDate);
-        if (viewMode === "weekly") return isSameWeek(l.date, periodDate);
-        return isSameMonth(l.date, periodDate);
-    });
-
-    const filteredDaily = periodLogs.filter(l => {
-        if (filterEmp !== "All" && l.employee !== filterEmp) return false;
-        if (filterProj !== "All" && l.project !== filterProj) return false;
+    // Client-side filtering for search and status (Absent/Active/Complete)
+    // Client-side filtering for search and status (Absent/Active/Complete)
+    const dailyAggrRows = buildDailyAggrRows(logs);
+    const filteredDaily = dailyAggrRows.filter(l => {
         if (filterStatus !== "All" && l.status !== filterStatus) return false;
         if (search && !l.employee.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
 
-    const filteredAggr = periodLogs.filter(l => {
-        if (filterEmp !== "All" && l.employee !== filterEmp) return false;
-        if (filterProj !== "All" && l.project !== filterProj) return false;
+    const filteredAggr = logs.filter(l => {
         if (search && !l.employee.toLowerCase().includes(search.toLowerCase())) return false;
         return true;
     });
@@ -463,7 +841,6 @@ export default function TimeLog() {
                     </>
                 )}
             </div>
-
             {/* ── Filters ── */}
             <div className="tl-filters">
                 <div className="tl-search-wrap">
@@ -479,14 +856,16 @@ export default function TimeLog() {
                 <div className="tl-filter-group">
                     <label className="tl-filter-label">Employee</label>
                     <select className="tl-select" value={filterEmp} onChange={e => setFilterEmp(e.target.value)}>
-                        {EMPLOYEES.map(e => <option key={e}>{e}</option>)}
+                        <option value="All">All Employees</option>
+                        {employees.map(e => <option key={e.id} value={e.id}>{e.fullName || e.email}</option>)}
                     </select>
                 </div>
 
                 <div className="tl-filter-group">
                     <label className="tl-filter-label">Project</label>
                     <select className="tl-select" value={filterProj} onChange={e => setFilterProj(e.target.value)}>
-                        {PROJECTS.map(p => <option key={p}>{p}</option>)}
+                        <option value="All">All Projects</option>
+                        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                 </div>
 
@@ -505,38 +884,49 @@ export default function TimeLog() {
             </div>
 
             {/* ── Tables ── */}
-            {viewMode === "daily" && (
-                <DailyTable
-                    filtered={filteredDaily}
-                    total={MOCK_LOGS.length}
-                    summary={summary}
-                    expandedId={expandedId}
-                    toggleExpand={toggleExpand}
-                />
-            )}
+            {loading ? (
+                <div className="tl-table-card" style={{ padding: "80px", textAlign: "center", color: "#888" }}>
+                    <div className="tl-empty-inner">
+                        <span style={{ fontSize: "2rem", display: "block", marginBottom: "1rem" }}>🔄</span>
+                        <span>Loading time logs...</span>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {viewMode === "daily" && (
+                        <DailyTable
+                            filtered={filteredDaily}
+                            total={dailyAggrRows.length}
+                            summary={summary}
+                            expandedId={expandedId}
+                            toggleExpand={toggleExpand}
+                        />
+                    )}
 
-            {viewMode === "weekly" && (
-                <AggrTable
-                    mode="weekly"
-                    rows={aggrRows}
-                    total={MOCK_LOGS.length}
-                    summary={summary}
-                    expandedId={expandedId}
-                    toggleExpand={toggleExpand}
-                    periodLogs={filteredAggr}
-                />
-            )}
+                    {viewMode === "weekly" && (
+                        <AggrTable
+                            mode="weekly"
+                            rows={aggrRows}
+                            total={logs.length}
+                            summary={summary}
+                            expandedId={expandedId}
+                            toggleExpand={toggleExpand}
+                            periodLogs={filteredAggr}
+                        />
+                    )}
 
-            {viewMode === "monthly" && (
-                <AggrTable
-                    mode="monthly"
-                    rows={aggrRows}
-                    total={MOCK_LOGS.length}
-                    summary={summary}
-                    expandedId={expandedId}
-                    toggleExpand={toggleExpand}
-                    periodLogs={filteredAggr}
-                />
+                    {viewMode === "monthly" && (
+                        <AggrTable
+                            mode="monthly"
+                            rows={aggrRows}
+                            total={logs.length}
+                            summary={summary}
+                            expandedId={expandedId}
+                            toggleExpand={toggleExpand}
+                            periodLogs={filteredAggr}
+                        />
+                    )}
+                </>
             )}
         </div>
     );
@@ -739,13 +1129,14 @@ function AggrTable({ mode, rows, total, summary, expandedId, toggleExpand, perio
 
 // ── Daily Breakdown ───────────────────────────────────────────────────────────
 function DailyBreakdown({ logs, employee }) {
+    const dailyLogs = groupLogsByDate(logs);
     return (
         <div className="tl-timeline-wrap tl-breakdown-wrap">
             <div className="tl-timeline-header">
                 <span className="tl-timeline-title">Daily Log Breakdown — {employee}</span>
             </div>
             <div className="tl-breakdown-grid">
-                {logs.map(log => (
+                {dailyLogs.map(log => (
                     <div key={log.id} className="tl-breakdown-card">
                         <div className="tl-bd-header">
                             <span className="tl-bd-date">

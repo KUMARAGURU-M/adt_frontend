@@ -1,13 +1,16 @@
 // src/pages/admin/Setting.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Setting.css';
+import { apiCall } from '../../utils/api';
 
 /* ─── Default state ─────────────────────── */
 const DEFAULT = {
   /* Login Page */
-  portalName:      'ADT - Production Login Portal',
-  welcomeMessage:  '👋 Welcome Back! Please Login to Continue 🚀 😊',
+  portalName: 'ADT - Production Login Portal',
+  welcomeMessage: '👋 Welcome Back! Please Login to Continue 🚀 😊',
+  enableThirukkural: true,
+  thirukkuralTranslation: 'all',
   loginQuotes: [
     'Success is not final, failure is not fatal: It is the courage to continue that counts.',
     'The only way to do great work is to love what you do.',
@@ -15,18 +18,18 @@ const DEFAULT = {
   ],
 
   /* Company Information */
-  companyName:     'Arrow Data-Tech',
-  streetAddress:   '07 M.G Road Near Rouridana',
-  city:            'Kottakuppam , Villupuram District',
-  stateProvince:   'Tamil Nadu',
-  zipCode:         '605104',
-  country:         'India',
+  companyName: 'Arrow Data-Tech',
+  streetAddress: '07 M.G Road Near Rouridana',
+  city: 'Kottakuppam , Villupuram District',
+  stateProvince: 'Tamil Nadu',
+  zipCode: '605104',
+  country: 'India',
   companyLocation: 'Puducherry',
-  phone:           '+91 08849SE (12)',
-  email:           'eachinnusen@outlook.com',
+  phone: '+91 08849SE (12)',
+  email: 'eachinnusen@outlook.com',
 
   /* Theme */
-  primaryColor:   '#cd1996',
+  primaryColor: '#cd1996',
   secondaryColor: '#13979c',
 
   /* Feature Toggles */
@@ -34,8 +37,8 @@ const DEFAULT = {
 
   /* System */
   sessionTimeout: 479,
-  maxFileSize:    10,
-  allowedTypes:   'jpg,jpeg,png,pdf,doc,docx',
+  maxFileSize: 10,
+  allowedTypes: 'jpg,jpeg,png,pdf,doc,docx',
 };
 
 /* ─── Modal ──────────────────────────────── */
@@ -52,9 +55,9 @@ const QuoteModal = ({ quotes, onClose, onSave }) => {
   const [list, setList] = useState([...quotes]);
   const [newQ, setNewQ] = useState('');
 
-  const addQuote   = () => { if(newQ.trim()){ setList(p=>[...p,newQ.trim()]); setNewQ(''); } };
-  const removeQuote= (i) => setList(p=>p.filter((_,idx)=>idx!==i));
-  const editQuote  = (i,val) => setList(p=>p.map((q,idx)=>idx===i?val:q));
+  const addQuote = () => { if (newQ.trim()) { setList(p => [...p, newQ.trim()]); setNewQ(''); } };
+  const removeQuote = (i) => setList(p => p.filter((_, idx) => idx !== i));
+  const editQuote = (i, val) => setList(p => p.map((q, idx) => idx === i ? val : q));
 
   return (
     <Modal onClose={onClose}>
@@ -62,7 +65,7 @@ const QuoteModal = ({ quotes, onClose, onSave }) => {
       <p className="st-modal-sub">These quotes rotate on the login page to inspire users.</p>
 
       <div className="st-quote-list">
-        {list.map((q,i) => (
+        {list.map((q, i) => (
           <div key={i} className="st-quote-item">
             <textarea
               className="st-quote-textarea"
@@ -97,20 +100,169 @@ const QuoteModal = ({ quotes, onClose, onSave }) => {
 /* ══════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════ */
+const FALLBACK_KURALS = [
+  {
+    number: 1,
+    chapter: "கடவுள் வாழ்த்து",
+    section: "அறத்துப்பால்",
+    kural: ["அகர முதல எழுத்தெல்லாம் ஆதி", "பகவன் முதற்றே உலகு."],
+    meaning: {
+      ta_mu_va: "எழுத்துக்கள் எல்லாம் அகரத்தை அடிப்படையாக கொண்டிருக்கின்றன. அதுபோல உலகம் கடவுளை அடிப்படையாக கொண்டிருக்கிறது.",
+      ta_salamon: "எழுத்துக்கள் எல்லாம் அகரத்தில் தொடங்குகின்றன; (அது போல) உலகம் கடவுளில் தொடங்குகிறது.",
+      ta_kalaignar: "அகரம் எழுத்துக்களுக்கு முதன்மை; ஆதிபகவன், உலகில் வாழும் உயிர்களுக்கு முதன்மை",
+      en: "As the letter A is the first of all letters, so the eternal God is first in the world."
+    }
+  },
+  {
+    number: 391,
+    chapter: "கல்வி",
+    section: "பொருட்பால்",
+    kural: ["கற்க கசடறக் கற்பவை கற்றபின்", "நிற்க அதற்குத் தக."],
+    meaning: {
+      ta_mu_va: "கற்கத் தகுந்த நூல்களைக் குற்றம் இல்லாமல் கற்க வேண்டும்; அவ்வாறு கற்ற பிறகு கற்ற கல்விக்குத் தக்கவாறு நெறியில் நிற்க வேண்டும்.",
+      ta_salamon: "கற்க வேண்டியவைகளைக் குற்றம் இல்லாமல் கற்க வேண்டும்; கற்ற பிறகு, கற்ற கல்விக்கு ஏற்ப நல்ல வழிகளில் நடக்க வேண்டும்.",
+      ta_kalaignar: "படிக்க வேண்டியவைகளைத் தங்கு தடையின்றிக் கற்றுக்கொள்ள வேண்டும்; கற்ற பிறகு அதன்படி நடக்கவும் வேண்டும்",
+      en: "Let a man learn thoroughly those things which he ought to learn, and let him afterwards stand in his way."
+    }
+  }
+];
+
+const getKuralMeaningForTranslation = (kural, translationMode) => {
+  if (!kural || !kural.meaning) return '';
+  switch (translationMode) {
+    case 'en':
+      return kural.meaning.en || '';
+    case 'ta_mu_va':
+      return kural.meaning.ta_mu_va || '';
+    case 'ta_salamon':
+      return kural.meaning.ta_salamon || '';
+    case 'ta_kalaignar':
+      return kural.meaning.ta_kalaignar || '';
+    case 'all':
+    default:
+      const ta = kural.meaning.ta_mu_va || kural.meaning.ta_salamon || kural.meaning.ta_kalaignar || '';
+      const en = kural.meaning.en || '';
+      return (
+        <div>
+          <p style={{ margin: '0 0 6px 0', fontWeight: '500', color: '#1f2937' }}>{ta}</p>
+          <p style={{ margin: 0, color: '#4b5563', borderTop: '1px dashed #e5e7eb', paddingTop: '4px' }}>{en}</p>
+        </div>
+      );
+  }
+};
+
 const Setting = () => {
-  const [form,      setForm]      = useState({ ...DEFAULT });
-  const [saved,     setSaved]     = useState(false);
-  const [showQuotes,setShowQuotes]= useState(false);
+  const [form, setForm] = useState({ ...DEFAULT });
+  const [saved, setSaved] = useState(false);
+  const [showQuotes, setShowQuotes] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [thirukkuralPreview, setThirukkuralPreview] = useState(null);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await apiCall('/settings');
+        if (data) {
+          setForm({
+            portalName: data.portalName || '',
+            welcomeMessage: data.welcomeMessage || '',
+            loginQuotes: data.loginQuotes || [],
+            enableThirukkural: data.enableThirukkural ?? true,
+            thirukkuralTranslation: data.thirukkuralTranslation || 'all',
+            companyName: data.companyName || '',
+            streetAddress: data.streetAddress || '',
+            city: data.city || '',
+            stateProvince: data.state || '',
+            zipCode: data.zipCode || '',
+            country: data.country || '',
+            companyLocation: data.companyLocation || '',
+            phone: data.phone || '',
+            email: data.email || '',
+            primaryColor: data.primaryColor || '#c28595',
+            secondaryColor: data.secondaryColor || '#f0979c',
+            topPerformerBanner: data.enableTopPerformerBanner ?? true,
+            sessionTimeout: data.sessionTimeout ?? 480,
+            maxFileSize: data.maxFileSize ?? 10,
+            allowedTypes: data.allowedTypes || 'jpg,jpeg,png,pdf,doc,docx',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    // Load daily Kural preview when enabled
+    if (form.enableThirukkural) {
+      fetch('https://tamil-kural-api.vercel.app/api/daily')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.number) {
+            setThirukkuralPreview(data);
+          } else {
+            throw new Error("Invalid response");
+          }
+        })
+        .catch(err => {
+          console.warn("Failed to fetch daily Thirukkural preview:", err);
+          const today = new Date();
+          const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+          const fallbackIndex = dayOfYear % FALLBACK_KURALS.length;
+          setThirukkuralPreview(FALLBACK_KURALS[fallbackIndex]);
+        });
+    }
+  }, [form.enableThirukkural]);
+
+  const handleSave = async () => {
+    try {
+      const payload = {
+        portalName: form.portalName,
+        welcomeMessage: form.welcomeMessage,
+        loginQuotes: form.loginQuotes,
+        enableThirukkural: form.enableThirukkural,
+        thirukkuralTranslation: form.thirukkuralTranslation,
+        companyName: form.companyName,
+        streetAddress: form.streetAddress,
+        city: form.city,
+        state: form.stateProvince,
+        zipCode: form.zipCode,
+        country: form.country,
+        companyLocation: form.companyLocation,
+        phone: form.phone,
+        email: form.email,
+        primaryColor: form.primaryColor,
+        secondaryColor: form.secondaryColor,
+        enableTopPerformerBanner: form.topPerformerBanner,
+        sessionTimeout: parseInt(form.sessionTimeout, 10) || 480,
+        maxFileSize: parseInt(form.maxFileSize, 10) || 10,
+        allowedTypes: form.allowedTypes,
+      };
+
+      await apiCall('/settings', 'PUT', payload);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      alert('Failed to save settings: ' + err.message);
+    }
   };
 
   /* Active quote (rotate for preview) */
-  const previewQuote = form.loginQuotes[0] || 'No quotes set yet.';
+  const previewQuote = (form.loginQuotes && form.loginQuotes[0]) || 'No quotes set yet.';
+
+  if (loading) {
+    return (
+      <div className="st-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', color: 'rgba(255,255,255,0.6)' }}>
+        <div>Loading settings from server...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="st-container">
@@ -137,26 +289,84 @@ const Setting = () => {
           <div className="st-card">
             <h3 className="st-card-title">🔐 Login Page Settings</h3>
 
-            {/* Motivational Quotes Section — replaces wallpaper */}
-            <div className="st-section-label">Motivational Quotes</div>
-            <p className="st-hint">
-              These quotes display on the login page to inspire and motivate users. They rotate on each page load.
-            </p>
-
-            {/* Preview */}
-            <div className="st-quote-preview">
-              <div className="st-quote-preview-label">Preview (first quote)</div>
-              <blockquote className="st-quote-preview-text">
-                "{previewQuote}"
-              </blockquote>
-              <div className="st-quote-count">
-                {form.loginQuotes.length} quote{form.loginQuotes.length !== 1 ? 's' : ''} configured
+            {/* Thirukkural Toggle */}
+            <div className="st-toggle-item" style={{ marginBottom: '14px' }}>
+              <div className="st-toggle-info">
+                <label className="st-toggle-label">
+                  <input
+                    type="checkbox"
+                    className="st-checkbox"
+                    checked={form.enableThirukkural}
+                    onChange={e => set('enableThirukkural', e.target.checked)}
+                  />
+                  Enable Thirukkural of the Day
+                </label>
+                <p className="st-hint">Replace motivational quotes with a daily Thirukkural on the login page.</p>
               </div>
             </div>
 
-            <button className="st-manage-quotes-btn" onClick={() => setShowQuotes(true)}>
-              ✏️ Manage Quotes ({form.loginQuotes.length})
-            </button>
+            {form.enableThirukkural ? (
+              <div className="st-thirukkural-settings" style={{ marginBottom: '14px' }}>
+                <div className="st-form-group" style={{ marginBottom: '12px' }}>
+                  <label className="st-label">Translation/Explanation Source</label>
+                  <select
+                    className="st-input"
+                    value={form.thirukkuralTranslation}
+                    onChange={e => set('thirukkuralTranslation', e.target.value)}
+                    style={{ cursor: 'pointer', padding: '8px 12px' }}
+                  >
+                    <option value="all">Tamil Meaning + English Translation</option>
+                    <option value="ta_mu_va">Tamil Meaning (Mu. Varadarajan)</option>
+                    <option value="ta_salamon">Tamil Meaning (Solomon Pappaiah)</option>
+                    <option value="ta_kalaignar">Tamil Meaning (Kalaignar)</option>
+                    <option value="en">English Translation Only</option>
+                  </select>
+                </div>
+
+                {/* Thirukkural Preview */}
+                <div className="st-quote-preview" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(59, 130, 246, 0.06) 100%)', borderColor: 'rgba(16, 185, 129, 0.25)' }}>
+                  <div className="st-quote-preview-label">Thirukkural Preview</div>
+                  {thirukkuralPreview ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: '11px', color: '#10b981', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                        குறள் {thirukkuralPreview.number} - {thirukkuralPreview.chapter} ({thirukkuralPreview.section})
+                      </div>
+                      <blockquote className="st-quote-preview-text" style={{ borderLeftColor: '#10b981', margin: 0, paddingLeft: '12px', fontStyle: 'normal' }}>
+                        <p style={{ margin: '0 0 6px 0', fontWeight: '700', color: '#10b981', fontSize: '14.5px', fontFamily: 'inherit', textAlign: 'center', textShadow: '0 0 8px rgba(16, 185, 129, 0.7), 0 0 16px rgba(16, 185, 129, 0.35)' }}>{thirukkuralPreview.kural?.[0]}</p>
+                        <p style={{ margin: '0 0 8px 0', fontWeight: '700', color: '#10b981', fontSize: '14.5px', fontFamily: 'inherit', textAlign: 'center', textShadow: '0 0 8px rgba(16, 185, 129, 0.7), 0 0 16px rgba(16, 185, 129, 0.35)' }}>{thirukkuralPreview.kural?.[1]}</p>
+                        <div style={{ fontSize: '12px', color: '#4b5563', lineHeight: '1.5', borderTop: '1px dashed #e2e8f0', paddingTop: '6px' }}>
+                          {getKuralMeaningForTranslation(thirukkuralPreview, form.thirukkuralTranslation)}
+                        </div>
+                      </blockquote>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>Loading daily Thirukkural preview...</div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginBottom: '14px' }}>
+                <div className="st-section-label">Motivational Quotes</div>
+                <p className="st-hint" style={{ marginBottom: '10px' }}>
+                  These quotes display on the login page to inspire and motivate users. They rotate on each page load.
+                </p>
+
+                {/* Preview */}
+                <div className="st-quote-preview">
+                  <div className="st-quote-preview-label">Preview (first quote)</div>
+                  <blockquote className="st-quote-preview-text">
+                    "{previewQuote}"
+                  </blockquote>
+                  <div className="st-quote-count">
+                    {form.loginQuotes.length} quote{form.loginQuotes.length !== 1 ? 's' : ''} configured
+                  </div>
+                </div>
+
+                <button className="st-manage-quotes-btn" onClick={() => setShowQuotes(true)}>
+                  ✏️ Manage Quotes ({form.loginQuotes.length})
+                </button>
+              </div>
+            )}
 
             <div className="st-divider" />
 

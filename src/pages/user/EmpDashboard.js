@@ -1,5 +1,6 @@
 // src/pages/employee/EmpDashboard.js
 import React, { useState, useEffect } from 'react';
+import { getCurrentUser, apiCall } from '../../utils/api';
 // import { useNavigate } from 'react-router-dom';
 
 import EmpHeader from './EmpHeader';
@@ -33,6 +34,76 @@ export default function EmpDashboard() {
 
   const [activeTab, setActiveTab] = useState('workwise');
   const [now, setNow] = useState(new Date());
+  const [userName, setUserName] = useState('Employee');
+  const [attendanceToday, setAttendanceToday] = useState(null);
+  const [checkingInOut, setCheckingInOut] = useState(false);
+  const [attendanceError, setAttendanceError] = useState('');
+  const [loadingAttendance, setLoadingAttendance] = useState(true);
+
+  const fetchTodayAttendance = async () => {
+    try {
+      const data = await apiCall('/attendance/today');
+      setAttendanceToday(data);
+    } catch (err) {
+      console.warn('Failed to load today attendance:', err.message);
+    } finally {
+      setLoadingAttendance(false);
+    }
+  };
+
+  const handleCheckIn = async () => {
+    setCheckingInOut(true);
+    setAttendanceError('');
+    try {
+      const data = await apiCall('/attendance/check-in', 'POST');
+      setAttendanceToday(data);
+    } catch (err) {
+      setAttendanceError(err.message || 'Check-in failed');
+    } finally {
+      setCheckingInOut(false);
+    }
+  };
+
+  const handleCheckOut = async () => {
+    setCheckingInOut(true);
+    setAttendanceError('');
+    try {
+      const data = await apiCall('/attendance/check-out', 'POST');
+      setAttendanceToday(data);
+    } catch (err) {
+      setAttendanceError(err.message || 'Check-out failed');
+    } finally {
+      setCheckingInOut(false);
+    }
+  };
+
+  const formatIsoTime = (isoString) => {
+    if (!isoString) return '—';
+    try {
+      const d = new Date(isoString);
+      let h = d.getHours();
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const s = String(d.getSeconds()).padStart(2, '0');
+      const ap = h >= 12 ? 'pm' : 'am';
+      h = h % 12 || 12;
+      return `${String(h).padStart(2, '0')}:${m}:${s} ${ap}`;
+    } catch {
+      return '—';
+    }
+  };
+
+  useEffect(() => {
+    fetchTodayAttendance();
+  }, []);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      if (user.fullName) {
+        setUserName(user.fullName);
+      }
+    }
+  }, []);
 
   const [summary] = useState({
     totalHours: '0.00',
@@ -62,6 +133,35 @@ export default function EmpDashboard() {
   };
 
   const renderTab = () => {
+    if (loadingAttendance) {
+      return (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#666', fontFamily: "'Poppins', sans-serif" }}>
+          Loading attendance...
+        </div>
+      );
+    }
+
+    const isCheckedIn = !!attendanceToday?.checkInTime;
+
+    if (!isCheckedIn && (activeTab === 'workwise' || activeTab === 'tasks')) {
+      return (
+        <div className="emp-locked-container">
+          <div className="emp-locked-card">
+            <div className="emp-locked-icon">🔒</div>
+            <h3>{activeTab === 'workwise' ? 'WorkWise Locked' : 'Tasks Locked'}</h3>
+            <p>
+              {activeTab === 'workwise'
+                ? 'You must Check-In to your shift to access WorkWise and start tracking your work.'
+                : 'You must Check-In to your shift to access tasks.'}
+            </p>
+            <button className="emp-locked-btn" onClick={handleCheckIn} disabled={checkingInOut}>
+              {checkingInOut ? 'Checking In...' : '▶ Check In Now'}
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'workwise': return <EmpWorkwise />;
       case 'calendar': return <EmpCalendar />;
@@ -75,7 +175,7 @@ export default function EmpDashboard() {
     <div className="emp-dashboard-page">
 
       {/* Glassmorphism Header */}
-      <EmpHeader userName="Employee" />
+      <EmpHeader userName={userName} />
 
       <div className="emp-dashboard-body">
 
@@ -96,6 +196,56 @@ export default function EmpDashboard() {
           {/* Timestamp - Time on right */}
           <span className="emp-ts-time">{fmtTime(now)}</span>
 
+        </div>
+
+        {/* Check In / Check Out Widget */}
+        <div className="emp-checkin-widget">
+          <div className="emp-checkin-header">
+            <span className="emp-checkin-icon">⏱️</span>
+            <div className="emp-checkin-title-block">
+              <h3>Shift Attendance Tracking</h3>
+              <p>Manual Check-In and Check-Out time logs</p>
+            </div>
+          </div>
+          
+          <div className="emp-checkin-status-row">
+            <div className="emp-checkin-time-box">
+              <span className="time-box-label">Check-In Time</span>
+              <span className="time-box-val checkin">
+                {formatIsoTime(attendanceToday?.checkInTime)}
+              </span>
+            </div>
+            <div className="emp-checkin-time-box">
+              <span className="time-box-label">Check-Out Time</span>
+              <span className="time-box-val checkout">
+                {formatIsoTime(attendanceToday?.checkOutTime)}
+              </span>
+            </div>
+            <div className="emp-checkin-actions">
+              {!attendanceToday?.checkInTime ? (
+                <button 
+                  className="checkin-btn btn-checkin" 
+                  onClick={handleCheckIn}
+                  disabled={checkingInOut}
+                >
+                  {checkingInOut ? 'Processing...' : '▶ Check In'}
+                </button>
+              ) : !attendanceToday?.checkOutTime ? (
+                <button 
+                  className="checkin-btn btn-checkout" 
+                  onClick={handleCheckOut}
+                  disabled={checkingInOut}
+                >
+                  {checkingInOut ? 'Processing...' : '⏹ Check Out'}
+                </button>
+              ) : (
+                <button className="checkin-btn btn-disabled" disabled>
+                  ✓ Shift Completed
+                </button>
+              )}
+            </div>
+          </div>
+          {attendanceError && <p className="checkin-error-msg">⚠️ {attendanceError}</p>}
         </div>
 
         {/* Today's Work Summary */}

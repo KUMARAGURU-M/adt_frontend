@@ -266,7 +266,10 @@
   outline: none; font-family: var(--inv-font); transition: all 0.15s; box-sizing: border-box;
 }
 .inv-cell-input:focus { border-color: var(--inv-primary); background: #fff; box-shadow: 0 0 0 2px rgba(0,163,255,0.1); }
-.inv-cell-input--num { text-align: center; min-width: 55px; }
+.inv-cell-input--num   { text-align: center; min-width: 55px; }
+.inv-cell-input--combo { min-width: 120px; border-color: #e2e8f0; background: #fafbff; }
+.inv-cell-input--combo:focus { border-color: var(--inv-primary); background: #fff; box-shadow: 0 0 0 2px rgba(0,163,255,0.12); }
+.inv-cell-input--combo::placeholder { color: #94a3b8; font-style: italic; font-size: 11px; }
 .inv-row-del { width: 24px; height: 24px; border-radius: 50%; border: none; background: #fee2e2; color: #dc2626; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: background 0.15s; }
 .inv-row-del:hover { background: #fca5a5; }
 
@@ -792,4 +795,214 @@ tfoot .inv-hist-detail-table td { background: #ede9fe; }
   .inv-history-filters { flex-direction: column; }
   .inv-hist-item-header { flex-direction: column; align-items: flex-start; }
   .inv-hist-item-right  { width: 100%; justify-content: space-between; }
+}
+
+/* ── Overlay Mode Tabs & Layout ── */
+.inv-mode-tabs {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+.inv-mode-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.inv-mode-tab:hover {
+  color: #0f172a;
+}
+.inv-mode-tab--active {
+  background: #ffffff;
+  color: var(--inv-primary, #0284c7);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.inv-overlay-upload-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--inv-radius-lg, 12px);
+  padding: 40px 20px;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.inv-overlay-upload-zone:hover {
+  border-color: var(--inv-primary, #0284c7);
+  background: #f0f9ff;
+}
+.inv-overlay-upload-icon {
+  font-size: 48px;
+}
+.inv-overlay-upload-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+}
+.inv-overlay-upload-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.inv-overlay-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid var(--inv-border, #e2e8f0);
+  border-radius: var(--inv-radius-lg, 12px);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.inv-overlay-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.inv-overlay-control-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  justify-content: space-between;
+}
+.inv-overlay-control-val {
+  color: var(--inv-primary, #0284c7);
+  font-weight: 700;
+}
+.inv-overlay-slider {
+  width: 100%;
+  accent-color: var(--inv-primary, #0284c7);
+  cursor: pointer;
+}
+.inv-overlay-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #475569;
+  cursor: pointer;
+  padding-top: 8px;
+}
+
+.inv-overlay-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: var(--inv-radius-lg, 12px);
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+}
+.inv-overlay-preview-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Printable Overlay container styles */
+.inv-document-overlay-content {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.inv-overlay-img {
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+  transition: all 0.15s;
+}
+
+.inv-overlay-pdf-embed {
+  border: none;
+  background: transparent;
+  width: 100%;
+  min-height: 800px;
+}
+
+.inv-overlay-help-box {
+  padding: 12px 16px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  color: #92400e;
+  font-size: 0.82rem;
+  font-weight: 500;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+@keyframes invSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.inv-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-radius: 50%;
+  border-top-color: #0284c7;
+  animation: invSpin 1s linear infinite;
+}
+
+/* Print layout optimizations for multi-page overlays */
+@media print {
+  .inv-preview-overlay-active {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .inv-preview-overlay-active .inv-document-outer {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .inv-document-overlay-page {
+    page-break-after: always !important;
+    page-break-inside: avoid !important;
+    page-break-before: auto !important;
+    margin: 0 auto !important;
+    border: none !important;
+    border-radius: 0 !important;
+    height: 297mm !important;
+    width: 210mm !important;
+    max-height: 297mm !important;
+    max-width: 210mm !important;
+    box-shadow: none !important;
+  }
 }

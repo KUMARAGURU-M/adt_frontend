@@ -1,29 +1,25 @@
-// src/pages/admin/ProcessManagement.js
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './ProcessManagement.css';
+import { apiCall } from '../../utils/api';
 
-/* ─── Seed Data ─────────────────────────────────────────────────── */
-const seedProcesses = [
-  { id: 1, name: 'EPUB - QC Process', description: '', active: true, created: '2025-12-06' },
-  { id: 2, name: 'EPUB - Tagging', description: '', active: true, created: '2025-12-06' },
-  { id: 3, name: 'FIG - Croping', description: '', active: true, created: '2025-12-06' },
-  { id: 4, name: 'INDEX - Process', description: '', active: true, created: '2025-12-06' },
-  { id: 5, name: 'MATH - Keying', description: '', active: true, created: '2025-12-06' },
-  { id: 6, name: 'OCR - Process', description: '', active: true, created: '2026-02-01' },
-  { id: 7, name: 'Proof Reading - Process', description: '', active: true, created: '2026-02-01' },
-  { id: 8, name: 'REF - Process', description: '', active: true, created: '2025-12-06' },
-  { id: 9, name: 'TABLE - Process', description: '', active: true, created: '2025-12-06' },
-  { id: 10, name: 'VALID - Process', description: '', active: true, created: '2025-12-06' },
-  { id: 11, name: 'WORD - QC Process', description: '', active: true, created: '2025-12-06' },
-  { id: 12, name: 'WORD - Styling', description: '', active: true, created: '2025-12-06' },
-  { id: 13, name: 'XML - QC Process', description: '', active: true, created: '2025-12-06' },
-  { id: 14, name: 'XML - Tagging', description: '', active: true, created: '2025-12-06' },
-];
+// ── Helpers ───────────────────────────────────────────────────────
+const fmt = (d) =>
+  d ? new Date(d).toLocaleDateString('en-US', {
+        month: 'numeric', day: 'numeric', year: 'numeric'
+      })
+    : '-';
+
+const mapProcess = (p) => ({
+  id:          p.id,
+  name:        p.name,
+  description: p.description || '',
+  active:      p.isActive,
+  created:     p.createdAt,
+});
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
-/* ─── Shared Modal Overlay ──────────────────────────────────────── */
+// ── Modal Overlay ─────────────────────────────────────────────────
 const Modal = ({ onClose, children }) => (
   <div className="pm-modal-overlay" onClick={onClose}>
     <div className="pm-modal-box" onClick={e => e.stopPropagation()}>
@@ -32,17 +28,29 @@ const Modal = ({ onClose, children }) => (
   </div>
 );
 
-/* ─── Edit Process Modal ─────────────────────────────────────────── */
+// ── Edit Modal ────────────────────────────────────────────────────
 const EditModal = ({ process, onClose, onUpdate }) => {
-  const [name, setName] = useState(process.name);
-  const [desc, setDesc] = useState(process.description);
+  const [name,   setName]   = useState(process.name);
+  const [desc,   setDesc]   = useState(process.description);
   const [active, setActive] = useState(process.active);
-  const [err, setErr] = useState('');
+  const [err,    setErr]    = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!name.trim()) { setErr('Process name is required.'); return; }
-    onUpdate({ ...process, name: name.trim(), description: desc, active });
-    onClose();
+    setSaving(true);
+    try {
+      await onUpdate(process.id, {
+        name:        name.trim(),
+        description: desc,
+        isActive:    active,
+      });
+      onClose();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -85,91 +93,178 @@ const EditModal = ({ process, onClose, onUpdate }) => {
       </div>
 
       <div className="pm-modal-actions">
-        <button className="pm-btn-cancel" onClick={onClose}>Cancel</button>
-        <button className="pm-btn-primary" onClick={handleUpdate}>Update Process</button>
+        <button className="pm-btn-cancel" onClick={onClose}>
+          Cancel
+        </button>
+        <button
+          className="pm-btn-primary"
+          onClick={handleUpdate}
+          disabled={saving}
+        >
+          {saving ? 'Updating...' : 'Update Process'}
+        </button>
       </div>
     </Modal>
   );
 };
 
-/* ─── Delete Confirm Modal ───────────────────────────────────────── */
-const DeleteModal = ({ process, onClose, onDelete }) => (
-  <Modal onClose={onClose}>
-    <div className="pm-delete-modal">
-      <div className="pm-delete-icon">🗑️</div>
-      <h2 className="pm-modal-title">Delete Process</h2>
-      <p className="pm-delete-msg">
-        Are you sure you want to delete <strong>"{process.name}"</strong>?<br />
-        This action cannot be undone.
-      </p>
-      <div className="pm-modal-actions centered">
-        <button className="pm-btn-cancel" onClick={onClose}>Cancel</button>
-        <button
-          className="pm-btn-danger"
-          onClick={() => { onDelete(process.id); onClose(); }}
-        >
-          Delete
-        </button>
+// ── Delete Modal ──────────────────────────────────────────────────
+const DeleteModal = ({ process, onClose, onDelete }) => {
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await onDelete(process.id);
+      onClose();
+    } catch (e) {
+      alert('Error deleting process: ' + e.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="pm-delete-modal">
+        <div className="pm-delete-icon">🗑️</div>
+        <h2 className="pm-modal-title">Delete Process</h2>
+        <p className="pm-delete-msg">
+          Are you sure you want to delete{' '}
+          <strong>"{process.name}"</strong>?<br />
+          This action cannot be undone.
+        </p>
+        <div className="pm-modal-actions centered">
+          <button className="pm-btn-cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            className="pm-btn-danger"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
       </div>
-    </div>
-  </Modal>
-);
+    </Modal>
+  );
+};
 
-/* ══════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-══════════════════════════════════════════════════════════════════ */
+// ═════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═════════════════════════════════════════════════════════════════
 const ProcessManagement = () => {
-  const [processes, setProcesses] = useState(seedProcesses);
-  const [modal, setModal] = useState(null); // { type, process }
+  const [processes,  setProcesses]  = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState('');
+  const [modal,      setModal]      = useState(null);
 
-  /* Add-form state */
+  // Add form state
   const [showAddForm, setShowAddForm] = useState(true);
-  const [newName, setNewName] = useState('');
-  const [newDesc, setNewDesc] = useState('');
-  const [newActive, setNewActive] = useState(true);
-  const [addErr, setAddErr] = useState('');
+  const [newName,     setNewName]     = useState('');
+  const [newDesc,     setNewDesc]     = useState('');
+  const [newActive,   setNewActive]   = useState(true);
+  const [addErr,      setAddErr]      = useState('');
+  const [creating,    setCreating]    = useState(false);
 
-  /* Pagination */
+  // Pagination
   const [perPage, setPerPage] = useState(25);
-  const [page, setPage] = useState(1);
+  const [page,    setPage]    = useState(1);
 
-  /* ── Helpers ── */
-  const fmt = (d) =>
-    d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : '-';
+  // ── Load processes ──────────────────────────────────────────
+  const loadProcesses = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await apiCall('/processes/all');
+      setProcesses(data.map(mapProcess));
+    } catch (err) {
+      setError('Failed to load processes: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const open = (type, process) => setModal({ type, process });
-  const close = () => setModal(null);
+  useEffect(() => {
+    loadProcesses();
+  }, [loadProcesses]);
 
-  /* ── Add ── */
-  const handleCreate = () => {
-    if (!newName.trim()) { setAddErr('Process name is required.'); return; }
-    const now = new Date().toISOString().split('T')[0];
-    setProcesses(prev => [
-      ...prev,
-      { id: Date.now(), name: newName.trim(), description: newDesc, active: newActive, created: now },
-    ]);
-    setNewName(''); setNewDesc(''); setNewActive(true); setAddErr('');
-  };
-
-  /* ── Update ── */
-  const handleUpdate = (updated) =>
-    setProcesses(prev => prev.map(p => p.id === updated.id ? updated : p));
-
-  /* ── Delete ── */
-  const handleDelete = (id) => {
-    setProcesses(prev => prev.filter(p => p.id !== id));
-  };
-
-  /* ── Pagination ── */
+  // ── Pagination ──────────────────────────────────────────────
   const totalItems = processes.length;
   const totalPages = Math.ceil(totalItems / perPage);
-  const startIdx = (page - 1) * perPage;
+  const startIdx   = (page - 1) * perPage;
+
   const pageRows = useMemo(
     () => processes.slice(startIdx, startIdx + perPage),
     [processes, startIdx, perPage]
   );
 
-  const handlePerPage = (val) => { setPerPage(val); setPage(1); };
+  const handlePerPage = (val) => {
+    setPerPage(val);
+    setPage(1);
+  };
+
+  const open  = (type, process) => setModal({ type, process });
+  const close = ()               => setModal(null);
+
+  // ── Create process ──────────────────────────────────────────
+  const handleCreate = async () => {
+    if (!newName.trim()) {
+      setAddErr('Process name is required.');
+      return;
+    }
+    setCreating(true);
+    try {
+      await apiCall('/processes', 'POST', {
+        name:        newName.trim(),
+        description: newDesc || null,
+        isActive:    newActive,
+      });
+      setNewName('');
+      setNewDesc('');
+      setNewActive(true);
+      setAddErr('');
+      await loadProcesses();
+    } catch (err) {
+      setAddErr(err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // ── Update process ──────────────────────────────────────────
+  const handleUpdate = async (id, payload) => {
+    await apiCall(`/processes/${id}`, 'PUT', payload);
+    await loadProcesses();
+  };
+
+  // ── Delete process ──────────────────────────────────────────
+  const handleDelete = async (id) => {
+    await apiCall(`/processes/${id}`, 'DELETE');
+    await loadProcesses();
+  };
+
+  // ── Render ──────────────────────────────────────────────────
+  if (loading) return (
+    <div className="pm-container">
+      <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
+        Loading processes...
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="pm-container">
+      <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>
+        {error}
+        <br />
+        <button onClick={loadProcesses} style={{ marginTop: '12px' }}>
+          Retry
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="pm-container">
@@ -202,6 +297,7 @@ const ProcessManagement = () => {
               placeholder="e.g., XML - Tagging"
               value={newName}
               onChange={e => { setNewName(e.target.value); setAddErr(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleCreate()}
             />
             {addErr && <p className="pm-form-error">{addErr}</p>}
           </div>
@@ -228,8 +324,12 @@ const ProcessManagement = () => {
             </label>
           </div>
 
-          <button className="pm-create-btn" onClick={handleCreate}>
-            Create Process
+          <button
+            className="pm-create-btn"
+            onClick={handleCreate}
+            disabled={creating}
+          >
+            {creating ? 'Creating...' : 'Create Process'}
           </button>
         </div>
       )}
@@ -256,16 +356,22 @@ const ProcessManagement = () => {
             <tbody>
               {pageRows.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="pm-empty">No processes found.</td>
+                  <td colSpan="5" className="pm-empty">
+                    No processes found.
+                  </td>
                 </tr>
               ) : pageRows.map(proc => (
                 <tr key={proc.id}>
                   <td className="td-name">{proc.name}</td>
                   <td className="td-desc">
-                    {proc.description || <span className="pm-dash">-</span>}
+                    {proc.description || (
+                      <span className="pm-dash">-</span>
+                    )}
                   </td>
                   <td>
-                    <span className={`pm-status-badge${proc.active ? ' active' : ' inactive'}`}>
+                    <span className={`pm-status-badge${
+                      proc.active ? ' active' : ' inactive'
+                    }`}>
                       {proc.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -310,7 +416,8 @@ const ProcessManagement = () => {
 
           <div className="pm-page-info">
             Showing {totalItems === 0 ? 0 : startIdx + 1} to{' '}
-            {Math.min(startIdx + perPage, totalItems)} of {totalItems} items
+            {Math.min(startIdx + perPage, totalItems)} of{' '}
+            {totalItems} items
           </div>
 
           {totalPages > 1 && (
@@ -322,15 +429,21 @@ const ProcessManagement = () => {
               >
                 ‹
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+
+              {Array.from(
+                { length: totalPages }, (_, i) => i + 1
+              ).map(n => (
                 <button
                   key={n}
-                  className={`pm-nav-btn${page === n ? ' active-page' : ''}`}
+                  className={`pm-nav-btn${
+                    page === n ? ' active-page' : ''
+                  }`}
                   onClick={() => setPage(n)}
                 >
                   {n}
                 </button>
               ))}
+
               <button
                 className="pm-nav-btn"
                 disabled={page === totalPages}
@@ -358,7 +471,6 @@ const ProcessManagement = () => {
           onDelete={handleDelete}
         />
       )}
-
     </div>
   );
 };

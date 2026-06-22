@@ -235,3 +235,22 @@
   box-shadow: 0 0 18px rgba(255, 59, 92, 0.35);
   transform: translateY(-1px);
 }
+
+.emp-impersonate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(19, 198, 223, 0.15);
+  border: 1px solid rgba(19, 198, 223, 0.40);
+  border-radius: 4px;
+  padding: 2px 8px;
+  width: fit-content;
+  backdrop-filter: blur(8px);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #13c6df;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(19, 198, 223, 0.50);
+}

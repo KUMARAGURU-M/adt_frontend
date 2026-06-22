@@ -248,10 +248,10 @@
 .ra-table thead tr { background: #f8fafc; }
 
 .ra-table th {
-  padding: 12px 16px;
+  padding: 14px 15px;
   color: #475569;
-  font-weight: 700;
-  font-size: 12.5px;
+  font-weight: 800;
+  font-size: 14px;
   text-align: center;
   border-bottom: 1px solid #edf2f7;
   white-space: nowrap;
@@ -259,7 +259,7 @@
 }
 
 .ra-table td {
-  padding: 10px 16px;
+  padding: 11px 15px;
   border-bottom: 1px solid #f1f5f9;
   color: #4a5568;
   vertical-align: middle;
@@ -355,6 +355,17 @@
 .ra-status-badge.on-hold {
   background: #fff3e0;
   color: #e65100;
+}
+
+.ra-status-badge.wip,
+.ra-status-badge.running {
+  background: #e0f7fa;
+  color: #00838f;
+}
+
+.ra-status-badge.on-break {
+  background: #f3e5f5;
+  color: #6a1b9a;
 }
 
 /* Table footer */

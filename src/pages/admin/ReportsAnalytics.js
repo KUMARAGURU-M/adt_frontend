@@ -1,41 +1,8 @@
 // src/pages/admin/ReportsAnalytics.js
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import './ReportsAnalytics.css';
-
-/* ─── Constants ─────────────────────────────────────────────────── */
-const ALL_EMPLOYEES = [
-  'Employee', 'T. Mohamed Usen', 'Narkis', 'Shakina A',
-  'Ayeesha M', 'Gowri', 'Sureka', 'Karthika',
-];
-
-const ALL_PROJECTS = [
-  'ING - Usen', 'LDM - Hanser', 'ING - OUP', 'LDM - WILEY',
-  'LDM - T&F', 'CMT - JATS', 'ING - ACDC', 'CNT', 'IMP - EPUB',
-];
-
-/* ─── Seed Time Logs ─────────────────────────────────────────────── */
-const seedLogs = [
-  { id: 1,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-18T23:10:38', endTime: '2026-02-18T23:10:56', durationHrs: 0.01,  pages: 8,   status: 'Completed' },
-  { id: 2,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-03T11:44:18', endTime: '2026-02-03T11:49:46', durationHrs: 0.09,  pages: 15,  status: 'Completed' },
-  { id: 3,  employee: 'Employee',       project: 'ING - Usen',  task: '-',                                           startTime: '2026-02-02T23:59:17', endTime: '2026-02-03T00:00:27', durationHrs: 0.03,  pages: null,status: 'Stopped'   },
-  { id: 4,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-02T23:52:29', endTime: '2026-02-02T23:52:56', durationHrs: 0.02,  pages: null,status: 'On-Hold'   },
-  { id: 5,  employee: 'Employee',       project: 'LDM - Hanser',task: '-',                                           startTime: '2026-02-02T22:48:30', endTime: '2026-02-02T22:57:15', durationHrs: 0.15,  pages: 10,  status: 'Completed' },
-  { id: 6,  employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-02-02T20:35:38', endTime: '2026-02-02T20:50:41', durationHrs: 0.25,  pages: 100, status: 'Completed' },
-  { id: 7,  employee: 'Employee',       project: 'LDM - Hanser',task: 'FIG - Croping - 9783446480438 - LDM - Hanser',startTime: '2026-02-02T00:59:26', endTime: '2026-02-02T20:31:19', durationHrs: 19.53, pages: 50,  status: 'Completed' },
-  { id: 8,  employee: 'Employee',       project: 'ING - Usen',  task: '-',                                           startTime: '2026-02-02T00:38:19', endTime: '2026-02-02T00:38:36', durationHrs: 0,     pages: 20,  status: 'Stopped'   },
-  { id: 9,  employee: 'Employee',       project: 'LDM - Hanser',task: 'FIG - Croping - 9783446480438 - LDM - Hanser',startTime: '2026-02-02T00:37:20', endTime: '2026-02-02T00:37:29', durationHrs: 0,     pages: 10,  status: 'Completed' },
-  { id: 10, employee: 'T. Mohamed Usen',project: 'ING - Usen',  task: 'EPUB - QC - 9798881870973 - ING - Usen',      startTime: '2026-01-31T10:00:00', endTime: '2026-01-31T10:00:00', durationHrs: 0,     pages: 10,  status: 'Completed' },
-  { id: 11, employee: 'Narkis',         project: 'ING - Usen',  task: 'EPUB - Tagging',                              startTime: '2026-01-30T09:00:00', endTime: '2026-01-30T09:00:00', durationHrs: 0,     pages: 14,  status: 'Completed' },
-  /* Extra to hit 411.1 hrs / 795 pages totals */
-  { id: 12, employee: 'Employee',       project: 'ING - Usen',  task: 'XML - Tagging',                               startTime: '2026-01-29T08:00:00', endTime: '2026-01-29T08:00:00', durationHrs: 389.5, pages: 363, status: 'Completed' },
-  { id: 13, employee: 'Employee',       project: 'LDM - T&F',   task: '-',                                           startTime: '2026-01-20T10:00:00', endTime: '2026-01-20T10:12:00', durationHrs: 0.2,   pages: 37,  status: 'Completed' },
-  { id: 14, employee: 'Employee',       project: 'CMT - JATS',  task: 'XML - Tagging',                               startTime: '2026-01-18T14:00:00', endTime: '2026-01-18T14:00:00', durationHrs: 0,     pages: 106, status: 'Completed' },
-  { id: 15, employee: 'Employee',       project: 'ING - ACDC',  task: '-',                                           startTime: '2026-01-15T09:00:00', endTime: '2026-01-15T09:00:00', durationHrs: 0,     pages: 18,  status: 'Completed' },
-  { id: 16, employee: 'Employee',       project: 'LDM - WILEY', task: '-',                                           startTime: '2026-01-10T11:00:00', endTime: '2026-01-10T11:24:00', durationHrs: 0.4,   pages: null,status: 'Stopped'   },
-  { id: 17, employee: 'Employee',       project: 'ING - OUP',   task: 'CUP1645',                                     startTime: '2026-01-08T13:00:00', endTime: '2026-01-08T14:18:00', durationHrs: 1.3,   pages: 123, status: 'Completed' },
-  { id: 18, employee: 'Employee',       project: 'LDM - Hanser',task: 'TP25 - 0386',                                 startTime: '2026-01-05T09:00:00', endTime: '2026-01-05T09:00:00', durationHrs: 0,     pages: 10,  status: 'Completed' },
-];
+import { apiCall } from '../../utils/api';
 
 /* ─── Format helpers ─────────────────────────────────────────────── */
 const fmtDateTime = (iso) => {
@@ -57,6 +24,27 @@ const fmtHrs = (h) => {
 
 const roundHrs = (h) => parseFloat(h.toFixed(1));
 
+const mapStatus = (status) => {
+  if (!status) return { label: '-', className: '' };
+  const s = status.toUpperCase();
+  if (s === 'FINISH' || s === 'COMPLETED') {
+    return { label: 'Completed', className: 'completed' };
+  }
+  if (s === 'HOLD' || s === 'ON-HOLD') {
+    return { label: 'On-Hold', className: 'on-hold' };
+  }
+  if (s === 'WIP') {
+    return { label: 'In Progress', className: 'wip' };
+  }
+  if (s === 'RUNNING') {
+    return { label: 'Running', className: 'running' };
+  }
+  if (s === 'ON BREAK' || s === 'ON_BREAK') {
+    return { label: 'On Break', className: 'on-break' };
+  }
+  return { label: status, className: status.toLowerCase() };
+};
+
 /* ─── Stat Card ─────────────────────────────────────────────────── */
 const StatCard = ({ label, value, sub, color }) => (
   <div className="ra-stat-card">
@@ -68,32 +56,64 @@ const StatCard = ({ label, value, sub, color }) => (
 
 /* ══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
-══════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════ */
 const ReportsAnalytics = () => {
   const [startDate,  setStartDate]  = useState('');
   const [endDate,    setEndDate]    = useState('');
   const [fEmployee,  setFEmployee]  = useState('');
   const [fProject,   setFProject]   = useState('');
 
-  /* Applied filters (only set on "Apply Filters" click) */
-  const [applied, setApplied] = useState({ startDate:'', endDate:'', employee:'', project:'' });
+  const [logs, setLogs] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const applyFilters = () => setApplied({ startDate, endDate, employee: fEmployee, project: fProject });
+  // ── Load dropdown options on mount ──
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        const [usersData, projectsData] = await Promise.all([
+          apiCall('/users'),
+          apiCall('/projects')
+        ]);
+        setEmployees(usersData || []);
+        setProjects(projectsData || []);
+      } catch (err) {
+        console.warn('Failed to load filter options:', err.message);
+      }
+    };
+    loadFilters();
+  }, []);
 
-  /* ── Filtered logs ── */
-  const filteredLogs = useMemo(() => seedLogs.filter(log => {
-    if (applied.employee && log.employee !== applied.employee) return false;
-    if (applied.project  && log.project  !== applied.project)  return false;
-    if (applied.startDate) {
-      const logDate = new Date(log.startTime);
-      if (logDate < new Date(applied.startDate)) return false;
+  const applyFilters = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      let query = '/reports/logs?';
+      const params = [];
+      if (fEmployee) params.push(`userId=${fEmployee}`);
+      if (fProject) params.push(`projectId=${fProject}`);
+      if (startDate) params.push(`startDate=${startDate}`);
+      if (endDate) params.push(`endDate=${endDate}`);
+      query += params.join('&');
+
+      const data = await apiCall(query);
+      setLogs(data || []);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch report logs');
+    } finally {
+      setLoading(false);
     }
-    if (applied.endDate) {
-      const logDate = new Date(log.startTime);
-      if (logDate > new Date(applied.endDate + 'T23:59:59')) return false;
-    }
-    return true;
-  }), [applied]);
+  };
+
+  // ── Load all logs on initial page load ──
+  useEffect(() => {
+    applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const filteredLogs = logs;
 
   const topScrollRef = React.useRef(null);
   const bottomScrollRef = React.useRef(null);
@@ -147,11 +167,11 @@ const ReportsAnalytics = () => {
 
   /* ── Summary stats ── */
   const totalHours = useMemo(() =>
-    roundHrs(filteredLogs.reduce((s, l) => s + l.durationHrs, 0)),
+    roundHrs(filteredLogs.reduce((s, l) => s + (l.workingSeconds || 0) / 3600.0, 0)),
   [filteredLogs]);
 
   const totalPages = useMemo(() =>
-    filteredLogs.reduce((s, l) => s + (l.pages || 0), 0),
+    filteredLogs.reduce((s, l) => s + (l.pagesCompleted || 0), 0),
   [filteredLogs]);
 
   const totalLogs = filteredLogs.length;
@@ -160,9 +180,10 @@ const ReportsAnalytics = () => {
   const byEmployee = useMemo(() => {
     const map = {};
     filteredLogs.forEach(l => {
-      if (!map[l.employee]) map[l.employee] = { hrs: 0, pages: 0 };
-      map[l.employee].hrs   += l.durationHrs;
-      map[l.employee].pages += (l.pages || 0);
+      const empName = l.employeeName || 'Unknown';
+      if (!map[empName]) map[empName] = { hrs: 0, pages: 0 };
+      map[empName].hrs   += (l.workingSeconds || 0) / 3600.0;
+      map[empName].pages += (l.pagesCompleted || 0);
     });
     return Object.entries(map)
       .map(([name, d]) => ({ name, hrs: roundHrs(d.hrs), pages: d.pages }))
@@ -173,9 +194,10 @@ const ReportsAnalytics = () => {
   const byProject = useMemo(() => {
     const map = {};
     filteredLogs.forEach(l => {
-      if (!map[l.project]) map[l.project] = { hrs: 0, pages: 0 };
-      map[l.project].hrs   += l.durationHrs;
-      map[l.project].pages += (l.pages || 0);
+      const projName = l.projectName || 'Unknown';
+      if (!map[projName]) map[projName] = { hrs: 0, pages: 0 };
+      map[projName].hrs   += (l.workingSeconds || 0) / 3600.0;
+      map[projName].pages += (l.pagesCompleted || 0);
     });
     return Object.entries(map)
       .map(([name, d]) => ({ name, hrs: roundHrs(d.hrs), pages: d.pages }))
@@ -186,9 +208,15 @@ const ReportsAnalytics = () => {
   const exportCSV = () => {
     const headers = ['ID', 'Employee', 'Project', 'Task', 'Start Time', 'End Time', 'Duration (hrs)', 'Pages', 'Status'];
     const rows = filteredLogs.map(l => [
-      l.id, `"${l.employee}"`, `"${l.project}"`, `"${l.task}"`,
-      fmtDateTime(l.startTime), fmtDateTime(l.endTime),
-      l.durationHrs, l.pages ?? '', `"${l.status || '-'}"`
+      l.id,
+      `"${l.employeeName || '-'}"`,
+      `"${l.projectName || '-'}"`,
+      `"${l.taskTitle || l.isbnTitle || '-'}"`,
+      fmtDateTime(l.startTime),
+      fmtDateTime(l.endTime),
+      ((l.workingSeconds || 0) / 3600.0).toFixed(2),
+      l.pagesCompleted ?? 0,
+      `"${l.status || '-'}"`
     ].join(','));
     const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv' });
     const a = Object.assign(document.createElement('a'), {
@@ -206,7 +234,7 @@ const ReportsAnalytics = () => {
           <span className="ra-page-icon">📋</span>
           <h2>Reports &amp; Analytics</h2>
         </div>
-        <button className="ra-export-btn" onClick={exportCSV}>
+        <button className="ra-export-btn" onClick={exportCSV} disabled={loading || filteredLogs.length === 0}>
           📤 Export CSV
         </button>
       </div>
@@ -247,7 +275,7 @@ const ReportsAnalytics = () => {
               onChange={e => setFEmployee(e.target.value)}
             >
               <option value="">All Employees</option>
-              {ALL_EMPLOYEES.map(e => <option key={e} value={e}>{e}</option>)}
+              {employees.map(e => <option key={e.id} value={e.id}>{e.fullName}</option>)}
             </select>
           </div>
 
@@ -260,15 +288,29 @@ const ReportsAnalytics = () => {
               onChange={e => setFProject(e.target.value)}
             >
               <option value="">All Projects</option>
-              {ALL_PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
+              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
         </div>
 
-        <button className="ra-apply-btn" onClick={applyFilters}>
-          Apply Filters
+        <button className="ra-apply-btn" onClick={applyFilters} disabled={loading}>
+          {loading ? 'Applying...' : 'Apply Filters'}
         </button>
       </div>
+
+      {error && (
+        <div style={{
+          padding: '12px 18px',
+          background: '#fee2e2',
+          border: '1px solid #fca5a5',
+          borderRadius: '8px',
+          color: '#991b1b',
+          fontSize: '0.85rem',
+          fontWeight: '600'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
 
       {/* ── Stat Cards ── */}
       <div className="ra-stats-grid">
@@ -372,50 +414,53 @@ const ReportsAnalytics = () => {
               {filteredLogs.length === 0 ? (
                 <tr>
                   <td colSpan="9" className="ra-table-empty">
-                    No time logs found for selected filters.
+                    {loading ? 'Loading...' : 'No time logs found for selected filters.'}
                   </td>
                 </tr>
-              ) : filteredLogs.map(log => (
-                <tr key={log.id}>
-                  <td className="td-id">{log.id}</td>
-                  <td className="td-employee col-left">{log.employee}</td>
-                  <td className="td-project">
-                    <span className="ra-project-tag">{log.project}</span>
-                  </td>
-                  <td className="td-task">
-                    {log.task === '-'
-                      ? <span className="ra-dash">-</span>
-                      : log.task}
-                  </td>
-                  <td className="td-time">{fmtDateTime(log.startTime)}</td>
-                  <td className="td-time">{fmtDateTime(log.endTime)}</td>
-                  <td className="td-duration">
-                    <span className={`ra-dur ${log.durationHrs >= 1 ? 'high' : ''}`}>
-                      {fmtHrs(log.durationHrs)}
-                    </span>
-                  </td>
-                  <td className="td-pages">
-                    {log.pages != null
-                      ? <span className="ra-pages-cell" style={{ justifyContent: 'center' }}>
-                          <span className="ra-pages-icon-sm">📄</span>
-                          {log.pages}
-                        </span>
-                      : <span className="ra-dash">-</span>}
-                  </td>
-                  <td className="td-status">
-                    <span className={`ra-status-badge ${log.status ? log.status.toLowerCase() : ''}`}>
-                      {log.status || '-'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              ) : filteredLogs.map(log => {
+                const statusInfo = mapStatus(log.status);
+                return (
+                  <tr key={log.id}>
+                    <td className="td-id" title={log.id}>
+                      {log.id ? log.id.substring(0, 8) : '-'}
+                    </td>
+                    <td className="td-employee col-left">{log.employeeName}</td>
+                    <td className="td-project">
+                      <span className="ra-project-tag">{log.projectName}</span>
+                    </td>
+                    <td className="td-task" title={log.taskTitle || log.isbnTitle}>
+                      {log.taskTitle || log.isbnTitle || <span className="ra-dash">-</span>}
+                    </td>
+                    <td className="td-time">{fmtDateTime(log.startTime)}</td>
+                    <td className="td-time">{fmtDateTime(log.endTime)}</td>
+                    <td className="td-duration">
+                      <span className={`ra-dur ${(log.workingSeconds || 0) >= 3600 ? 'high' : ''}`}>
+                        {fmtHrs((log.workingSeconds || 0) / 3600.0)}
+                      </span>
+                    </td>
+                    <td className="td-pages">
+                      {log.pagesCompleted != null
+                        ? <span className="ra-pages-cell" style={{ justifyContent: 'center' }}>
+                            <span className="ra-pages-icon-sm">📄</span>
+                            {log.pagesCompleted}
+                          </span>
+                        : <span className="ra-dash">-</span>}
+                    </td>
+                    <td className="td-status">
+                      <span className={`ra-status-badge ${statusInfo.className}`}>
+                        {statusInfo.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Table footer */}
         <div className="ra-table-footer">
-          Showing <strong>{filteredLogs.length}</strong> of <strong>{seedLogs.length}</strong> entries
+          Showing <strong>{filteredLogs.length}</strong> entries
         </div>
       </div>
 

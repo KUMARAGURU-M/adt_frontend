@@ -133,18 +133,18 @@
   min-width: 820px;
 }
 
-/* Clean white header — no background tint, just border-bottom */
+/* Standardized header background */
 .al-table thead tr {
-  background: white;
+  background: #f8fafc;
 }
 
 .al-table th {
-  padding: 14px 16px;
-  color: #374151;
-  font-weight: 600;
-  font-size: 13px;
+  padding: 14px 15px;
+  color: #475569;
+  font-weight: 800;
+  font-size: 14px;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #edf2f7;
   white-space: nowrap;
 }
 
@@ -184,8 +184,8 @@
 }
 
 .al-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 11px 15px;
+  border-bottom: 1px solid #f1f5f9;
   color: #4a5568;
   vertical-align: middle;
   text-align: center;
@@ -196,7 +196,7 @@
 }
 
 .al-table tbody tr:hover {
-  background: #f9fafb;
+  background-color: #f8fafc;
 }
 
 /* Timestamp */

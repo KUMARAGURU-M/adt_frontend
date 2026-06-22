@@ -1,75 +1,16 @@
-// src/pages/admin/TaskManagement.js
-import React, { useState, useMemo, useEffect } from "react";
+import React, {
+  useState, useMemo, useEffect, useCallback
+} from "react";
 import { useLocation } from "react-router-dom";
 import "./TaskManagement.css";
+import { apiCall } from "../../utils/api";
 
-/* ─── Constants ─────────────────────────────── */
-const ALL_PROJECTS = [
-  "LDM - Hanser", "ING - Usen", "ING - OUP", "LDM - T&F",
-  "LDM - WILEY", "CNT", "IMP - EPUB", "CMT - JATS", "ING - ACDC", "LDM - ASS_EPUB3",
+// ── Constants ─────────────────────────────────────────────────────
+const ALL_STATUSES = [
+  "FINISH","WIP","YTS","RTU","UPLOADED","PENDING","HOLD","QUERY"
 ];
 
-const ALL_PROCESSES = [
-  "REWORK - Process",
-  "EPUB - QC Process", "EPUB - Tagging", "FIG - Croping", "INDEX - Process",
-  "MATH - Keying", "OCR - Process", "Proof Reading - Process", "REF - Process",
-  "TABLE - Process", "VALID - Process", "WORD - QC Process", "WORD - Styling",
-  "XML - QC Process", "XML - Tagging",
-];
-
-const ALL_EMPLOYEES = ["Ayeesha M", "Shakina A", "T. Mohamed Usen", "Karthika", "Sureka", "Gowri", "Employee"];
-
-const ALL_STATUSES = ["FINISH", "WIP", "YTS", "RTU", "UPLOADED", "PENDING", "HOLD", "QUERY"];
-
-/* jobs keyed by project */
-const JOBS_BY_PROJECT = {
-  "LDM - Hanser": ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)", "TP25-0387_LDM_Sample\n(ISBN: 9783446480001)"],
-  "ING - Usen": ["ING-Usen-Job-001\n(ISBN: 9798881870973)", "ING-Usen-Job-002\n(ISBN: 9798881870001)"],
-  "ING - OUP": ["French\n(ISBN: 9780521821445)", "OUP-Job-002\n(ISBN: 9780521821001)"],
-  "LDM - T&F": ["TF-Job-001\n(ISBN: 9780001234567)"],
-  "LDM - WILEY": ["WILEY-Job-001\n(ISBN: 9780002345678)"],
-  "CNT": ["CNT-Job-001\n(ISBN: 9780003456789)"],
-  "IMP - EPUB": ["IMP-EPUB-Job-001\n(ISBN: 9780004567890)"],
-  "CMT - JATS": ["is_v30_i2_d1767629676\n(ISBN: is_v30_i2_d1767629676)"],
-  "ING - ACDC": ["ACDC-Job-001\n(ISBN: 9780005678901)"],
-  "LDM - ASS_EPUB3": ["ASS-EPUB3-Job-001\n(ISBN: 9780006789012)"],
-};
-
-const DUMMY_JOB_PAGES = {
-  "TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)": 240,
-  "TP25-0387_LDM_Sample\n(ISBN: 9783446480001)": 150,
-  "ING-Usen-Job-001\n(ISBN: 9798881870973)": 320,
-  "ING-Usen-Job-002\n(ISBN: 9798881870001)": 180,
-  "French\n(ISBN: 9780521821445)": 412,
-  "OUP-Job-002\n(ISBN: 9780521821001)": 295,
-  "TF-Job-001\n(ISBN: 9780001234567)": 124,
-  "WILEY-Job-001\n(ISBN: 9780002345678)": 380,
-  "CNT-Job-001\n(ISBN: 9780003456789)": 215,
-  "IMP-EPUB-Job-001\n(ISBN: 9780004567890)": 98,
-  "is_v30_i2_d1767629676\n(ISBN: is_v30_i2_d1767629676)": 288,
-  "ACDC-Job-001\n(ISBN: 9780005678901)": 174,
-  "ASS-EPUB3-Job-001\n(ISBN: 9780006789012)": 310,
-};
-
-/* ─── Seed data ─────────────────────────────── */
-const initialTasks = [
-  { id: 1, title: "EPUB - Tagging - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["EPUB - Tagging"], employees: ["Employee"], status: "PENDING", dueDate: "2026-05-12", pages: "50", chapter: "1", estimateHours: "0.0", description: "", totalPages: 240 },
-  { id: 2, title: "Proof Reading - Process - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["Proof Reading - Process"], employees: ["Employee"], status: "PENDING", dueDate: "", pages: "", chapter: "", estimateHours: "0.0", description: "", totalPages: 240 },
-  { id: 3, title: "CUP1645", project: "ING - OUP", jobs: ["French\n(ISBN: 9780521821445)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "PENDING", dueDate: "2026-02-03", pages: "", chapter: "", estimateHours: "0.0", description: "", totalPages: 412 },
-  { id: 4, title: "FIG - Croping - 9783446480438 - LDM - Hanser", project: "LDM - Hanser", jobs: ["TP25-0386_chv9783446477629_Joebsti\n(ISBN: 9783446480438)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "FINISH", dueDate: "2026-02-01", pages: "10", chapter: "Plaintiffs-Original-Petition_202447383...", estimateHours: "0.0", description: "", totalPages: 240 },
-  { id: 5, title: "XML - Tagging - is_v30_i2_d1767629676 - CMT - JATS", project: "CMT - JATS", jobs: ["is_v30_i2_d1767629676\n(ISBN: is_v30_i2_d1767629676)"], processes: ["XML - Tagging"], employees: ["Employee"], status: "FINISH", dueDate: "2026-01-29", pages: "251", chapter: "1-15", estimateHours: "0.0", description: "", totalPages: 288 },
-];
-
-const emptyForm = {
-  title: "", project: "", jobs: [], processes: [], employees: [],
-  status: "PENDING", date: "", dueDate: "", estimateHours: "0.0", description: "",
-  pagesType: "", pagesStart: "", pagesEnd: "",
-  chapterType: "", chapterStart: "", chapterEnd: "",
-  pages: "", chapter: "", assignedBy: "",
-  path: "", complexity: "", totalPages: ""
-};
-
-/* ─── Helpers ───────────────────────────────── */
+// ── Helpers ───────────────────────────────────────────────────────
 const fmtDue = (d) => {
   if (!d) return "-";
   const [y, m, day] = d.split("-");
@@ -78,48 +19,64 @@ const fmtDue = (d) => {
 
 const badgeClass = (s) => {
   const lower = s?.toLowerCase() || "";
-  if (lower === "finish" || lower === "completed" || lower === "uploaded") return "completed";
-  if (lower === "wip" || lower === "inprogress" || lower === "rtu") return "inprogress";
-  if (lower === "yts" || lower === "pending") return "pending";
-  if (lower === "hold" || lower === "query" || lower === "cancelled") return "cancelled";
-  if (lower === "archived") return "archived";
+  if (["finish","completed","uploaded"].includes(lower))  return "completed";
+  if (["wip","inprogress","rtu"].includes(lower))         return "inprogress";
+  if (["yts","pending"].includes(lower))                  return "pending";
+  if (["hold","query","cancelled"].includes(lower))       return "cancelled";
+  if (lower === "archived")                               return "archived";
   return "pending";
 };
 
-const getJobIdentifier = (job) => {
-  if (!job) return "";
-  const isbnMatch = job.match(/\(ISBN:\s*([^)]+)\)/i);
-  if (isbnMatch) return isbnMatch[1].trim();
-  return job.split("\n")[0].trim();
-};
+// Map backend response → frontend shape
+const mapTask = (t) => ({
+  id:          t.id,
+  title:       t.taskTitle || "",
+  projectId:   t.projectId || null,
+  project:     t.projectName || "",
+  processId:   t.processId || null,
+  processes:   t.processName ? [t.processName] : [],
+  processIds:  t.processId ? [t.processId] : [],
+  jobs:        (t.jobs || []).map(j => ({
+    id:    j.jobId,
+    label: [j.jobIdCode, j.titleName, j.xmlIsbn]
+             .filter(Boolean).join(" / "),
+    isbn:  j.xmlIsbn,
+    pages: j.pageCount,
+    assignedPages: j.assignedPages,
+  })),
+  employees:   (t.employees || []).map(e => ({
+    id:       e.userId,
+    name:     e.fullName,
+    assignedPages: e.assignedPages,
+    status:   e.status,
+  })),
+  status:      t.status || "PENDING",
+  date:        t.assignedDate || "",
+  dueDate:     t.dueDate || "",
+  pages:       t.assignedPages?.toString() || "",
+  chapter:     t.chapterArticleBatch || "",
+  estimateHours: t.estimateHours?.toString() || "0.0",
+  description: t.description || "",
+  complexity:  t.complexity || "",
+  totalPages:  t.totalPages || "",
+  serverPath:  t.serverPath || "",
+  assignedBy:  t.assignedByName || "",
+});
 
-const autoTitle = (f) => {
-  const processPart = f.processes.join(", ");
-  const jobPart = f.jobs.map(getJobIdentifier).join(", ");
-  const parts = [processPart, jobPart, f.project].filter(Boolean);
-  return parts.join(" - ");
-};
-
-/* ─── Overlay ───────────────────────────────── */
-const Overlay = ({ onClose, children }) => (
-  <div className="modal-overlay" onClick={onClose}>
-    <div onClick={e => e.stopPropagation()}>{children}</div>
-  </div>
-);
-
-/* ─── Checkbox list component ───────────────── */
-function CheckboxList({ title, icon, items, selected, onChange, allowDeselect }) {
-  const allSelected = items.length > 0 && items.every(i => selected.includes(i));
+// ── CheckboxList ──────────────────────────────────────────────────
+function CheckboxList({ title, icon, items, selected, onChange,
+                        allowDeselect, labelKey = null, valueKey = null }) {
+  const getValue = (item) => valueKey ? item[valueKey] : item;
+  const getLabel = (item) => labelKey ? item[labelKey] : item;
+  const allSel   = items.length > 0 &&
+                   items.every(i => selected.includes(getValue(i)));
 
   const toggle = (item) => {
-    onChange(selected.includes(item)
-      ? selected.filter(s => s !== item)
-      : [...selected, item]
-    );
+    const val = getValue(item);
+    onChange(selected.includes(val)
+      ? selected.filter(s => s !== val)
+      : [...selected, val]);
   };
-
-  const selectAll = () => onChange([...items]);
-  const deselectAll = () => onChange([]);
 
   return (
     <div className="tm-checkbox-section">
@@ -128,141 +85,233 @@ function CheckboxList({ title, icon, items, selected, onChange, allowDeselect })
           <span style={{ fontSize: "0.82rem" }}>{icon}</span>
           <span className="tm-checkbox-section-title">{title}</span>
           {selected.length > 0 && (
-            <span className="tm-selected-count">({selected.length} selected)</span>
+            <span className="tm-selected-count">
+              ({selected.length} selected)
+            </span>
           )}
         </div>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display:"flex", gap:10 }}>
           {allowDeselect && selected.length > 0 && (
-            <button className="tm-deselect-btn" onClick={deselectAll}>Deselect All</button>
+            <button className="tm-deselect-btn" onClick={() => onChange([])}>
+              Deselect All
+            </button>
           )}
-          {!allSelected && (
-            <button className="tm-select-all-btn" onClick={selectAll}>Select All</button>
+          {!allSel && (
+            <button className="tm-select-all-btn"
+              onClick={() => onChange(items.map(getValue))}>
+              Select All
+            </button>
           )}
         </div>
       </div>
       <div className="tm-checkbox-list">
-        {items.map(item => (
-          <label
-            key={item}
-            className={`tm-checkbox-item ${selected.includes(item) ? "checked" : ""}`}
-          >
-            <input
-              type="checkbox"
-              checked={selected.includes(item)}
-              onChange={() => toggle(item)}
-            />
-            <span style={{ lineHeight: 1.3 }}>{item.replace("\n", " ")}</span>
-          </label>
-        ))}
+        {items.map(item => {
+          const val = getValue(item);
+          const lbl = getLabel(item);
+          return (
+            <label key={val}
+              className={`tm-checkbox-item ${selected.includes(val) ? "checked" : ""}`}>
+              <input
+                type="checkbox"
+                checked={selected.includes(val)}
+                onChange={() => toggle(item)}
+              />
+              <span style={{ lineHeight:1.3 }}>
+                {typeof lbl === "string"
+                  ? lbl.replace("\n", " ")
+                  : lbl}
+              </span>
+            </label>
+          );
+        })}
+        {items.length === 0 && (
+          <div style={{ color:"#a0aec0", padding:"8px", fontSize:"0.8rem" }}>
+            No items available
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════
-   TASK FORM MODAL
-══════════════════════════════════════════════ */
-function TaskModal({ mode, task, onClose, onSave }) {
+// ── Overlay ───────────────────────────────────────────────────────
+const Overlay = ({ onClose, children }) => (
+  <div className="modal-overlay" onClick={onClose}>
+    <div onClick={e => e.stopPropagation()}>{children}</div>
+  </div>
+);
+
+// ── TaskModal ─────────────────────────────────────────────────────
+function TaskModal({ mode, task, onClose, onSave,
+                     projects, processes, employees }) {
+
+  const emptyForm = {
+    title: "", projectId: null, processIds: [],
+    jobIds: [], employeeIds: [],
+    status: "PENDING", date: "", dueDate: "",
+    estimateHours: "0.0", description: "",
+    pagesType: "", pagesStart: "", pagesEnd: "",
+    chapterType: "", chapterStart: "", chapterEnd: "",
+    assignedBy: null, totalPages: "", complexity: "",
+    serverPath: "",
+  };
+
   const [form, setForm] = useState(() => {
-    if (task) {
-      let pagesType = task.pagesType || "";
-      let pagesStart = task.pagesStart || "";
-      let pagesEnd = task.pagesEnd || "";
-
-      if (!pagesType && task.pages) {
-        if (task.pages === "All Pages") pagesType = "All Pages";
-        else if (task.pages.includes(" - ")) {
-          pagesType = "Start Page - End Page";
-          [pagesStart, pagesEnd] = task.pages.split(" - ");
-        } else {
-          pagesType = "Start Page - End Page";
-          pagesStart = task.pages;
-        }
-      }
-
-      let chapterType = task.chapterType || "";
-      let chapterStart = task.chapterStart || "";
-      let chapterEnd = task.chapterEnd || "";
-
-      if (!chapterType && task.chapter) {
-        if (["Full Book", "All Article", "All Batch", "All Chapter"].includes(task.chapter)) {
-          chapterType = task.chapter;
-        } else if (task.chapter.includes(" - ")) {
-          chapterType = "Start Page - End Page";
-          [chapterStart, chapterEnd] = task.chapter.split(" - ");
-        } else {
-          chapterType = "Start Page - End Page";
-          chapterStart = task.chapter;
-        }
-      }
-
-      return {
-        ...emptyForm,
-        ...task,
-        pagesType, pagesStart, pagesEnd,
-        chapterType, chapterStart, chapterEnd
-      };
-    }
-    return { ...emptyForm };
+    if (!task) return { ...emptyForm };
+    return {
+      title:        task.title,
+      projectId:    task.projectId,
+      processIds:   task.processIds || [],
+      jobIds:       task.jobs.map(j => j.id),
+      employeeIds:  task.employees.map(e => e.id),
+      status:       task.status,
+      date:         task.date,
+      dueDate:      task.dueDate,
+      estimateHours: task.estimateHours,
+      description:  task.description,
+      pagesType:    task.pages === "All Pages"
+                      ? "All Pages"
+                      : task.pages?.includes(" - ")
+                      ? "Start Page - End Page"
+                      : task.pages ? "Start Page - End Page" : "",
+      pagesStart:   task.pages?.includes(" - ")
+                      ? task.pages.split(" - ")[0] : task.pages || "",
+      pagesEnd:     task.pages?.includes(" - ")
+                      ? task.pages.split(" - ")[1] : "",
+      chapterType:  ["Full Book","All Article","All Batch","All Chapter"]
+                      .includes(task.chapter)
+                      ? task.chapter
+                      : task.chapter?.includes(" - ")
+                      ? "Start Page - End Page"
+                      : task.chapter ? "Start Page - End Page" : "",
+      chapterStart: task.chapter?.includes(" - ")
+                      ? task.chapter.split(" - ")[0] : task.chapter || "",
+      chapterEnd:   task.chapter?.includes(" - ")
+                      ? task.chapter.split(" - ")[1] : "",
+      assignedBy:   null, // will be set by user
+      totalPages:   task.totalPages?.toString() || "",
+      complexity:   task.complexity || "",
+      serverPath:   task.serverPath || "",
+    };
   });
-  const [errors, setErrors] = useState({});
+
+  const [errors,         setErrors]         = useState({});
+  const [saving,         setSaving]         = useState(false);
   const [showComplexity, setShowComplexity] = useState(!!form.complexity);
+
+  // Jobs available for selected project
+  const [projectJobs, setProjectJobs] = useState([]);
+
+  useEffect(() => {
+    if (!form.projectId) { setProjectJobs([]); return; }
+    apiCall(`/jobs/by-project/${form.projectId}`)
+      .then(data => setProjectJobs(data.map(j => ({
+        id:    j.id,
+        label: [j.jobIdCode, j.titleName, j.xmlIsbn]
+                 .filter(Boolean).join(" / "),
+        pages: j.pageCount,
+      }))))
+      .catch(() => setProjectJobs([]));
+  }, [form.projectId]);
 
   const setF = (k, v) => {
     setForm(p => {
       const next = { ...p, [k]: v };
-      if (k === "project") {
-        next.jobs = [];
+      if (k === "projectId") {
+        next.jobIds = [];
         next.totalPages = "";
-      } else if (k === "jobs") {
-        if (v && v.length > 0) {
-          next.totalPages = DUMMY_JOB_PAGES[v[0]] || "";
-        } else {
-          next.totalPages = "";
+        next.pagesType = "";
+        next.pagesStart = "";
+        next.pagesEnd = "";
+      }
+      if (k === "jobIds" && v.length > 0) {
+        // Auto-fill totalPages from first selected job
+        const firstJob = projectJobs.find(j => j.id === v[0]);
+        if (firstJob?.pages) {
+          next.totalPages = firstJob.pages.toString();
+          // Auto-select "All Pages" when a book is chosen
+          next.pagesType = "All Pages";
+          next.pagesStart = "";
+          next.pagesEnd = "";
         }
       }
-      /* auto-generate title if it's blank or auto-generated */
-      if (k !== "title") {
-        const auto = autoTitle(next);
-        if (!p.title || p.title === autoTitle(p)) next.title = auto;
+      if (k === "jobIds" && v.length === 0) {
+        next.totalPages = "";
+        next.pagesType = "";
+        next.pagesStart = "";
+        next.pagesEnd = "";
       }
       return next;
     });
     setErrors(prev => ({ ...prev, [k]: "" }));
   };
 
-  const availableJobs = JOBS_BY_PROJECT[form.project] || [];
-
   const validate = () => {
     const e = {};
-    if (!form.project) e.project = "Project is required.";
-    if (!form.processes.length) e.processes = "Select at least one process.";
-    if (!form.employees.length) e.employees = "Select at least one employee.";
-    if (!form.assignedBy) e.assignedBy = "Assigned By is required.";
+    if (!form.projectId)       e.projectId   = "Project is required.";
+    if (!form.processIds.length) e.processIds = "Select at least one process.";
+    if (!form.employeeIds.length) e.employeeIds = "Select at least one employee.";
     return e;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
 
     let finalPages = form.pagesType;
     if (form.pagesType === "Start Page - End Page") {
-      finalPages = [form.pagesStart, form.pagesEnd].filter(Boolean).join(" - ");
+      finalPages = [form.pagesStart, form.pagesEnd]
+                    .filter(Boolean).join(" - ");
+    }
+
+    // Calculate the numeric assignedPages to store for tracking
+    let numericAssignedPages = null;
+    if (form.pagesType === "All Pages" && form.totalPages) {
+      numericAssignedPages = parseInt(form.totalPages) || null;
+    } else if (form.pagesType === "Start Page - End Page") {
+      const start = parseInt(form.pagesStart) || 0;
+      const end   = parseInt(form.pagesEnd)   || 0;
+      if (start > 0 && end >= start) {
+        numericAssignedPages = end - start + 1;
+      }
     }
 
     let finalChapter = form.chapterType;
     if (form.chapterType === "Start Page - End Page") {
-      finalChapter = [form.chapterStart, form.chapterEnd].filter(Boolean).join(" - ");
+      finalChapter = [form.chapterStart, form.chapterEnd]
+                       .filter(Boolean).join(" - ");
     }
 
-    onSave({
-      ...form,
-      id: task?.id || Date.now(),
-      pages: finalPages,
-      chapter: finalChapter
-    });
-    onClose();
+    setSaving(true);
+    try {
+      await onSave({
+        projectId:         form.projectId,
+        processIds:        form.processIds,
+        taskTitle:         form.title || null,
+        description:       form.description || null,
+        status:            form.status,
+        dueDate:           form.dueDate || null,
+        assignedPagesStr:  finalPages || null,
+        assignedPages:     numericAssignedPages,
+        complexity:        showComplexity ? form.complexity : null,
+        chapterArticleBatch: finalChapter || null,
+        estimateHours:     parseFloat(form.estimateHours) || null,
+        serverPath:        form.serverPath || null,
+        assignedBy:        form.assignedBy || null,
+        totalPages:        parseInt(form.totalPages) || null,
+        jobAssignments: form.jobIds.map(id => ({
+          jobId: id, assignedPages: numericAssignedPages
+        })),
+        employeeAssignments: form.employeeIds.map(id => ({
+          userId: id, assignedPages: numericAssignedPages
+        })),
+      }, task?.id);
+      onClose();
+    } catch (err) {
+      alert("Error saving task: " + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -272,7 +321,7 @@ function TaskModal({ mode, task, onClose, onSave }) {
         {/* Header */}
         <div className="tm-modal-header">
           <div className="tm-modal-header-left">
-            <span style={{ fontSize: "1.1rem" }}>✅</span>
+            <span style={{ fontSize:"1.1rem" }}>✅</span>
             <h2 className="tm-modal-title">
               {mode === "add" ? "Add New Task" : "Edit Task"}
             </h2>
@@ -280,67 +329,64 @@ function TaskModal({ mode, task, onClose, onSave }) {
           <button className="tm-modal-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* Body */}
         <div className="tm-modal-body">
 
           {/* Project */}
           <div>
             <div className="tm-field-label">
-              <span>📁</span> Project <span className="req">*</span>
+              📁 Project <span className="req">*</span>
             </div>
             <select
-              className={`tm-form-select ${errors.project ? "tm-form-input--error" : ""}`}
-              value={form.project}
-              onChange={e => {
-                setF("project", e.target.value);
-              }}
+              className={`tm-form-select ${errors.projectId ? "tm-form-input--error" : ""}`}
+              value={form.projectId || ""}
+              onChange={e => setF("projectId", e.target.value || null)}
             >
               <option value="">Select Publisher</option>
-              {ALL_PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
             </select>
-            {errors.project && <span className="tm-form-error">{errors.project}</span>}
+            {errors.projectId && (
+              <span className="tm-form-error">{errors.projectId}</span>
+            )}
           </div>
 
           {/* Status & Date */}
           <div className="tm-two-col">
             <div>
-              <div className="tm-field-label"><span>🏷️</span> Status <span className="req">*</span></div>
-              <select
-                className="tm-form-select"
-                value={form.status}
-                onChange={e => setF("status", e.target.value)}
-              >
+              <div className="tm-field-label">🏷️ Status</div>
+              <select className="tm-form-select" value={form.status}
+                onChange={e => setF("status", e.target.value)}>
                 {ALL_STATUSES.map(s => (
-                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
             <div>
-              <div className="tm-field-label"><span>📅</span> Date</div>
-              <input
-                type="date"
-                className="tm-form-input"
-                value={form.date || ""}
-                onChange={e => setF("date", e.target.value)}
-              />
+              <div className="tm-field-label">📅 Date</div>
+              <input type="date" className="tm-form-input"
+                value={form.date}
+                onChange={e => setF("date", e.target.value)} />
             </div>
           </div>
 
           {/* Book/Job */}
           <div>
-            <div className="tm-field-label">
-              <span>📖</span> Book/Job <span className="req">*</span>
-            </div>
-            {!form.project ? (
-              <div className="tm-job-placeholder">📌 Please select a Project first</div>
+            <div className="tm-field-label">📖 Book/Job</div>
+            {!form.projectId ? (
+              <div className="tm-job-placeholder">
+                📌 Please select a Project first
+              </div>
             ) : (
               <CheckboxList
                 title="Available Jobs"
                 icon="📖"
-                items={availableJobs}
-                selected={form.jobs}
-                onChange={v => setF("jobs", v)}
-                allowDeselect={true}
+                items={projectJobs}
+                selected={form.jobIds}
+                onChange={v => setF("jobIds", v)}
+                allowDeselect
+                valueKey="id"
+                labelKey="label"
               />
             )}
           </div>
@@ -348,195 +394,219 @@ function TaskModal({ mode, task, onClose, onSave }) {
           {/* Pages & Complexity */}
           <div className="tm-two-col">
             <div>
-              <div className="tm-field-label"><span>📄</span> Pages</div>
-              <input
-                type="number"
-                className="tm-form-input"
+              <div className="tm-field-label">📄 Pages</div>
+              <input type="number" className="tm-form-input"
                 placeholder="Job pages"
-                value={form.totalPages || ""}
-                onChange={e => setF("totalPages", e.target.value)}
-              />
+                value={form.totalPages}
+                onChange={e => setF("totalPages", e.target.value)} />
             </div>
             <div>
-              <div style={{ display: "flex", alignItems: "center", height: "24px" }}>
-                <label className="tm-checkbox-item" style={{ borderBottom: "none", padding: 0, background: "none" }}>
+              <div style={{ display:"flex", alignItems:"center", height:"24px" }}>
+                <label className="tm-checkbox-item"
+                  style={{ borderBottom:"none", padding:0, background:"none" }}>
                   <input
                     type="checkbox"
                     checked={showComplexity}
                     onChange={e => {
-                      const checked = e.target.checked;
-                      setShowComplexity(checked);
-                      if (!checked) {
-                        setF("complexity", "");
-                      } else {
-                        setF("complexity", "Simple");
-                      }
+                      setShowComplexity(e.target.checked);
+                      if (!e.target.checked) setF("complexity", "");
+                      else setF("complexity", "Simple");
                     }}
                   />
-                  <span style={{ fontWeight: 600, color: "#4a5568", fontSize: "0.82rem" }}>Add Complexity</span>
+                  <span style={{ fontWeight:600, color:"#4a5568",
+                                 fontSize:"0.82rem" }}>
+                    Add Complexity
+                  </span>
                 </label>
               </div>
-              <div style={{ marginTop: "5px" }}>
+              <div style={{ marginTop:"5px" }}>
                 {showComplexity ? (
-                  <select
-                    className="tm-form-select"
-                    value={form.complexity || "Simple"}
-                    onChange={e => setF("complexity", e.target.value)}
-                  >
+                  <select className="tm-form-select" value={form.complexity}
+                    onChange={e => setF("complexity", e.target.value)}>
                     <option value="Simple">Simple</option>
                     <option value="Medium">Medium</option>
                     <option value="Complex">Complex</option>
                     <option value="Heavy Complex">Heavy Complex</option>
                   </select>
                 ) : (
-                  <select
-                    className="tm-form-select"
-                    disabled
-                    value=""
-                    style={{ opacity: 0.5, backgroundColor: "#f8fafc", cursor: "not-allowed" }}
-                  >
-                    <option value="">Complexity Not Added</option>
+                  <select className="tm-form-select" disabled
+                    style={{ opacity:0.5, cursor:"not-allowed" }}>
+                    <option>Complexity Not Added</option>
                   </select>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Process (Stage) */}
+          {/* Process */}
           <div>
             <div className="tm-field-label">
-              <span>⚙️</span> Process (Stage) <span className="req">*</span>
+              ⚙️ Process (Stage) <span className="req">*</span>
             </div>
             <CheckboxList
               title="Processes"
               icon="⚙️"
-              items={ALL_PROCESSES}
-              selected={form.processes}
-              onChange={v => setF("processes", v)}
+              items={processes}
+              selected={form.processIds}
+              onChange={v => setF("processIds", v)}
               allowDeselect={false}
+              valueKey="id"
+              labelKey="name"
             />
-            {errors.processes && <span className="tm-form-error">{errors.processes}</span>}
+            {errors.processIds && (
+              <span className="tm-form-error">{errors.processIds}</span>
+            )}
           </div>
 
           {/* Task Title */}
           <div>
             <div className="tm-field-label">
-              <span>🏷️</span> Task Title
-              <span className="tm-field-hint">(Optional · Auto-generated if empty)</span>
+              🏷️ Task Title
+              <span className="tm-field-hint">
+                (Optional · Auto-generated if empty)
+              </span>
             </div>
-            <input
-              className="tm-form-input"
-              placeholder="Enter task title or select Process, Job, and Project"
+            <input className="tm-form-input"
+              placeholder="Enter task title or leave blank for auto-generation"
               value={form.title}
-              onChange={e => setF("title", e.target.value)}
-            />
+              onChange={e => setF("title", e.target.value)} />
           </div>
 
-          {/* Assigned Employees */}
+          {/* Employees */}
           <div>
             <div className="tm-field-label">
-              <span>👥</span> Assigned Employee(s) <span className="req">*</span>
+              👥 Assigned Employee(s) <span className="req">*</span>
             </div>
             <CheckboxList
               title="Employees"
               icon="👤"
-              items={ALL_EMPLOYEES}
-              selected={form.employees}
-              onChange={v => setF("employees", v)}
+              items={employees}
+              selected={form.employeeIds}
+              onChange={v => setF("employeeIds", v)}
               allowDeselect={false}
+              valueKey="id"
+              labelKey="fullName"
             />
-            {errors.employees && <span className="tm-form-error">{errors.employees}</span>}
+            {errors.employeeIds && (
+              <span className="tm-form-error">{errors.employeeIds}</span>
+            )}
           </div>
 
           {/* Assigned By */}
           <div>
-            <div className="tm-field-label">
-              <span>👤</span> Assigned By (Task Creator) <span className="req">*</span>
-            </div>
-            <select
-              className={`tm-form-select ${errors.assignedBy ? "tm-form-input--error" : ""}`}
+            <div className="tm-field-label">👤 Assigned By</div>
+            <select className="tm-form-select"
               value={form.assignedBy || ""}
-              onChange={e => setF("assignedBy", e.target.value)}
-            >
+              onChange={e => setF("assignedBy", e.target.value || null)}>
               <option value="">Select Employee</option>
-              {ALL_EMPLOYEES.map(emp => <option key={emp} value={emp}>{emp}</option>)}
+              {employees.map(emp => (
+                <option key={emp.id} value={emp.id}>{emp.fullName}</option>
+              ))}
             </select>
-            {errors.assignedBy && <span className="tm-form-error">{errors.assignedBy}</span>}
           </div>
 
           {/* Description */}
           <div>
-            <div className="tm-field-label"><span>📝</span> Description</div>
-            <textarea
-              className="tm-form-textarea"
+            <div className="tm-field-label">📝 Description</div>
+            <textarea className="tm-form-textarea"
               placeholder="Enter task description (optional)"
               value={form.description}
               onChange={e => setF("description", e.target.value)}
-              rows={3}
-            />
+              rows={3} />
           </div>
 
           {/* Estimate Hours + Due Date */}
           <div className="tm-two-col">
             <div>
-              <div className="tm-field-label"><span>⏱️</span> Estimate Hours</div>
-              <input
-                className="tm-form-input"
-                type="number" min="0" step="0.1"
+              <div className="tm-field-label">⏱️ Estimate Hours</div>
+              <input className="tm-form-input" type="number"
+                min="0" step="0.1"
                 value={form.estimateHours}
-                onChange={e => setF("estimateHours", e.target.value)}
-              />
+                onChange={e => setF("estimateHours", e.target.value)} />
             </div>
             <div>
-              <div className="tm-field-label"><span>📅</span> Due Date</div>
-              <input
-                type="date"
-                className="tm-form-input"
+              <div className="tm-field-label">📅 Due Date</div>
+              <input type="date" className="tm-form-input"
                 value={form.dueDate}
-                onChange={e => setF("dueDate", e.target.value)}
-              />
+                onChange={e => setF("dueDate", e.target.value)} />
             </div>
           </div>
 
-          {/* Assigned Pages & Chapter / Article / Batch */}
+          {/* Assigned Pages & Chapter */}
           <div className="tm-two-col">
             <div>
-              <div className="tm-field-label"><span>📄</span> Assigned Pages</div>
-              <select
-                className="tm-form-select"
-                value={form.pagesType}
-                onChange={e => setF("pagesType", e.target.value)}
-              >
+              <div className="tm-field-label">📄 Assigned Pages</div>
+              <select className="tm-form-select" value={form.pagesType}
+                onChange={e => setF("pagesType", e.target.value)}>
                 <option value="">-- Select --</option>
-                <option value="All Pages"> All Pages</option>
+                <option value="All Pages">All Pages</option>
                 <option value="Start Page - End Page">Start-End Page</option>
               </select>
+              {/* Read-only hint when auto-filled from book */}
+              {form.pagesType === "All Pages" && form.totalPages && (
+                <div style={{
+                  marginTop: '6px',
+                  fontSize: '0.78rem',
+                  color: '#2d6a4f',
+                  background: '#d8f3dc',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontWeight: 600,
+                }}>
+                  ✅ All {form.totalPages} pages assigned
+                </div>
+              )}
               {form.pagesType === "Start Page - End Page" && (
-                <div className="tm-two-col" style={{ marginTop: "8px" }}>
-                  <input className="tm-form-input" placeholder="Start" value={form.pagesStart} onChange={e => setF("pagesStart", e.target.value)} />
-                  <input className="tm-form-input" placeholder="End" value={form.pagesEnd} onChange={e => setF("pagesEnd", e.target.value)} />
+                <div className="tm-two-col" style={{ marginTop:"8px" }}>
+                  <input className="tm-form-input" placeholder="Start"
+                    type="number" min="1"
+                    value={form.pagesStart}
+                    onChange={e => setF("pagesStart", e.target.value)} />
+                  <input className="tm-form-input" placeholder="End"
+                    type="number" min="1"
+                    value={form.pagesEnd}
+                    onChange={e => setF("pagesEnd", e.target.value)} />
+                </div>
+              )}
+              {/* Show computed count for Start-End */}
+              {form.pagesType === "Start Page - End Page"
+                && form.pagesStart && form.pagesEnd
+                && parseInt(form.pagesEnd) >= parseInt(form.pagesStart) && (
+                <div style={{
+                  marginTop: '6px',
+                  fontSize: '0.78rem',
+                  color: '#1e40af',
+                  background: '#dbeafe',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontWeight: 600,
+                }}>
+                  📄 {parseInt(form.pagesEnd) - parseInt(form.pagesStart) + 1} pages assigned
                 </div>
               )}
             </div>
 
             <div>
-              <div className="tm-field-label"><span>📑</span> Chapter / Article / Batch</div>
-              <select
-                className="tm-form-select"
-                value={form.chapterType}
-                onChange={e => setF("chapterType", e.target.value)}
-              >
+              <div className="tm-field-label">📑 Chapter / Article / Batch</div>
+              <select className="tm-form-select" value={form.chapterType}
+                onChange={e => setF("chapterType", e.target.value)}>
                 <option value="">-- Select --</option>
                 <option value="Full Book">Full Book</option>
                 <option value="All Article">All Article</option>
                 <option value="All Batch">All Batch</option>
                 <option value="All Chapter">All Chapter</option>
-                <option value="Start Page - End Page">Start A/B/C - End A/B/C</option>
+                <option value="Start Page - End Page">
+                  Start A/B/C - End A/B/C
+                </option>
               </select>
               {form.chapterType === "Start Page - End Page" && (
-                <div className="tm-two-col" style={{ marginTop: "8px" }}>
-                  <input className="tm-form-input" placeholder="Start" value={form.chapterStart} onChange={e => setF("chapterStart", e.target.value)} />
-                  <input className="tm-form-input" placeholder="End" value={form.chapterEnd} onChange={e => setF("chapterEnd", e.target.value)} />
+                <div className="tm-two-col" style={{ marginTop:"8px" }}>
+                  <input className="tm-form-input" placeholder="Start"
+                    value={form.chapterStart}
+                    onChange={e => setF("chapterStart", e.target.value)} />
+                  <input className="tm-form-input" placeholder="End"
+                    value={form.chapterEnd}
+                    onChange={e => setF("chapterEnd", e.target.value)} />
                 </div>
               )}
             </div>
@@ -544,52 +614,107 @@ function TaskModal({ mode, task, onClose, onSave }) {
 
           {/* Path */}
           <div>
-            <div className="tm-field-label"><span>🔗</span> Path</div>
-            <input
-              className="tm-form-input"
-              placeholder="Enter file/folder path (e.g. \\server\share\file.pdf)"
-              value={form.path || ""}
-              onChange={e => setF("path", e.target.value)}
-            />
+            <div className="tm-field-label">🔗 Path</div>
+            <input className="tm-form-input"
+              placeholder="Enter file/folder path"
+              value={form.serverPath}
+              onChange={e => setF("serverPath", e.target.value)} />
           </div>
 
-
-        </div>{/* end body */}
-
-        {/* Footer */}
-        <div className="tm-modal-footer">
-          <button className="btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="btn-create-task" onClick={handleSave}>
-            ✦ {mode === "add" ? "Create Task" : "Update Task"}
-          </button>
         </div>
 
+        <div className="tm-modal-footer">
+          <button className="btn-cancel" onClick={onClose}>Cancel</button>
+          <button className="btn-create-task" onClick={handleSave}
+            disabled={saving}>
+            ✦ {saving
+              ? (mode === "add" ? "Creating..." : "Updating...")
+              : (mode === "add" ? "Create Task" : "Update Task")}
+          </button>
+        </div>
       </div>
     </Overlay>
   );
 }
 
-/* ══════════════════════════════════════════════
-   MAIN COMPONENT
-══════════════════════════════════════════════ */
+// ═════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═════════════════════════════════════════════════════════════════
 export default function TaskManagement() {
-  const [tasks, setTasks] = useState(initialTasks);
-  const [itemsPerPage, setItemsPerPage] = useState(25);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  /* filters */
-  const [search, setSearch] = useState("");
-  const [searchApplied, setSearchApplied] = useState("");
-  const [filterProject, setFilterProject] = useState("");
-  const [filterProcess, setFilterProcess] = useState("");
-  const [filterEmployee, setFilterEmployee] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [tasks,    setTasks]    = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [processes, setProcesses] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState("");
+  const [modal,    setModal]    = useState(null);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
 
-  /* modal */
-  const [modal, setModal] = useState(null); // {type:'add'|'edit'|'delete', task?}
+  // Filters
+  const [search,         setSearch]         = useState("");
+  const [searchApplied,  setSearchApplied]  = useState("");
+  const [filterProject,  setFilterProject]  = useState("");
+  const [filterProcess,  setFilterProcess]  = useState("");
+  const [filterEmployee, setFilterEmployee] = useState("");
+  const [filterStatus,   setFilterStatus]   = useState("");
+
+  // Pagination
+  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [currentPage,  setCurrentPage]  = useState(1);
+  const [totalItems,   setTotalItems]   = useState(0);
+  const [totalPages,   setTotalPages]   = useState(0);
 
   const location = useLocation();
+
+  // ── Load reference data ─────────────────────────────────────
+  const loadDropdowns = useCallback(async () => {
+    try {
+      const [proj, proc, emp] = await Promise.all([
+        apiCall("/projects"),
+        apiCall("/processes"),
+        apiCall("/users"),
+      ]);
+      setProjects(proj.map(p => ({ id: p.id, name: p.name })));
+      setProcesses(proc.map(p => ({ id: p.id, name: p.name })));
+      setEmployees(emp.map(e => ({
+        id: e.id, fullName: e.fullName
+      })));
+    } catch (err) {
+      console.warn("Could not load dropdowns:", err.message);
+    }
+  }, []);
+
+  // ── Load tasks ──────────────────────────────────────────────
+  const loadTasks = useCallback(async (pg = 0, params = {}) => {
+    try {
+      setLoading(true);
+      setError("");
+      const query = new URLSearchParams({
+        page: pg,
+        size: itemsPerPage,
+        ...(params.projectId  && { projectId: params.projectId }),
+        ...(params.processId  && { processId: params.processId }),
+        ...(params.employeeId && { userId: params.employeeId }),
+        ...(params.status     && { status: params.status }),
+        ...(params.search     && { search: params.search }),
+      });
+      const data = await apiCall(`/tasks/search?${query}`);
+      setTasks(data.content.map(mapTask));
+      setTotalItems(data.totalElements);
+      setTotalPages(data.totalPages);
+      setCurrentPage(pg + 1);
+    } catch (err) {
+      setError("Failed to load tasks: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [itemsPerPage]);
+
+  useEffect(() => {
+    loadDropdowns();
+    loadTasks(0);
+  }, []);
 
   useEffect(() => {
     if (location.state?.openAddTask) {
@@ -598,255 +723,184 @@ export default function TaskManagement() {
     }
   }, [location]);
 
-  /* ── filtered list ── */
-  const filtered = useMemo(() => tasks.filter(t => {
-    const q = searchApplied.toLowerCase();
-    if (q && !t.title.toLowerCase().includes(q) && !t.jobs.join(" ").toLowerCase().includes(q)) return false;
-    if (filterProject && t.project !== filterProject) return false;
-    if (filterProcess && !t.processes.includes(filterProcess)) return false;
-    if (filterEmployee && !t.employees.includes(filterEmployee)) return false;
-    if (filterStatus && t.status !== filterStatus) return false;
-    return true;
-  }), [tasks, searchApplied, filterProject, filterProcess, filterEmployee, filterStatus]);
+  // ── Current page display ────────────────────────────────────
+  const paginated = tasks; // server already paginated
 
-  const totalItems = filtered.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const applySearch = () => {
-    setSearchApplied(search);
-    setCurrentPage(1);
-  };
-
-  const clearFilters = () => {
-    setSearch("");
-    setSearchApplied("");
-    setFilterProject("");
-    setFilterProcess("");
-    setFilterEmployee("");
-    setFilterStatus("");
-    setCurrentPage(1);
-  };
-
-  const topScrollRef = React.useRef(null);
+  // ── Scroll sync ─────────────────────────────────────────────
+  const topScrollRef    = React.useRef(null);
   const bottomScrollRef = React.useRef(null);
 
   useEffect(() => {
     const topEl = topScrollRef.current;
     const bottomEl = bottomScrollRef.current;
     if (!topEl || !bottomEl) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      const firstChild = bottomEl.firstElementChild;
-      if (firstChild) {
-        const tableWidth = firstChild.offsetWidth;
-        const innerDummy = topEl.firstElementChild;
-        if (innerDummy) {
-          innerDummy.style.width = `${tableWidth}px`;
-        }
+    const ro = new ResizeObserver(() => {
+      const fc = bottomEl.firstElementChild;
+      if (fc) {
+        const id = topEl.firstElementChild;
+        if (id) id.style.width = `${fc.offsetWidth}px`;
       }
     });
+    ro.observe(bottomEl);
+    let sT = false, sB = false;
+    const onT = () => { if (!sB) { sT = true; bottomEl.scrollLeft = topEl.scrollLeft; sT = false; } };
+    const onB = () => { if (!sT) { sB = true; topEl.scrollLeft = bottomEl.scrollLeft; sB = false; } };
+    topEl.addEventListener("scroll", onT);
+    bottomEl.addEventListener("scroll", onB);
+    return () => { ro.disconnect(); topEl.removeEventListener("scroll", onT); bottomEl.removeEventListener("scroll", onB); };
+  }, [tasks]);
 
-    resizeObserver.observe(bottomEl);
-
-    let isSyncingTop = false;
-    let isSyncingBottom = false;
-
-    const handleTopScroll = () => {
-      if (!isSyncingBottom) {
-        isSyncingTop = true;
-        bottomEl.scrollLeft = topEl.scrollLeft;
-        isSyncingTop = false;
-      }
-    };
-
-    const handleBottomScroll = () => {
-      if (!isSyncingTop) {
-        isSyncingBottom = true;
-        topEl.scrollLeft = bottomEl.scrollLeft;
-        isSyncingBottom = false;
-      }
-    };
-
-    topEl.addEventListener('scroll', handleTopScroll);
-    bottomEl.addEventListener('scroll', handleBottomScroll);
-
-    return () => {
-      resizeObserver.disconnect();
-      topEl.removeEventListener('scroll', handleTopScroll);
-      bottomEl.removeEventListener('scroll', handleBottomScroll);
-    };
-  }, [filtered]);
-
-  /* ── CRUD ── */
-  const handleSave = (updated) => {
-    setTasks(prev => {
-      const exists = prev.find(t => t.id === updated.id);
-      return exists
-        ? prev.map(t => t.id === updated.id ? updated : t)
-        : [...prev, updated];
+  // ── Search / Clear ──────────────────────────────────────────
+  const applySearch = () => {
+    setSearchApplied(search);
+    loadTasks(0, {
+      projectId:  filterProject,
+      processId:  filterProcess,
+      employeeId: filterEmployee,
+      status:     filterStatus,
+      search,
     });
-    setModal(null);
   };
 
-  const handleDelete = () => {
-    setTasks(prev => prev.filter(t => t.id !== modal.task.id));
-    setModal(null);
+  const clearFilters = () => {
+    setSearch(""); setSearchApplied("");
+    setFilterProject(""); setFilterProcess("");
+    setFilterEmployee(""); setFilterStatus("");
+    loadTasks(0);
   };
 
-  /* ── Export CSV ── */
+  // ── CRUD ────────────────────────────────────────────────────
+  const handleSave = async (payload, existingId) => {
+    if (existingId) {
+      await apiCall(`/tasks/${existingId}`, "PUT", payload);
+    } else {
+      await apiCall("/tasks", "POST", payload);
+    }
+    await loadTasks(currentPage - 1);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await apiCall(`/tasks/${modal.task.id}`, "DELETE");
+      await loadTasks(currentPage - 1);
+      setModal(null);
+    } catch (err) {
+      alert("Error deleting task: " + err.message);
+    }
+  };
+
+  const handleRemoveDuplicates = async () => {
+    try {
+      const result = await apiCall(
+        "/tasks/remove-duplicates", "POST");
+      alert(`Removed ${result.removedCount} duplicate tasks.`);
+      await loadTasks(0);
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  };
+
+  // ── Exports ─────────────────────────────────────────────────
   const handleExportCSV = () => {
-    const header = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator", "Path"];
-    const rows = filtered.map(t => [
-      fmtDue(t.date) || "-",
+    const header = ["Assigned Date","Project","Process","Job","Employee",
+                    "Chapter","Page","Due Date","Status","Task Creator","Path"];
+    const rows = tasks.map(t => [
+      fmtDue(t.date)||"-",
       `"${t.project}"`,
       `"${t.processes.join("; ")}"`,
-      `"${t.jobs.join("; ").replace(/\n/g, " ")}"`,
-      `"${t.employees.join("; ")}"`,
-      `"${t.chapter || "-"}"`,
-      t.pages || "-",
-      fmtDue(t.dueDate) || "-",
+      `"${t.jobs.map(j => j.label).join("; ")}"`,
+      `"${t.employees.map(e => e.name).join("; ")}"`,
+      `"${t.chapter||"-"}"`,
+      t.pages||"-",
+      fmtDue(t.dueDate)||"-",
       t.status,
-      `"${t.assignedBy || "-"}"`,
-      `"${t.path || "-"}"`
+      `"${t.assignedBy||"-"}"`,
+      `"${t.serverPath||"-"}"`
     ]);
-    const csv = [header, ...rows].map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    const csv = [header,...rows].map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type:"text/csv" });
     const a = document.createElement("a");
-    a.href = url; a.download = "tasks.csv"; a.click();
-    URL.revokeObjectURL(url);
+    a.href = URL.createObjectURL(blob);
+    a.download = "tasks.csv";
+    a.click();
   };
 
   const handleExportPDF = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Task Management Report</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 30px; color: #333; }
-            h2 { color: #7c3aed; margin-bottom: 5px; }
-            p { color: #666; margin-top: 0; font-size: 14px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
-            th, td { border: 1px solid #e2e8f0; padding: 8px 6px; text-align: left; }
-            th { background-color: #7c3aed; color: #fff; font-weight: 700; }
-            tr:nth-child(even) { background-color: #f8fafc; }
-          </style>
-        </head>
-        <body>
-          <h2>Task Management Report</h2>
-          <p>Generated on: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Assigned Date</th>
-                <th>Project</th>
-                <th>Process</th>
-                <th>Job (Book/ISBN)</th>
-                <th>Employee Name</th>
-                <th>Chapter/Article/Batch</th>
-                <th>Page</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Task Creator</th>
-                <th>Path</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filtered.map(t => `
-                <tr>
-                  <td>${fmtDue(t.date) || '-'}</td>
-                  <td>${t.project || '-'}</td>
-                  <td>${t.processes.join(", ") || '-'}</td>
-                  <td>${t.jobs.length ? t.jobs.map(j => j.replace(/\n/g, " ")).join("; ") : '-'}</td>
-                  <td>${t.employees.join(", ") || '-'}</td>
-                  <td>${t.chapter || '-'}</td>
-                  <td>${t.pages || '-'}</td>
-                  <td>${fmtDue(t.dueDate) || '-'}</td>
-                  <td>${t.status || '-'}</td>
-                  <td>${t.assignedBy || '-'}</td>
-                  <td>${t.path || '-'}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-          <script>
-            window.onload = function() {
-              window.print();
-              window.close();
-            }
-          </script>
-        </body>
-      </html>
+    const pw = window.open("", "_blank");
+    pw.document.write(`
+      <html><head><title>Task Report</title>
+      <style>
+        body{font-family:sans-serif;padding:30px}
+        h2{color:#7c3aed}
+        table{width:100%;border-collapse:collapse;font-size:10px}
+        th,td{border:1px solid #e2e8f0;padding:6px;text-align:left}
+        th{background:#7c3aed;color:#fff}
+        tr:nth-child(even){background:#f8fafc}
+      </style></head><body>
+      <h2>Task Management Report</h2>
+      <p>${new Date().toLocaleDateString()}</p>
+      <table><thead><tr>
+        <th>Date</th><th>Project</th><th>Process</th><th>Job</th>
+        <th>Employee</th><th>Chapter</th><th>Page</th>
+        <th>Due Date</th><th>Status</th><th>Creator</th><th>Path</th>
+      </tr></thead><tbody>
+      ${tasks.map(t => `<tr>
+        <td>${fmtDue(t.date)||"-"}</td>
+        <td>${t.project||"-"}</td>
+        <td>${t.processes.join(", ")||"-"}</td>
+        <td>${t.jobs.map(j => j.label).join("; ")||"-"}</td>
+        <td>${t.employees.map(e => e.name).join(", ")||"-"}</td>
+        <td>${t.chapter||"-"}</td>
+        <td>${t.pages||"-"}</td>
+        <td>${fmtDue(t.dueDate)||"-"}</td>
+        <td>${t.status}</td>
+        <td>${t.assignedBy||"-"}</td>
+        <td>${t.serverPath||"-"}</td>
+      </tr>`).join("")}
+      </tbody></table>
+      <script>window.onload=()=>{window.print();window.close()}</script>
+      </body></html>
     `);
-    printWindow.document.close();
+    pw.document.close();
   };
 
-  const handleExportExcel = () => {
-    const headers = ["Assigned Date", "Project", "Process", "Job (Book/ISBN)", "Employee Name", "Chapter/Article/Batch", "Page", "Due Date", "Status", "Task Creator", "Path"];
-    const csvRows = filtered.map(t => [
-      fmtDue(t.date) || "-",
-      `"${t.project}"`,
-      `"${t.processes.join("; ")}"`,
-      `"${t.jobs.join("; ").replace(/\n/g, " ")}"`,
-      `"${t.employees.join("; ")}"`,
-      `"${t.chapter || "-"}"`,
-      t.pages || "-",
-      fmtDue(t.dueDate) || "-",
-      t.status || "-",
-      `"${t.assignedBy || "-"}"`,
-      `"${t.path || "-"}"`
-    ].join(','));
-    const blob = new Blob(["\ufeff" + [headers.join(','), ...csvRows].join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", "tasks_report.xlsx");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  /* ── Remove duplicates ── */
-  const handleRemoveDuplicates = () => {
-    const seen = new Set();
-    setTasks(prev => prev.filter(t => {
-      const key = `${t.title}|${t.project}|${t.processes.join(",")}|${t.employees.join(",")}`;
-      if (seen.has(key)) return false;
-      seen.add(key); return true;
-    }));
-  };
-
+  // ── Render ──────────────────────────────────────────────────
   return (
     <div className="tm-wrapper">
 
-      {/* ── Page Header ── */}
+      {/* ── Header ── */}
       <div className="tm-page-header">
         <div className="tm-page-title">
-          <span style={{ fontSize: 22 }}>✅</span>
+          <span style={{ fontSize:22 }}>✅</span>
           <h1>Task Management</h1>
         </div>
         <div className="tm-header-actions">
-          <button className="btn-remove-dup" onClick={handleRemoveDuplicates}>🔁 Remove Duplicates</button>
+          <button className="btn-remove-dup"
+            onClick={handleRemoveDuplicates}>
+            🔁 Remove Duplicates
+          </button>
           <div className="tm-export-dropdown-container">
-            <button className="btn-export-csv" onClick={() => setShowExportDropdown(!showExportDropdown)}>
+            <button className="btn-export-csv"
+              onClick={() => setShowExportDropdown(v => !v)}>
               📥 Export Report
             </button>
             {showExportDropdown && (
               <div className="tm-export-dropdown-menu">
-                <button className="tm-export-item" onClick={() => { handleExportPDF(); setShowExportDropdown(false); }}>
+                <button className="tm-export-item"
+                  onClick={() => { handleExportPDF(); setShowExportDropdown(false); }}>
                   📄 Export PDF
                 </button>
-                <button className="tm-export-item" onClick={() => { handleExportExcel(); setShowExportDropdown(false); }}>
-                  📊 Export Excel
-                </button>
-                <button className="tm-export-item" onClick={() => { handleExportCSV(); setShowExportDropdown(false); }}>
+                <button className="tm-export-item"
+                  onClick={() => { handleExportCSV(); setShowExportDropdown(false); }}>
                   📋 Export CSV
                 </button>
               </div>
             )}
           </div>
-          <button className="btn-add-task" onClick={() => setModal({ type: "add" })}>+ Add Task</button>
+          <button className="btn-add-task"
+            onClick={() => setModal({ type:"add" })}>
+            + Add Task
+          </button>
         </div>
       </div>
 
@@ -854,149 +908,233 @@ export default function TaskManagement() {
       <div className="tm-filter-box">
         <div className="tm-filter-top">
           <span className="tm-filter-title">⚙️ Filters</span>
-          <button className="btn-clear-all" onClick={clearFilters}>Clear All</button>
+          <button className="btn-clear-all" onClick={clearFilters}>
+            Clear All
+          </button>
         </div>
         <div className="tm-filter-row">
-
           <div className="tm-filter-group">
             <span className="tm-filter-label">🔍 Search</span>
-            <input
-              className="tm-filter-input"
-              placeholder="Search in title/description..."
+            <input className="tm-filter-input"
+              placeholder="Search in title..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && applySearch()}
-            />
+              onKeyDown={e => e.key === "Enter" && applySearch()} />
           </div>
 
           <div className="tm-filter-group">
             <span className="tm-filter-label">📁 Project</span>
             <select className="tm-filter-select" value={filterProject}
-              onChange={e => { setFilterProject(e.target.value); setCurrentPage(1); }}>
+              onChange={e => setFilterProject(e.target.value)}>
               <option value="">All Projects</option>
-              {ALL_PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
             </select>
           </div>
 
           <div className="tm-filter-group">
             <span className="tm-filter-label">⚙️ Process</span>
             <select className="tm-filter-select" value={filterProcess}
-              onChange={e => { setFilterProcess(e.target.value); setCurrentPage(1); }}>
+              onChange={e => setFilterProcess(e.target.value)}>
               <option value="">All Processes</option>
-              {ALL_PROCESSES.map(p => <option key={p} value={p}>{p}</option>)}
+              {processes.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
             </select>
           </div>
 
           <div className="tm-filter-group">
             <span className="tm-filter-label">👥 Employee</span>
             <select className="tm-filter-select" value={filterEmployee}
-              onChange={e => { setFilterEmployee(e.target.value); setCurrentPage(1); }}>
+              onChange={e => setFilterEmployee(e.target.value)}>
               <option value="">All Employees</option>
-              {ALL_EMPLOYEES.map(e => <option key={e} value={e}>{e}</option>)}
+              {employees.map(e => (
+                <option key={e.id} value={e.id}>{e.fullName}</option>
+              ))}
             </select>
           </div>
 
           <div className="tm-filter-group">
             <span className="tm-filter-label">🏷️ Status</span>
             <select className="tm-filter-select" value={filterStatus}
-              onChange={e => { setFilterStatus(e.target.value); setCurrentPage(1); }}>
+              onChange={e => setFilterStatus(e.target.value)}>
               <option value="">All Status</option>
-              {ALL_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+              {ALL_STATUSES.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
             </select>
           </div>
 
-          <div className="tm-filter-group" style={{ visibility: "hidden" }}>
-            {/* spacer */}
-          </div>
-
-          {/* Search button */}
-          <div className="tm-filter-group" style={{ justifyContent: "flex-end" }}>
+          <div className="tm-filter-group"
+            style={{ justifyContent:"flex-end" }}>
             <span className="tm-filter-label">&nbsp;</span>
-            <button className="btn-search" onClick={applySearch}>🔍 Search</button>
+            <button className="btn-search" onClick={applySearch}>
+              🔍 Search
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Loading / Error ── */}
+      {loading ? (
+        <div style={{ padding:"40px", textAlign:"center", color:"#888" }}>
+          Loading tasks...
+        </div>
+      ) : error ? (
+        <div style={{ padding:"40px", textAlign:"center", color:"red" }}>
+          {error}
+        </div>
+      ) : (
+        <>
+          <div className="double-scroll-top" ref={topScrollRef}>
+            <div className="double-scroll-top-inner" />
           </div>
 
-        </div>
-      </div>
+          <div className="tm-table-wrapper" ref={bottomScrollRef}>
+            <table className="tm-table">
+              <thead>
+                <tr>
+                  <th className="col-date">Assigned Date</th>
+                  <th className="col-project">Project</th>
+                  <th className="col-process">Process</th>
+                  <th className="col-job">Title / ISBN</th>
+                  <th className="col-employee">Employee Name</th>
+                  <th className="col-chapter">Chapter / Article / Batch</th>
+                  <th className="col-pages">Page</th>
+                  <th className="col-duedate">Due Date</th>
+                  <th className="col-status">Status</th>
+                  <th className="col-creator">Task Creator</th>
+                  <th className="col-path">Server Path</th>
+                  <th className="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={12} style={{
+                      textAlign:"center", padding:"48px", color:"#a0aec0"
+                    }}>
+                      No tasks found.
+                    </td>
+                  </tr>
+                ) : paginated.map(task => (
+                  <tr key={task.id}>
+                    <td className="col-date">
+                      {fmtDue(task.date) || "-"}
+                    </td>
+                    <td className="col-project">
+                      <span className="cell-project">{task.project}</span>
+                    </td>
+                    <td className="col-process">
+                      <span className="cell-process">
+                        {task.processes.join(", ") || "-"}
+                      </span>
+                    </td>
+                    <td className="col-job">
+                      <span className="cell-job">
+                        {task.jobs.length
+                          ? task.jobs.map(j => j.label).join("; ")
+                          : "-"}
+                      </span>
+                    </td>
+                    <td className="col-employee col-left">
+                      {task.employees.map(e => e.name).join(", ") || "-"}
+                    </td>
+                    <td className="col-chapter">
+                      <span className="cell-chapter">
+                        {task.chapter || "-"}
+                      </span>
+                    </td>
+                    <td className="col-pages">
+                      {task.pages
+                        ? (() => {
+                            // Compute numeric count from assignedPagesStr
+                            const p = task.pages.toString().trim();
+                            if (p === 'All Pages') {
+                              return task.totalPages
+                                ? `All (${task.totalPages})`
+                                : 'All Pages';
+                            }
+                            if (p.includes(' - ')) {
+                              const [s, e] = p.split(' - ').map(Number);
+                              if (!isNaN(s) && !isNaN(e) && e >= s) {
+                                return `${s}–${e} (${e - s + 1} pg)`;
+                              }
+                            }
+                            return p;
+                          })()
+                        : '-'}
+                    </td>
+                    <td className="col-duedate">
+                      {fmtDue(task.dueDate) || "-"}
+                    </td>
+                    <td className="col-status">
+                      <span className={`status-badge ${badgeClass(task.status)}`}>
+                        {task.status?.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="col-creator">
+                      {task.assignedBy || "-"}
+                    </td>
+                    <td className="col-path"
+                      style={{ fontFamily:"monospace",
+                               fontSize:"11px", wordBreak:"break-all" }}>
+                      {task.serverPath || "-"}
+                    </td>
+                    <td className="col-actions">
+                      <div className="tm-actions">
+                        <button className="tm-action-btn" title="Edit"
+                          onClick={() => setModal({ type:"edit", task })}>
+                          ✏️
+                        </button>
+                        <button className="tm-action-btn" title="Delete"
+                          onClick={() => setModal({ type:"delete", task })}>
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* ── Table Top Scrollbar ── */}
-      <div className="double-scroll-top" ref={topScrollRef}>
-        <div className="double-scroll-top-inner"></div>
-      </div>
-
-      {/* ── Table ── */}
-      <div className="tm-table-wrapper" ref={bottomScrollRef}>
-        <table className="tm-table">
-          <thead>
-            <tr>
-              <th className="col-date">Assigned Date <span className="sort-icon"></span></th>
-              <th className="col-project">Project <span className="sort-icon"></span></th>
-              <th className="col-process">Process <span className="sort-icon"></span></th>
-              <th className="col-job">Title / ISBN <span className="sort-icon"></span></th>
-              <th className="col-employee">Employee Name <span className="sort-icon"></span></th>
-              <th className="col-chapter">A.Chapter / A.Article / A.Batch</th>
-              <th className="col-pages">Page</th>
-              <th className="col-duedate">Date</th>
-              <th className="col-status">Status <span className="sort-icon"></span></th>
-              <th className="col-creator">Task Creator <span className="sort-icon"></span></th>
-              <th className="col-path">Server Path</th>
-              <th className="col-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.length === 0 ? (
-              <tr><td colSpan={12} style={{ textAlign: "center", padding: "48px", color: "#a0aec0" }}>No tasks found.</td></tr>
-            ) : paginated.map(task => (
-              <tr key={task.id}>
-                <td className="col-date">{fmtDue(task.date) || "-"}</td>
-                <td className="col-project"><span className="cell-project">{task.project}</span></td>
-                <td className="col-process"><span className="cell-process">{task.processes.join(", ") || "-"}</span></td>
-                <td className="col-job">
-                  <span className="cell-job">
-                    {task.jobs.length ? task.jobs.map(j => j.replace(/\n/g, " ")).join("; ") : "-"}
-                  </span>
-                </td>
-                <td className="col-employee col-left">{task.employees.join(", ") || "-"}</td>
-                <td className="col-chapter"><span className="cell-chapter">{task.chapter || "-"}</span></td>
-                <td className="col-pages">{task.pages || "-"}</td>
-                <td className="col-duedate">{fmtDue(task.dueDate) || "-"}</td>
-                <td className="col-status">
-                  <span className={`status-badge ${badgeClass(task.status)}`}>{task.status?.toUpperCase()}</span>
-                </td>
-                <td className="col-creator">{task.assignedBy || "-"}</td>
-                <td className="col-path" style={{ fontFamily: "monospace", fontSize: "11px", wordBreak: "break-all" }}>{task.path || "-"}</td>
-                <td className="col-actions">
-                  <div className="tm-actions">
-                    <button className="tm-action-btn" title="Edit" onClick={() => setModal({ type: "edit", task })}>✏️</button>
-                    <button className="tm-action-btn" title="Delete" onClick={() => setModal({ type: "delete", task })}>🗑️</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* ── Pagination ── */}
-      <div className="tm-pagination">
-        <div className="tm-pagination-left">
-          <label>Items per page:</label>
-          <select value={itemsPerPage}
-            onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}>
-            {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
-        </div>
-        <div className="tm-pagination-right">
-          {totalPages > 1 && <>
-            <button className="page-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>‹</button>
-            <span className="page-info">Page {currentPage} of {totalPages}</span>
-            <button className="page-btn" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>›</button>
-          </>}
-          <span className="page-count">
-            Showing {totalItems === 0 ? 0 : Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} to{" "}
-            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
-          </span>
-        </div>
-      </div>
+          {/* Pagination */}
+          <div className="tm-pagination">
+            <div className="tm-pagination-left">
+              <label>Items per page:</label>
+              <select value={itemsPerPage}
+                onChange={e => {
+                  setItemsPerPage(Number(e.target.value));
+                  loadTasks(0);
+                }}>
+                {[10,25,50,100].map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+            <div className="tm-pagination-right">
+              {totalPages > 1 && <>
+                <button className="page-btn"
+                  disabled={currentPage === 1}
+                  onClick={() => loadTasks(currentPage - 2)}>‹</button>
+                <span className="page-info">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button className="page-btn"
+                  disabled={currentPage === totalPages}
+                  onClick={() => loadTasks(currentPage)}>›</button>
+              </>}
+              <span className="page-count">
+                Showing {Math.min((currentPage-1)*itemsPerPage+1, totalItems)}{" "}
+                to {Math.min(currentPage*itemsPerPage, totalItems)}{" "}
+                of {totalItems} items
+              </span>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Add / Edit Modal ── */}
       {(modal?.type === "add" || modal?.type === "edit") && (
@@ -1005,6 +1143,9 @@ export default function TaskManagement() {
           task={modal.task || null}
           onClose={() => setModal(null)}
           onSave={handleSave}
+          projects={projects}
+          processes={processes}
+          employees={employees}
         />
       )}
 
@@ -1016,7 +1157,8 @@ export default function TaskManagement() {
               <div className="tm-modal-header-left">
                 <h2 className="tm-modal-title">Delete Task</h2>
               </div>
-              <button className="tm-modal-close" onClick={() => setModal(null)}>✕</button>
+              <button className="tm-modal-close"
+                onClick={() => setModal(null)}>✕</button>
             </div>
             <div className="tm-confirm-body">
               <div className="tm-confirm-icon">🗑️</div>
@@ -1026,14 +1168,15 @@ export default function TaskManagement() {
                 This action cannot be undone.
               </p>
             </div>
-            <div className="tm-modal-footer" style={{ justifyContent: "center" }}>
-              <button className="btn-cancel" onClick={() => setModal(null)}>Cancel</button>
-              <button className="btn-danger-modal" onClick={handleDelete}>Delete</button>
+            <div className="tm-modal-footer" style={{ justifyContent:"center" }}>
+              <button className="btn-cancel"
+                onClick={() => setModal(null)}>Cancel</button>
+              <button className="btn-danger-modal"
+                onClick={handleDelete}>Delete</button>
             </div>
           </div>
         </Overlay>
       )}
-
     </div>
   );
 }

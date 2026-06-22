@@ -11,7 +11,7 @@
 
 .ec-card {
   width: 100%;
-  max-width: 900px;
+  max-width: 100%;
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
@@ -97,12 +97,14 @@
   transition: all 0.2s ease;
 }
 
-.ec-nav-prev, .ec-nav-next {
+.ec-nav-prev,
+.ec-nav-next {
   background: #f1f3f5;
   color: #333;
 }
 
-.ec-nav-prev:hover, .ec-nav-next:hover {
+.ec-nav-prev:hover,
+.ec-nav-next:hover {
   background: #e9ecef;
 }
 
@@ -202,7 +204,8 @@
   color: #2e7d32;
 }
 
-.ec-day-pages, .ec-day-projects {
+.ec-day-pages,
+.ec-day-projects {
   font-size: 0.55rem;
   color: #555;
 }

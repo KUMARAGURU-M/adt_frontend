@@ -1,29 +1,12 @@
 // src/pages/admin/UserManagement.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import './UserManagement.css';
+import { apiCall, getRolePrefix } from '../../utils/api';
 
-/* ─── Static seed data ─────────────────────────────────────────── */
-const initialUsers = [
-  { id: 1, initial: 'S', name: 'Sureka',         email: 'sureka@arrowdatatech.com',   phone: '-',          role: 'employee', shift: 'General Shift', top: false, status: 'Active' },
-  { id: 2, initial: 'A', name: 'Ayeesha M',       email: 'vimala@arrowdatatech.com',   phone: '9791778036', role: 'manager',  shift: '1st Shift',     top: false, status: 'Active' },
-  { id: 3, initial: 'S', name: 'Shakina A',       email: 'shakina@arrowdatatech.com',  phone: '9944732344', role: 'manager',  shift: '2nd Shift',     top: false, status: 'Active' },
-  { id: 4, initial: 'T', name: 'T. Mohamed Usen', email: 'usen@arrowdatatech.com',     phone: '9894562152', role: 'admin',    shift: 'Night Shift',   top: false, status: 'Active' },
-  { id: 5, initial: 'K', name: 'Karthika',        email: 'karthika@arrowdatatech.com', phone: '-',          role: 'employee', shift: 'General Shift', top: true,  status: 'Active' },
-];
-
-const ALL_PROJECTS = [
-  'LDM - Hanser', 'ING - Usen', 'ING - OUP', 'LDM - T&F',
-  'LDM - WILEY', 'CNT', 'IMP - EPUB', 'CMT - JATS', 'ING - ACDC',
-];
-const ALL_PROCESSES = [
-  'EPUB - QC Process', 'EPUB - Tagging', 'FIG - Croping',
-  'INDEX - Process', 'MATH - Keying', 'OCR - Process',
-  'Proof Reading - Process', 'REF - Process', 'TABLE - Process',
-];
-const ALL_ROLES  = ['Employee', 'Manager', 'Admin'];
-const ALL_SHIFTS = ['1st Shift', '2nd Shift', 'General Shift', 'Night Shift'];
+// ── Static fallback data ─────────────────────────────────────────
+const ALL_ROLES = ['Employee', 'Manager', 'Admin', 'Viewer', 'Team Leader'];
 
 /* ─── Overlay wrapper ───────────────────────────────────────────── */
 const Modal = ({ onClose, children }) => (
@@ -37,14 +20,15 @@ const Modal = ({ onClose, children }) => (
 /* ══════════════════════════════════════════════════════════════════
    0. ADD NEW USER
 ══════════════════════════════════════════════════════════════════ */
-const AddUserModal = ({ onClose, onAdd }) => {
+const AddUserModal = ({ onClose, onAdd, shifts }) => {
   const [form, setForm] = useState({
     id:       '',
     name:     '',
     email:    '',
     phone:    '',
+    password: '',
     role:     'employee',
-    shift:    '',
+    shiftId:  '',
     timezone: 'Asia/Kolkata',
     top:      false,
     calendar: false,
@@ -70,17 +54,17 @@ const AddUserModal = ({ onClose, onAdd }) => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
     onAdd({
-      id:      Number(form.id.trim()) || form.id.trim(),
-      initial: form.name.charAt(0).toUpperCase(),
-      name:    form.name.trim(),
-      email:   form.email.trim(),
-      phone:   form.phone.trim() || '-',
-      role:    form.role,
-      shift:   form.shift || '-',
-      top:     form.top,
-      status:  form.active ? 'Active' : 'Inactive',
+      id:       form.id.trim(),
+      name:     form.name.trim(),
+      email:    form.email.trim(),
+      phone:    form.phone.trim() || '-',
+      password: form.password || 'Welcome@123',
+      role:     form.role,
+      shiftId:  form.shiftId || null,
+      top:      form.top,
+      calendar: form.calendar,
+      active:   form.active,
     });
-    onClose();
   };
 
   return (
@@ -92,7 +76,7 @@ const AddUserModal = ({ onClose, onAdd }) => {
         <label className="form-label">ID <span className="req">*</span></label>
         <input
           className="form-input"
-          placeholder="e.g. 6"
+          placeholder="e.g. EMP006"
           value={form.id}
           onChange={e => set('id', e.target.value)}
         />
@@ -104,7 +88,6 @@ const AddUserModal = ({ onClose, onAdd }) => {
         <label className="form-label">Name <span className="req">*</span></label>
         <input
           className="form-input"
-          placeholder=""
           value={form.name}
           onChange={e => set('name', e.target.value)}
         />
@@ -113,10 +96,9 @@ const AddUserModal = ({ onClose, onAdd }) => {
 
       {/* Email */}
       <div className="form-group">
-        <label className="form-label">Email</label>
+        <label className="form-label">Email <span className="req">*</span></label>
         <input
           className="form-input"
-          placeholder=""
           value={form.email}
           onChange={e => set('email', e.target.value)}
         />
@@ -131,6 +113,18 @@ const AddUserModal = ({ onClose, onAdd }) => {
           placeholder="+91 1234567890"
           value={form.phone}
           onChange={e => set('phone', e.target.value)}
+        />
+      </div>
+
+      {/* Password */}
+      <div className="form-group">
+        <label className="form-label">Password</label>
+        <input
+          type="password"
+          className="form-input"
+          placeholder="Default: Welcome@123"
+          value={form.password}
+          onChange={e => set('password', e.target.value)}
         />
       </div>
 
@@ -159,12 +153,12 @@ const AddUserModal = ({ onClose, onAdd }) => {
         <label className="form-label">Shift</label>
         <select
           className="form-select"
-          value={form.shift}
-          onChange={e => set('shift', e.target.value)}
+          value={form.shiftId}
+          onChange={e => set('shiftId', e.target.value)}
         >
           <option value="">Select Shift</option>
-          {ALL_SHIFTS.map(s => (
-            <option key={s} value={s}>{s}</option>
+          {shifts.map(s => (
+            <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
         <p className="form-hint">
@@ -241,19 +235,18 @@ const AddUserModal = ({ onClose, onAdd }) => {
 /* ══════════════════════════════════════════════════════════════════
    1. ASSIGN PROJECT & PROCESS
 ══════════════════════════════════════════════════════════════════ */
-const AssignProjectModal = ({ user, onClose }) => {
+const AssignProjectModal = ({ user, onClose, projects, processes, onSave }) => {
   const [selProjects,  setSelProjects]  = useState([]);
   const [selProcesses, setSelProcesses] = useState([]);
 
   const toggle = (arr, setArr, val) =>
     setArr(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
 
-  const selectAll = (list, set) =>
-    set(prev => prev.length === list.length ? [] : [...list]);
+  const selectAll = (list, setArr) =>
+    setArr(prev => prev.length === list.length ? [] : list.map(i => i.id));
 
   const handleSave = () => {
-    alert(`Saved assignments for ${user.name}.\nProjects: ${selProjects.join(', ') || 'None'}\nProcesses: ${selProcesses.join(', ') || 'None'}`);
-    onClose();
+    onSave(user.id, selProjects, selProcesses);
   };
 
   return (
@@ -270,19 +263,19 @@ const AssignProjectModal = ({ user, onClose }) => {
             <label className="assign-check select-all">
               <input
                 type="checkbox"
-                checked={selProjects.length === ALL_PROJECTS.length}
-                onChange={() => selectAll(ALL_PROJECTS, setSelProjects)}
+                checked={selProjects.length === projects.length && projects.length > 0}
+                onChange={() => selectAll(projects, setSelProjects)}
               />
-              Select All ({selProjects.length}/{ALL_PROJECTS.length})
+              Select All ({selProjects.length}/{projects.length})
             </label>
-            {ALL_PROJECTS.map(p => (
-              <label key={p} className="assign-check">
+            {projects.map(p => (
+              <label key={p.id} className="assign-check">
                 <input
                   type="checkbox"
-                  checked={selProjects.includes(p)}
-                  onChange={() => toggle(selProjects, setSelProjects, p)}
+                  checked={selProjects.includes(p.id)}
+                  onChange={() => toggle(selProjects, setSelProjects, p.id)}
                 />
-                {p}
+                {p.name}
               </label>
             ))}
           </div>
@@ -297,19 +290,19 @@ const AssignProjectModal = ({ user, onClose }) => {
             <label className="assign-check select-all">
               <input
                 type="checkbox"
-                checked={selProcesses.length === ALL_PROCESSES.length}
-                onChange={() => selectAll(ALL_PROCESSES, setSelProcesses)}
+                checked={selProcesses.length === processes.length && processes.length > 0}
+                onChange={() => selectAll(processes, setSelProcesses)}
               />
-              Select All ({selProcesses.length}/{ALL_PROCESSES.length})
+              Select All ({selProcesses.length}/{processes.length})
             </label>
-            {ALL_PROCESSES.map(p => (
-              <label key={p} className="assign-check">
+            {processes.map(p => (
+              <label key={p.id} className="assign-check">
                 <input
                   type="checkbox"
-                  checked={selProcesses.includes(p)}
-                  onChange={() => toggle(selProcesses, setSelProcesses, p)}
+                  checked={selProcesses.includes(p.id)}
+                  onChange={() => toggle(selProcesses, setSelProcesses, p.id)}
                 />
-                {p}
+                {p.name}
               </label>
             ))}
           </div>
@@ -331,13 +324,12 @@ const AssignProjectModal = ({ user, onClose }) => {
 /* ══════════════════════════════════════════════════════════════════
    2. ASSIGN ROLE
 ══════════════════════════════════════════════════════════════════ */
-const AssignRoleModal = ({ user, onClose }) => {
+const AssignRoleModal = ({ user, onClose, onAssign }) => {
   const [role, setRole] = useState('');
 
   const handleAssign = () => {
     if (!role) { alert('Please select a role.'); return; }
-    alert(`Role "${role}" assigned to ${user.name}.`);
-    onClose();
+    onAssign(user.id, role);
   };
 
   return (
@@ -363,10 +355,9 @@ const AssignRoleModal = ({ user, onClose }) => {
 /* ══════════════════════════════════════════════════════════════════
    3. IMPERSONATE USER
 ══════════════════════════════════════════════════════════════════ */
-const ImpersonateModal = ({ user, onClose }) => {
+const ImpersonateModal = ({ user, onClose, onContinue }) => {
   const handleContinue = () => {
-    alert(`Impersonating ${user.name}. A new window would open in production.`);
-    onClose();
+    onContinue(user.id);
   };
 
   return (
@@ -395,7 +386,7 @@ const ImpersonateModal = ({ user, onClose }) => {
 /* ══════════════════════════════════════════════════════════════════
    4. SET PASSWORD
 ══════════════════════════════════════════════════════════════════ */
-const SetPasswordModal = ({ user, onClose }) => {
+const SetPasswordModal = ({ user, onClose, onSet }) => {
   const [pw,  setPw]  = useState('');
   const [cpw, setCpw] = useState('');
   const [err, setErr] = useState('');
@@ -403,8 +394,7 @@ const SetPasswordModal = ({ user, onClose }) => {
   const handleSet = () => {
     if (pw.length < 6) { setErr('Password must be at least 6 characters.'); return; }
     if (pw !== cpw)    { setErr('Passwords do not match.'); return; }
-    alert(`Password set for ${user.name}.`);
-    onClose();
+    onSet(user.id, pw);
   };
 
   return (
@@ -481,13 +471,13 @@ const ResetPasswordModal = ({ user, onClose }) => {
 /* ══════════════════════════════════════════════════════════════════
    6. EDIT USER
 ══════════════════════════════════════════════════════════════════ */
-const EditUserModal = ({ user, onClose, onUpdate }) => {
+const EditUserModal = ({ user, onClose, onUpdate, shifts }) => {
   const [form, setForm] = useState({
     name:     user.name,
     email:    user.email,
     phone:    user.phone === '-' ? '' : user.phone,
     role:     user.role,
-    shift:    user.shift === '-' ? '' : user.shift,
+    shiftId:  user.shiftId || '',
     timezone: 'Asia/Kolkata',
     top:      user.top,
     calendar: true,
@@ -503,12 +493,11 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
       email:   form.email,
       phone:   form.phone || '-',
       role:    form.role,
-      shift:   form.shift || '-',
+      shiftId: form.shiftId || null,
       top:     form.top,
       status:  form.active ? 'Active' : 'Inactive',
       initial: form.name.charAt(0).toUpperCase(),
     });
-    onClose();
   };
 
   return (
@@ -544,9 +533,9 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
 
       <div className="form-group">
         <label className="form-label">Shift</label>
-        <select className="form-select" value={form.shift} onChange={e => set('shift', e.target.value)}>
+        <select className="form-select" value={form.shiftId} onChange={e => set('shiftId', e.target.value)}>
           <option value="">-- None --</option>
-          {ALL_SHIFTS.map(s => <option key={s} value={s}>{s}</option>)}
+          {shifts.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
         <p className="form-hint">Set the employee's default shift. This will be used automatically when they start tracking time.</p>
       </div>
@@ -599,7 +588,6 @@ const EditUserModal = ({ user, onClose, onUpdate }) => {
 const DeleteModal = ({ user, onClose, onDelete }) => {
   const handleDelete = () => {
     onDelete(user.id);
-    onClose();
   };
 
   return (
@@ -624,11 +612,62 @@ const DeleteModal = ({ user, onClose, onDelete }) => {
    MAIN COMPONENT
 ══════════════════════════════════════════════════════════════════ */
 const UserManagement = () => {
-  const [users,       setUsers]       = useState(initialUsers);
+  const [users,       setUsers]       = useState([]);
+  const [projects,    setProjects]    = useState([]);
+  const [processes,   setProcesses]   = useState([]);
+  const [shifts,      setShifts]      = useState([]);
   const [modal,       setModal]       = useState(null);
   const [showAddUser, setShowAddUser] = useState(false);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState('');
 
   const location = useLocation();
+
+  // ── Load users from API ──────────────────────────────────────
+  const loadUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await apiCall('/users');
+      const mapped = data.map(u => ({
+        id:      u.id,
+        initial: u.fullName ? u.fullName.charAt(0).toUpperCase() : '?',
+        name:    u.fullName,
+        email:   u.email,
+        phone:   u.phone || '-',
+        role:    u.role ? u.role.toLowerCase() : 'employee',
+        shiftId: u.shiftId || null,
+        shift:   u.shift || '-',
+        top:     u.isTopPerformer,
+        status:  u.isActive ? 'Active' : 'Inactive',
+      }));
+      setUsers(mapped);
+    } catch (err) {
+      setError('Failed to load users: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // ── Load dropdown data from API ──────────────────────────────
+  const loadDropdownData = useCallback(async () => {
+    try {
+      const [proj, proc, shift] = await Promise.all([
+        apiCall('/projects'),
+        apiCall('/processes'),
+        apiCall('/shifts'),
+      ]);
+      setProjects(proj.map(p => ({ id: p.id, name: p.name })));
+      setProcesses(proc.map(p => ({ id: p.id, name: p.name })));
+      setShifts(shift.map(s => ({ id: s.id, name: s.name })));
+    } catch (err) {
+      console.warn('Failed to load dropdown data:', err.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadUsers();
+    loadDropdownData();
+  }, [loadUsers, loadDropdownData]);
 
   useEffect(() => {
     if (location.state?.openAddUser) {
@@ -640,20 +679,119 @@ const UserManagement = () => {
   const open  = (type, user) => setModal({ type, user });
   const close = ()            => setModal(null);
 
-  const handleUpdate = (updated) =>
-    setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
+  // ── API-backed handlers ──────────────────────────────────────
 
-  const handleDelete = (id) =>
-    setUsers(prev => prev.filter(u => u.id !== id));
+  const handleAdd = async (formData) => {
+  try {
+    await apiCall('/users', 'POST', {
+      userCode:          formData.id,
+      fullName:          formData.name,
+      email:             formData.email,
+      // Fix: treat empty string as null too
+      phone:             formData.phone && formData.phone !== '-' ? formData.phone : null,
+      password:          formData.password || 'Welcome@123',
+      roleName:          formData.role.charAt(0).toUpperCase() + formData.role.slice(1),
+      shiftId:           formData.shiftId || null,
+      isTopPerformer:    formData.top,
+      showCalendarStats: formData.calendar,
+      isActive:          formData.active,
+    });
+    await loadUsers();
+    setShowAddUser(false);
+  } catch (err) {
+    alert('Error creating user: ' + err.message);
+  }
+};
 
-  const handleAdd = (newUser) =>
-    setUsers(prev => [...prev, newUser]);
+  const handleUpdate = async (updatedUser) => {
+    try {
+      await apiCall(`/users/${updatedUser.id}`, 'PUT', {
+        fullName:       updatedUser.name,
+        email:          updatedUser.email,
+        phone:          updatedUser.phone !== '-' ? updatedUser.phone : null,
+        roleName:       updatedUser.role.charAt(0).toUpperCase() + updatedUser.role.slice(1),
+        shiftId:        updatedUser.shiftId || null,
+        isTopPerformer: updatedUser.top,
+        isActive:       updatedUser.status === 'Active',
+      });
+      await loadUsers();
+      close();
+    } catch (err) {
+      alert('Error updating user: ' + err.message);
+    }
+  };
 
-  const topScrollRef = React.useRef(null);
+  const handleDelete = async (userId) => {
+    try {
+      await apiCall(`/users/${userId}`, 'DELETE');
+      await loadUsers();
+      close();
+    } catch (err) {
+      alert('Error deleting user: ' + err.message);
+    }
+  };
+
+  const handleSetPassword = async (userId, newPassword) => {
+    try {
+      await apiCall(`/users/${userId}/set-password`, 'POST', {
+        newPassword,
+        confirmPassword: newPassword,
+      });
+      alert('Password updated successfully.');
+      close();
+    } catch (err) {
+      alert('Error setting password: ' + err.message);
+    }
+  };
+
+  const handleAssignRole = async (userId, roleName) => {
+    try {
+      await apiCall(`/users/${userId}/assign-role`, 'POST', { roleName });
+      await loadUsers();
+      alert(`Role "${roleName}" assigned successfully.`);
+      close();
+    } catch (err) {
+      alert('Error assigning role: ' + err.message);
+    }
+  };
+
+  const handleAssignProjects = async (userId, projectIds, processIds) => {
+    try {
+      await apiCall(`/users/${userId}/assign-projects`, 'POST', {
+        projectIds,
+        processIds,
+      });
+      alert('Assignments saved successfully.');
+      close();
+    } catch (err) {
+      alert('Error saving assignments: ' + err.message);
+    }
+  };
+
+  const handleImpersonate = async (userId) => {
+    try {
+      const data = await apiCall(`/auth/impersonate/${userId}`, 'POST');
+      localStorage.setItem('impersonateToken',   data.accessToken);
+      localStorage.setItem('impersonateRefresh', data.refreshToken);
+      localStorage.setItem('impersonateUser', JSON.stringify({
+        userId:   data.userId,
+        fullName: data.fullName,
+        roles:    data.roles,
+      }));
+      const prefix = getRolePrefix(data.roles);
+      window.open(`/${prefix}/dashboard`, '_blank');
+      close();
+    } catch (err) {
+      alert('Error impersonating user: ' + err.message);
+    }
+  };
+
+  // ── Top scroll sync refs ─────────────────────────────────────
+  const topScrollRef    = React.useRef(null);
   const bottomScrollRef = React.useRef(null);
 
   useEffect(() => {
-    const topEl = topScrollRef.current;
+    const topEl    = topScrollRef.current;
     const bottomEl = bottomScrollRef.current;
     if (!topEl || !bottomEl) return;
 
@@ -662,17 +800,12 @@ const UserManagement = () => {
       if (firstChild) {
         const tableWidth = firstChild.offsetWidth;
         const innerDummy = topEl.firstElementChild;
-        if (innerDummy) {
-          innerDummy.style.width = `${tableWidth}px`;
-        }
+        if (innerDummy) innerDummy.style.width = `${tableWidth}px`;
       }
     });
-
     resizeObserver.observe(bottomEl);
 
-    let isSyncingTop = false;
-    let isSyncingBottom = false;
-
+    let isSyncingTop = false, isSyncingBottom = false;
     const handleTopScroll = () => {
       if (!isSyncingBottom) {
         isSyncingTop = true;
@@ -680,7 +813,6 @@ const UserManagement = () => {
         isSyncingTop = false;
       }
     };
-
     const handleBottomScroll = () => {
       if (!isSyncingTop) {
         isSyncingBottom = true;
@@ -688,16 +820,31 @@ const UserManagement = () => {
         isSyncingBottom = false;
       }
     };
-
     topEl.addEventListener('scroll', handleTopScroll);
     bottomEl.addEventListener('scroll', handleBottomScroll);
-
     return () => {
       resizeObserver.disconnect();
       topEl.removeEventListener('scroll', handleTopScroll);
       bottomEl.removeEventListener('scroll', handleBottomScroll);
     };
   }, [users]);
+
+  // ── Render ───────────────────────────────────────────────────
+  if (loading) return (
+    <div className="user-mgmt-container">
+      <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
+        Loading users...
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="user-mgmt-container">
+      <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>
+        {error}
+      </div>
+    </div>
+  );
 
   return (
     <div className="user-mgmt-container">
@@ -713,9 +860,9 @@ const UserManagement = () => {
         </button>
       </div>
 
-      {/* ── Table Top Scrollbar ── */}
+      {/* ── Top Scrollbar ── */}
       <div className="double-scroll-top" ref={topScrollRef}>
-        <div className="double-scroll-top-inner"></div>
+        <div className="double-scroll-top-inner" />
       </div>
 
       {/* ── Table ── */}
@@ -735,24 +882,38 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                  No users found. Click "+ Add User" to create one.
+                </td>
+              </tr>
+            ) : users.map((user) => (
               <tr key={user.id}>
-                <td><div className="avatar-circle">{user.initial}</div></td>
+                <td>
+                  <div className="avatar-circle">{user.initial}</div>
+                </td>
                 <td className="td-name col-left">{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.phone}</td>
                 <td>
-                  <span className={`role-badge ${user.role.toLowerCase()}`}>{user.role}</span>
+                  <span className={`role-badge ${user.role.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {user.role}
+                  </span>
                 </td>
                 <td>{user.shift}</td>
-                <td>{user.top && <span className="top-performer">⭐ Top Performer</span>}</td>
+                <td>
+                  {user.top && (
+                    <span className="top-performer">⭐ Top Performer</span>
+                  )}
+                </td>
                 <td>
                   <span className={`status-badge ${user.status.toLowerCase()}`}>
-                    {user.status?.toLowerCase() === 'active' ? 'ACTIVE' : (user.status ? user.status.charAt(0).toUpperCase() + user.status.slice(1) : '')}
+                    {user.status?.toUpperCase()}
                   </span>
                 </td>
 
-                {/* ── ACTION DROPDOWN ── */}
+                {/* ── Action Dropdown ── */}
                 <td>
                   <select
                     className="action-dropdown"
@@ -760,7 +921,7 @@ const UserManagement = () => {
                     onChange={e => {
                       const action = e.target.value;
                       if (action) open(action, user);
-                      e.target.value = "";
+                      e.target.value = '';
                     }}
                   >
                     <option value="" disabled>⚙️ Actions</option>
@@ -784,18 +945,62 @@ const UserManagement = () => {
         <AddUserModal
           onClose={() => setShowAddUser(false)}
           onAdd={handleAdd}
+          shifts={shifts}
         />
       )}
 
       {/* ── Action Modals ── */}
-      {modal?.type === 'assign'      && <AssignProjectModal  user={modal.user} onClose={close} />}
-      {modal?.type === 'role'        && <AssignRoleModal     user={modal.user} onClose={close} />}
-      {modal?.type === 'impersonate' && <ImpersonateModal    user={modal.user} onClose={close} />}
-      {modal?.type === 'setpw'       && <SetPasswordModal    user={modal.user} onClose={close} />}
-      {modal?.type === 'resetpw'     && <ResetPasswordModal  user={modal.user} onClose={close} />}
-      {modal?.type === 'edit'        && <EditUserModal        user={modal.user} onClose={close} onUpdate={handleUpdate} />}
-      {modal?.type === 'delete'      && <DeleteModal          user={modal.user} onClose={close} onDelete={handleDelete} />}
-
+      {modal?.type === 'assign' && (
+        <AssignProjectModal
+          user={modal.user}
+          onClose={close}
+          projects={projects}
+          processes={processes}
+          onSave={handleAssignProjects}
+        />
+      )}
+      {modal?.type === 'role' && (
+        <AssignRoleModal
+          user={modal.user}
+          onClose={close}
+          onAssign={handleAssignRole}
+        />
+      )}
+      {modal?.type === 'impersonate' && (
+        <ImpersonateModal
+          user={modal.user}
+          onClose={close}
+          onContinue={handleImpersonate}
+        />
+      )}
+      {modal?.type === 'setpw' && (
+        <SetPasswordModal
+          user={modal.user}
+          onClose={close}
+          onSet={handleSetPassword}
+        />
+      )}
+      {modal?.type === 'resetpw' && (
+        <ResetPasswordModal
+          user={modal.user}
+          onClose={close}
+        />
+      )}
+      {modal?.type === 'edit' && (
+        <EditUserModal
+          user={modal.user}
+          onClose={close}
+          onUpdate={handleUpdate}
+          shifts={shifts}
+        />
+      )}
+      {modal?.type === 'delete' && (
+        <DeleteModal
+          user={modal.user}
+          onClose={close}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };

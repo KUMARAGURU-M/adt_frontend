@@ -256,3 +256,47 @@
   font-weight: 700;
   letter-spacing: 0.35px;
 }
+
+/* ── Notification Badge ── */
+.sidebar-badge {
+  background: #ff3b5c;
+  color: #ffffff;
+  font-size: 0.70rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  box-shadow: 0 0 8px rgba(255, 59, 92, 0.6);
+  z-index: 2;
+  transition: transform 0.22s ease;
+}
+
+.nav-item:hover .sidebar-badge,
+.nav-item.active .sidebar-badge {
+  transform: scale(1.05);
+}
+
+/* Pulsing blink animation */
+.sidebar-badge.blink {
+  animation: badge-pulse 1.8s infinite ease-in-out;
+}
+
+@keyframes badge-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 59, 92, 0.7);
+  }
+  70% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px rgba(255, 59, 92, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 59, 92, 0);
+  }
+}

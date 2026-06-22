@@ -1,37 +1,34 @@
 // src/pages/admin/ActivityLogs.js
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './ActivityLogs.css';
+import { apiCall } from '../../utils/api';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
-const ENTITY_TYPES  = ['Employee', 'Project', 'Task', 'TimeLog'];
-const ACTION_TYPES  = ['Create', 'Update', 'Delete', 'Login', 'Logout'];
-const ITEMS_OPTIONS = [10, 25, 50, 100];
-
-/* ─── Seed Data ─────────────────────────────────────────────────── */
-const seedLogs = [
-  { id:  1, timestamp: '2026-05-15T10:08:49', user: 'T. Mohamed Usen', action: 'Login',  entityType: 'Employee', entity: 'T. Mohamed Usen', changes: '-', ip: '10.92.0.19' },
-  { id:  2, timestamp: '2026-05-14T15:19:16', user: 'T. Mohamed Usen', action: 'Login',  entityType: 'Employee', entity: 'T. Mohamed Usen', changes: '-', ip: '10.92.0.28' },
-  { id:  3, timestamp: '2026-05-14T14:27:52', user: 'Employee',        action: 'Login',  entityType: 'Employee', entity: 'Employee',        changes: '-', ip: '10.92.0.19' },
-  { id:  4, timestamp: '2026-05-14T14:27:29', user: 'T. Mohamed Usen', action: 'Login',  entityType: 'Employee', entity: 'T. Mohamed Usen', changes: '-', ip: '10.92.0.19' },
-  { id:  5, timestamp: '2026-05-14T14:26:34', user: 'Employee',        action: 'Login',  entityType: 'Employee', entity: 'Employee',        changes: '-', ip: '10.92.0.28' },
-  { id:  6, timestamp: '2026-05-14T13:30:50', user: 'T. Mohamed Usen', action: 'Login',  entityType: 'Employee', entity: 'T. Mohamed Usen', changes: '-', ip: '10.92.0.28' },
-  { id:  7, timestamp: '2026-05-14T13:29:39', user: 'Employee',        action: 'Login',  entityType: 'Employee', entity: 'Employee',        changes: '-', ip: '10.92.0.28' },
-  { id:  8, timestamp: '2026-05-14T10:13:21', user: 'T. Mohamed Usen', action: 'Login',  entityType: 'Employee', entity: 'T. Mohamed Usen', changes: '-', ip: '10.92.0.19' },
-  { id:  9, timestamp: '2026-05-14T10:04:09', user: 'T. Mohamed Usen', action: 'Login',  entityType: 'Employee', entity: 'T. Mohamed Usen', changes: '-', ip: '10.92.0.28' },
-  { id: 10, timestamp: '2026-05-13T21:38:04', user: 'T. Mohamed Usen', action: 'Login',  entityType: 'Employee', entity: 'T. Mohamed Usen', changes: '-', ip: '10.92.0.28' },
-  { id: 11, timestamp: '2026-05-13T09:15:00', user: 'T. Mohamed Usen', action: 'Create', entityType: 'Project',  entity: 'ING - ACDC',      changes: 'Created new project', ip: '10.92.0.19' },
-  { id: 12, timestamp: '2026-05-12T14:30:22', user: 'T. Mohamed Usen', action: 'Update', entityType: 'Task',     entity: 'EPUB - Tagging',  changes: 'Status: pending → completed', ip: '10.92.0.28' },
-  { id: 13, timestamp: '2026-05-12T11:05:44', user: 'Employee',        action: 'Login',  entityType: 'Employee', entity: 'Employee',        changes: '-', ip: '10.92.0.19' },
-  { id: 14, timestamp: '2026-05-11T16:42:10', user: 'Shakina A',       action: 'Login',  entityType: 'Employee', entity: 'Shakina A',       changes: '-', ip: '10.92.0.28' },
-  { id: 15, timestamp: '2026-05-11T09:00:33', user: 'T. Mohamed Usen', action: 'Delete', entityType: 'Task',     entity: 'Old Task',        changes: 'Deleted task record',  ip: '10.92.0.19' },
-  { id: 16, timestamp: '2026-05-10T18:55:01', user: 'Ayeesha M',       action: 'Logout', entityType: 'Employee', entity: 'Ayeesha M',       changes: '-', ip: '10.92.0.28' },
-  { id: 17, timestamp: '2026-05-10T10:20:15', user: 'T. Mohamed Usen', action: 'Update', entityType: 'Employee', entity: 'Sureka',          changes: 'Shift: General Shift → Night Shift', ip: '10.92.0.19' },
-  { id: 18, timestamp: '2026-05-09T08:30:45', user: 'T. Mohamed Usen', action: 'Create', entityType: 'TimeLog',  entity: 'TimeLog #4521',   changes: 'Logged 2.5 hrs on ING-OUP', ip: '10.92.0.28' },
+const ENTITY_TYPES = [
+  { label: 'Employee', value: 'employee' },
+  { label: 'Project', value: 'project' },
+  { label: 'Task', value: 'task' },
+  { label: 'Shift', value: 'shift' },
+  { label: 'Process', value: 'process' },
+  { label: 'Job', value: 'job' },
 ];
+
+const ACTION_TYPES = [
+  { label: 'Create', value: 'CREATE' },
+  { label: 'Update', value: 'UPDATE' },
+  { label: 'Delete', value: 'DELETE' },
+  { label: 'Login', value: 'LOGIN' },
+  { label: 'Logout', value: 'LOGOUT' },
+  { label: 'Password Reset', value: 'PASSWORD_RESET' },
+  { label: 'Bulk Import', value: 'BULK_IMPORT' },
+];
+
+const ITEMS_OPTIONS = [10, 25, 50, 100];
 
 /* ─── Format timestamp: DD/MM/YYYY, HH:MM:SS ────────────────────── */
 const fmtTimestamp = (iso) => {
+  if (!iso) return '-';
   const d   = new Date(iso);
   const dd  = String(d.getDate()).padStart(2,'0');
   const mm  = String(d.getMonth()+1).padStart(2,'0');
@@ -43,20 +40,25 @@ const fmtTimestamp = (iso) => {
 };
 
 /* ─── Action Badge ───────────────────────────────────────────────── */
-const ActionBadge = ({ action }) => (
-  <span className={`al-action-badge al-action-${action.toLowerCase()}`}>
-    {action.toUpperCase()}
-  </span>
-);
+const ActionBadge = ({ action }) => {
+  if (!action) return <span className="al-action-badge">-</span>;
+  const label = action.replace('_', ' ').toUpperCase();
+  const cssClass = action.toLowerCase().replace('_', '-');
+  return (
+    <span className={`al-action-badge al-action-${cssClass}`}>
+      {label}
+    </span>
+  );
+};
 
 /* ─── Entity Type Badge ─────────────────────────────────────────── */
 const EntityBadge = ({ type }) => (
-  <span className="al-entity-badge">{type.toLowerCase()}</span>
+  <span className="al-entity-badge">{type ? type.toLowerCase() : '-'}</span>
 );
 
 /* ══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
-══════════════════════════════════════════════════════════════════ */
+   ══════════════════════════════════════════════════════════════════ */
 const ActivityLogs = () => {
   /* Filter state */
   const [fEntityType, setFEntityType] = useState('');
@@ -67,31 +69,51 @@ const ActivityLogs = () => {
   const [perPage, setPerPage] = useState(10);
   const [page,    setPage]    = useState(1);
 
-  /* Apply */
+  /* Logs data */
+  const [logs, setLogs] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  /* Load data from API */
+  const loadLogs = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      let query = `/activity-logs?page=${page - 1}&size=${perPage}`;
+      if (applied.entityType) query += `&entityType=${applied.entityType}`;
+      if (applied.action) query += `&action=${applied.action}`;
+
+      const data = await apiCall(query);
+      setLogs(data.content || []);
+      setTotalItems(data.totalElements || 0);
+      setTotalPages(data.totalPages || 1);
+    } catch (err) {
+      setError(err.message || 'Failed to load activity logs');
+    } finally {
+      setLoading(false);
+    }
+  }, [page, perPage, applied]);
+
+  useEffect(() => {
+    loadLogs();
+  }, [loadLogs]);
+
+  /* Apply Filters click */
   const handleApply = () => {
     setApplied({ entityType: fEntityType, action: fAction });
     setPage(1);
   };
 
-  /* Filtered rows */
-  const filtered = useMemo(() => seedLogs.filter(log => {
-    if (applied.entityType && log.entityType !== applied.entityType) return false;
-    if (applied.action     && log.action     !== applied.action)     return false;
-    return true;
-  }), [applied]);
-
-  /* Pagination math */
-  const totalItems = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
-  const safePage   = Math.min(page, totalPages);
-  const startIdx   = (safePage - 1) * perPage;
-  const pageRows   = useMemo(
-    () => filtered.slice(startIdx, startIdx + perPage),
-    [filtered, startIdx, perPage]
-  );
+  const safePage = Math.min(page, totalPages);
+  const startIdx = (safePage - 1) * perPage;
 
   const goTo = (p) => setPage(Math.max(1, Math.min(p, totalPages)));
-  const handlePerPage = (val) => { setPerPage(val); setPage(1); };
+  const handlePerPage = (val) => {
+    setPerPage(val);
+    setPage(1);
+  };
 
   /* Page number buttons — show max 5 */
   const pageNumbers = useMemo(() => {
@@ -126,7 +148,7 @@ const ActivityLogs = () => {
             >
               <option value="">All Types</option>
               {ENTITY_TYPES.map(t => (
-                <option key={t} value={t}>{t}</option>
+                <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
           </div>
@@ -140,16 +162,31 @@ const ActivityLogs = () => {
             >
               <option value="">All Actions</option>
               {ACTION_TYPES.map(a => (
-                <option key={a} value={a}>{a}</option>
+                <option key={a.value} value={a.value}>{a.label}</option>
               ))}
             </select>
           </div>
         </div>
 
-        <button className="al-apply-btn" onClick={handleApply}>
-          Apply Filters
+        <button className="al-apply-btn" onClick={handleApply} disabled={loading}>
+          {loading ? 'Applying...' : 'Apply Filters'}
         </button>
       </div>
+
+      {error && (
+        <div style={{
+          padding: '12px 18px',
+          background: '#fee2e2',
+          border: '1px solid #fca5a5',
+          borderRadius: '8px',
+          color: '#991b1b',
+          fontSize: '0.85rem',
+          fontWeight: '600',
+          marginBottom: '20px'
+        }}>
+          ⚠️ {error}
+        </div>
+      )}
 
       {/* ── Table Card ── */}
       <div className="al-table-card">
@@ -167,25 +204,25 @@ const ActivityLogs = () => {
               </tr>
             </thead>
             <tbody>
-              {pageRows.length === 0 ? (
+              {logs.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="al-empty">
-                    No activity logs found for selected filters.
+                    {loading ? 'Loading...' : 'No activity logs found for selected filters.'}
                   </td>
                 </tr>
-              ) : pageRows.map(log => (
+              ) : logs.map(log => (
                 <tr key={log.id}>
-                  <td className="td-ts">{fmtTimestamp(log.timestamp)}</td>
-                  <td className="td-user col-left">{log.user}</td>
+                  <td className="td-ts">{fmtTimestamp(log.createdAt)}</td>
+                  <td className="td-user col-left">{log.userName}</td>
                   <td className="td-action"><ActionBadge action={log.action} /></td>
                   <td className="td-entity-type"><EntityBadge type={log.entityType} /></td>
-                  <td className="td-entity col-left">{log.entity}</td>
+                  <td className="td-entity col-left">{log.entityLabel || '-'}</td>
                   <td className="td-changes">
-                    {log.changes === '-'
+                    {!log.changes || log.changes === '-'
                       ? <span className="al-dash">-</span>
                       : <span className="al-changes-text">{log.changes}</span>}
                   </td>
-                  <td className="td-ip">{log.ip}</td>
+                  <td className="td-ip">{log.ipAddress || '-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -220,7 +257,7 @@ const ActivityLogs = () => {
             <button
               className="al-nav-btn al-nav-edge"
               title="First page"
-              disabled={safePage === 1}
+              disabled={safePage === 1 || loading}
               onClick={() => goTo(1)}
             >
               «
@@ -229,7 +266,7 @@ const ActivityLogs = () => {
             <button
               className="al-nav-btn"
               title="Previous page"
-              disabled={safePage === 1}
+              disabled={safePage === 1 || loading}
               onClick={() => goTo(safePage - 1)}
             >
               ‹
@@ -240,6 +277,7 @@ const ActivityLogs = () => {
               <button
                 key={n}
                 className={`al-nav-btn${safePage === n ? ' al-active-page' : ''}`}
+                disabled={loading}
                 onClick={() => goTo(n)}
               >
                 {n}
@@ -250,7 +288,7 @@ const ActivityLogs = () => {
             <button
               className="al-nav-btn"
               title="Next page"
-              disabled={safePage === totalPages}
+              disabled={safePage === totalPages || loading}
               onClick={() => goTo(safePage + 1)}
             >
               ›
@@ -259,7 +297,7 @@ const ActivityLogs = () => {
             <button
               className="al-nav-btn al-nav-edge"
               title="Last page"
-              disabled={safePage === totalPages}
+              disabled={safePage === totalPages || loading}
               onClick={() => goTo(totalPages)}
             >
               »

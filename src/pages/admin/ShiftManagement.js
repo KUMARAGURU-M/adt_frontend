@@ -1,35 +1,16 @@
-// src/pages/admin/ShiftManagement.js
-// Fully correlated: Shifts → Allotment Board → Assignments → Table
-
-import React, { useState, useMemo, useCallback } from 'react';
+import React, {
+  useState, useEffect, useMemo, useCallback
+} from 'react';
 import './ShiftManagement.css';
+import { apiCall } from '../../utils/api';
 
-/* ─── Constants ─────────────────────────────────────────────────── */
+// ── Constants ─────────────────────────────────────────────────────
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
-
-const EMPLOYEES = [
-  { id: 1,  name: 'M. Ayeesha' },
-  { id: 2,  name: 'A. Shakina' },
-  { id: 3,  name: 'G. Nilai' },
-  { id: 4,  name: 'P. Magesh' },
-  { id: 5,  name: 'S. Narkis' },
-  { id: 6,  name: 'A. Elavarasi' },
-  { id: 7,  name: 'Mohana' },
-  { id: 8,  name: 'Suleka' },
-  { id: 9,  name: 'Jayanthi' },
-  { id: 10, name: 'Vasanthi' },
-  { id: 11, name: 'Gowri' },
-  { id: 12, name: 'Safrin' },
-  { id: 13, name: 'Rasheetha' },
-  { id: 14, name: 'Thaslima' },
-  { id: 15, name: 'Jenifer' },
-  { id: 16, name: 'Buela' },
-  { id: 17, name: 'Reeta' },
+const SHIFT_NAME_OPTIONS = [
+  '1st Shift', '2nd Shift', 'Night Shift', 'General Shift'
 ];
 
-const SHIFT_NAME_OPTIONS = ['1st Shift', '2nd Shift', 'Night Shift', 'General Shift'];
-
-/* ─── Helpers ───────────────────────────────────────────────────── */
+// ── Helpers ───────────────────────────────────────────────────────
 const fmt12 = (t) => {
   if (!t) return '-';
   const [h, m] = t.split(':').map(Number);
@@ -39,20 +20,37 @@ const fmt12 = (t) => {
 };
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' }) : '-';
+  d ? new Date(d).toLocaleDateString('en-US', {
+        month: 'numeric', day: 'numeric', year: 'numeric'
+      })
+    : '-';
 
-const generateId = () => Date.now() + Math.random();
+// Map backend → frontend shape
+const mapShift = (s) => ({
+  id:                s.id,
+  name:              s.name,
+  startTime:         s.startTime || '',
+  endTime:           s.endTime   || '',
+  description:       s.description || '',
+  active:            s.isActive,
+  created:           s.createdAt,
+  assignedEmployees: (s.assignedEmployees || []).map(e => ({
+    id:       e.userId,
+    name:     e.fullName,
+    email:    e.email,
+  })),
+});
 
-/* ─── Modal Overlay ─────────────────────────────────────────────── */
+// ── Modal Overlay ─────────────────────────────────────────────────
 const Modal = ({ onClose, children }) => (
   <div className="sm-modal-overlay" onClick={onClose}>
-    <div className="sm-modal-box" onClick={(e) => e.stopPropagation()}>
+    <div className="sm-modal-box" onClick={e => e.stopPropagation()}>
       {children}
     </div>
   </div>
 );
 
-/* ─── Edit Shift Modal ───────────────────────────────────────────── */
+// ── Edit Shift Modal ──────────────────────────────────────────────
 const EditModal = ({ shift, onClose, onUpdate }) => {
   const [name,      setName]      = useState(shift.name);
   const [startTime, setStartTime] = useState(shift.startTime);
@@ -60,11 +58,22 @@ const EditModal = ({ shift, onClose, onUpdate }) => {
   const [desc,      setDesc]      = useState(shift.description);
   const [active,    setActive]    = useState(shift.active);
   const [err,       setErr]       = useState('');
+  const [saving,    setSaving]    = useState(false);
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!name.trim()) { setErr('Shift name is required.'); return; }
-    onUpdate({ ...shift, name: name.trim(), startTime, endTime, description: desc, active });
-    onClose();
+    setSaving(true);
+    try {
+      await onUpdate(shift.id, {
+        name, startTime, endTime,
+        description: desc, isActive: active,
+      });
+      onClose();
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -78,10 +87,10 @@ const EditModal = ({ shift, onClose, onUpdate }) => {
         <select
           className={`sm-form-input${err ? ' input-error' : ''}`}
           value={name}
-          onChange={(e) => { setName(e.target.value); setErr(''); }}
+          onChange={e => { setName(e.target.value); setErr(''); }}
         >
           <option value="">Select Shift</option>
-          {SHIFT_NAME_OPTIONS.map((n) => (
+          {SHIFT_NAME_OPTIONS.map(n => (
             <option key={n} value={n}>{n}</option>
           ))}
         </select>
@@ -91,79 +100,103 @@ const EditModal = ({ shift, onClose, onUpdate }) => {
       <div className="sm-form-row">
         <div className="sm-form-group">
           <label className="sm-form-label">Start Time</label>
-          <input type="time" className="sm-form-input" value={startTime}
-            onChange={(e) => setStartTime(e.target.value)} />
+          <input type="time" className="sm-form-input"
+            value={startTime}
+            onChange={e => setStartTime(e.target.value)} />
         </div>
         <div className="sm-form-group">
           <label className="sm-form-label">End Time</label>
-          <input type="time" className="sm-form-input" value={endTime}
-            onChange={(e) => setEndTime(e.target.value)} />
+          <input type="time" className="sm-form-input"
+            value={endTime}
+            onChange={e => setEndTime(e.target.value)} />
         </div>
       </div>
 
       <div className="sm-form-group">
         <label className="sm-form-label">Description</label>
-        <textarea className="sm-form-textarea" placeholder="Optional description"
-          value={desc} rows={3} onChange={(e) => setDesc(e.target.value)} />
+        <textarea className="sm-form-textarea"
+          placeholder="Optional description"
+          value={desc} rows={3}
+          onChange={e => setDesc(e.target.value)} />
       </div>
 
       <div className="sm-check-group">
         <label className="sm-check-label">
-          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
+          <input type="checkbox" checked={active}
+            onChange={e => setActive(e.target.checked)} />
           Active
         </label>
       </div>
 
       <div className="sm-modal-actions">
         <button className="sm-btn-cancel" onClick={onClose}>Cancel</button>
-        <button className="sm-btn-primary" onClick={handleUpdate}>Update Shift</button>
+        <button className="sm-btn-primary" onClick={handleUpdate}
+          disabled={saving}>
+          {saving ? 'Updating...' : 'Update Shift'}
+        </button>
       </div>
     </Modal>
   );
 };
 
-/* ─── Delete Confirm Modal ───────────────────────────────────────── */
-const DeleteModal = ({ shift, onClose, onDelete }) => (
-  <Modal onClose={onClose}>
-    <div className="sm-delete-modal">
-      <div className="sm-delete-icon">🗑️</div>
-      <h2 className="sm-modal-title">Delete Shift</h2>
-      <p className="sm-delete-msg">
-        Are you sure you want to delete <strong>"{shift.name}"</strong>?<br />
-        This will also remove all allotted employees from this shift.<br />
-        <em>This action cannot be undone.</em>
-      </p>
-      <div className="sm-modal-actions centered">
-        <button className="sm-btn-cancel" onClick={onClose}>Cancel</button>
-        <button className="sm-btn-danger" onClick={() => { onDelete(shift.id); onClose(); }}>
-          Delete
-        </button>
-      </div>
-    </div>
-  </Modal>
-);
+// ── Delete Modal ──────────────────────────────────────────────────
+const DeleteModal = ({ shift, onClose, onDelete }) => {
+  const [deleting, setDeleting] = useState(false);
 
-/* ─── Allotment Column ───────────────────────────────────────────── */
-/**
- * Each column represents ONE shift (from the shifts list).
- * - Shows shift time range in the header.
- * - Employee dropdown only shows employees not already allotted to ANY shift.
- * - "Assign Shift" finalises the allotment for that shift.
- * - Assigned state is saved back into the shift record (assignedEmployees[]).
- */
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await onDelete(shift.id);
+      onClose();
+    } catch (e) {
+      alert('Error: ' + e.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="sm-delete-modal">
+        <div className="sm-delete-icon">🗑️</div>
+        <h2 className="sm-modal-title">Delete Shift</h2>
+        <p className="sm-delete-msg">
+          Are you sure you want to delete{' '}
+          <strong>"{shift.name}"</strong>?<br />
+          This will also remove all allotted employees from this shift.<br />
+          <em>This action cannot be undone.</em>
+        </p>
+        <div className="sm-modal-actions centered">
+          <button className="sm-btn-cancel" onClick={onClose}>Cancel</button>
+          <button className="sm-btn-danger" onClick={handleDelete}
+            disabled={deleting}>
+            {deleting ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+// ── Allotment Column ──────────────────────────────────────────────
 const AllotmentColumn = ({
   shift,
   allottedList,
   isAssigned,
   globalAllottedIds,
+  allEmployees,
   onAddEmployee,
   onRemoveEmployee,
   onAssign,
+  assigning,
 }) => {
-  const availableEmployees = EMPLOYEES.filter((e) => !globalAllottedIds.has(e.id));
+  const availableEmployees = allEmployees.filter(
+    e => !globalAllottedIds.has(e.id)
+  );
 
   return (
     <div className={`sm-allot-column${isAssigned ? ' is-assigned' : ''}`}>
+
       {/* Header */}
       <div className="sm-allot-header">
         <div className="sm-allot-title-wrapper">
@@ -171,10 +204,14 @@ const AllotmentColumn = ({
           <span className="sm-allot-time-range">
             {fmt12(shift.startTime)} – {fmt12(shift.endTime)}
           </span>
-          <span className="sm-allot-count">{allottedList.length} Allotted</span>
+          <span className="sm-allot-count">
+            {allottedList.length} Allotted
+          </span>
         </div>
         <div className="sm-allot-header-right">
-          <span className={`sm-status-badge${shift.active ? ' active' : ' inactive'}`}>
+          <span className={`sm-status-badge${
+            shift.active ? ' active' : ' inactive'
+          }`}>
             {shift.active ? 'Active' : 'Inactive'}
           </span>
           {isAssigned && (
@@ -188,14 +225,20 @@ const AllotmentColumn = ({
         <select
           className="sm-allot-select"
           value=""
-          onChange={(e) => { if (e.target.value) onAddEmployee(shift.id, Number(e.target.value)); }}
+          onChange={e => {
+            if (e.target.value) {
+              onAddEmployee(shift.id, e.target.value);
+            }
+          }}
           disabled={!shift.active}
         >
           <option value="" disabled>
             {shift.active ? '+ Add Employee' : 'Shift is inactive'}
           </option>
-          {availableEmployees.map((emp) => (
-            <option key={emp.id} value={emp.id}>{emp.name}</option>
+          {availableEmployees.map(emp => (
+            <option key={emp.id} value={emp.id}>
+              {emp.name}
+            </option>
           ))}
           {availableEmployees.length === 0 && (
             <option disabled>All employees allotted</option>
@@ -211,7 +254,7 @@ const AllotmentColumn = ({
           </div>
         ) : (
           <div className="sm-shift-list">
-            {allottedList.map((emp) => (
+            {allottedList.map(emp => (
               <div key={emp.id} className="sm-shift-item">
                 <span className="sm-shift-item-avatar">👤</span>
                 <span className="sm-shift-item-name">{emp.name}</span>
@@ -220,9 +263,7 @@ const AllotmentColumn = ({
                   className="sm-shift-item-remove"
                   onClick={() => onRemoveEmployee(shift.id, emp.id)}
                   title={`Remove ${emp.name}`}
-                >
-                  ✕
-                </button>
+                >✕</button>
               </div>
             ))}
           </div>
@@ -235,156 +276,116 @@ const AllotmentColumn = ({
           type="button"
           className={`sm-assign-btn${isAssigned ? ' btn-success' : ''}`}
           onClick={() => onAssign(shift.id)}
-          disabled={allottedList.length === 0 || !shift.active}
-          title={
-            !shift.active
-              ? 'Shift is inactive'
-              : allottedList.length === 0
-              ? 'Add at least one employee'
-              : ''
+          disabled={
+            allottedList.length === 0 ||
+            !shift.active ||
+            assigning === shift.id
           }
         >
-          {isAssigned ? '✓ Saved & Assigned' : '💾 Assign Shift'}
+          {assigning === shift.id
+            ? 'Saving...'
+            : isAssigned
+            ? '✓ Saved & Assigned'
+            : '💾 Assign Shift'}
         </button>
       </div>
     </div>
   );
 };
 
-/* ══════════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-══════════════════════════════════════════════════════════════════ */
+// ═════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═════════════════════════════════════════════════════════════════
 const ShiftManagement = () => {
-  /* ── Shifts State
-   *  Each shift: { id, name, startTime, endTime, description, active, created, assignedEmployees[] }
-   *  assignedEmployees is set when user clicks "Assign Shift" in the allotment board.
-   */
-  const [shifts, setShifts] = useState([]);
 
-  /* ── Modal State ── */
-  const [modal, setModal] = useState(null); // { type: 'edit'|'delete', shift }
+  const [shifts,      setShifts]      = useState([]);
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [error,       setError]       = useState('');
+  const [modal,       setModal]       = useState(null);
 
-  /* ── Add-form State ── */
-  const [showAddForm, setShowAddForm] = useState(true);
-  const [newName,      setNewName]      = useState('');
-  const [newStartTime, setNewStartTime] = useState('');
-  const [newEndTime,   setNewEndTime]   = useState('');
-  const [newDesc,      setNewDesc]      = useState('');
-  const [newActive,    setNewActive]    = useState(true);
-  const [addErr,       setAddErr]       = useState('');
+  // Add form state
+  const [showAddForm,   setShowAddForm]   = useState(true);
+  const [newName,       setNewName]       = useState('');
+  const [newStartTime,  setNewStartTime]  = useState('');
+  const [newEndTime,    setNewEndTime]    = useState('');
+  const [newDesc,       setNewDesc]       = useState('');
+  const [newActive,     setNewActive]     = useState(true);
+  const [addErr,        setAddErr]        = useState('');
+  const [creating,      setCreating]      = useState(false);
 
-  /* ── Pagination State ── */
+  // Allotment board state
+  // { [shiftId]: { id, name, email }[] }
+  const [allotments,    setAllotments]    = useState({});
+  const [assignedFlags, setAssignedFlags] = useState({});
+  const [assigning,     setAssigning]     = useState(null);
+
+  // Pagination
   const [perPage, setPerPage] = useState(25);
   const [page,    setPage]    = useState(1);
 
-  /**
-   * allotments: { [shiftId]: Employee[] }
-   * Tracks the working (unsaved) employee list per shift in the allotment board.
-   * When "Assign Shift" is clicked, this is committed into shift.assignedEmployees.
-   */
-  const [allotments, setAllotments] = useState({});
+  // ── Load data ──────────────────────────────────────────────
+  const loadShifts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await apiCall('/shifts/all');
+      const mapped = data.map(mapShift);
+      setShifts(mapped);
 
-  /**
-   * assignedFlags: { [shiftId]: boolean }
-   * True once the user has clicked "Assign Shift" without subsequent edits.
-   */
-  const [assignedFlags, setAssignedFlags] = useState({});
+      // Initialize allotments from currently assigned employees
+      const initAllotments = {};
+      const initFlags       = {};
+      mapped.forEach(s => {
+        initAllotments[s.id] = s.assignedEmployees || [];
+        initFlags[s.id]      = s.assignedEmployees?.length > 0;
+      });
+      setAllotments(initAllotments);
+      setAssignedFlags(initFlags);
 
-  /* ─── Derived: all employee IDs currently in any allotment column ─── */
+    } catch (err) {
+      setError('Failed to load shifts: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadEmployees = useCallback(async () => {
+    try {
+      const data = await apiCall('/shifts/employees');
+      setAllEmployees(data.map(e => ({
+        id:    e.userId,
+        name:  e.fullName,
+        email: e.email,
+        currentShiftId:   e.currentShiftId,
+        currentShiftName: e.currentShiftName,
+      })));
+    } catch (err) {
+      console.warn('Could not load employees:', err.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadShifts();
+    loadEmployees();
+  }, [loadShifts, loadEmployees]);
+
+  // ── Derived: all employee IDs in any allotment column ──────
   const globalAllottedIds = useMemo(() => {
     const ids = new Set();
-    Object.values(allotments).forEach((list) =>
-      list.forEach((emp) => ids.add(emp.id))
+    Object.values(allotments).forEach(list =>
+      list.forEach(emp => ids.add(emp.id))
     );
     return ids;
   }, [allotments]);
 
-  /* ─── Shift CRUD ─────────────────────────────────────────────── */
-  const handleCreate = () => {
-    if (!newName.trim()) { setAddErr('Please select a shift name.'); return; }
-    const id = generateId();
-    const now = new Date().toISOString().split('T')[0];
-    const newShift = {
-      id,
-      name:        newName.trim(),
-      startTime:   newStartTime,
-      endTime:     newEndTime,
-      description: newDesc,
-      active:      newActive,
-      created:     now,
-      assignedEmployees: [],
-    };
-    setShifts((prev) => [...prev, newShift]);
-    /* Initialise an empty allotment slot for this shift */
-    setAllotments((prev) => ({ ...prev, [id]: [] }));
-    setAssignedFlags((prev) => ({ ...prev, [id]: false }));
-    /* Reset form */
-    setNewName(''); setNewStartTime(''); setNewEndTime('');
-    setNewDesc(''); setNewActive(true); setAddErr('');
-  };
-
-  const handleUpdate = useCallback((updated) => {
-    setShifts((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-    /* If the name changed, keep allotments intact — keyed by id, not name */
-    /* Mark as needing re-assignment since shift details changed */
-    setAssignedFlags((prev) => ({ ...prev, [updated.id]: false }));
-  }, []);
-
-  const handleDelete = useCallback((id) => {
-    setShifts((prev) => prev.filter((s) => s.id !== id));
-    /* Clean up allotments and flags for deleted shift */
-    setAllotments((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-    setAssignedFlags((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-  }, []);
-
-  /* ─── Allotment Board Actions ────────────────────────────────── */
-  const handleAddEmployee = useCallback((shiftId, empId) => {
-    const emp = EMPLOYEES.find((e) => e.id === empId);
-    if (!emp) return;
-    setAllotments((prev) => ({
-      ...prev,
-      [shiftId]: [...(prev[shiftId] || []), emp],
-    }));
-    /* Editing allotments un-saves the assignment */
-    setAssignedFlags((prev) => ({ ...prev, [shiftId]: false }));
-  }, []);
-
-  const handleRemoveEmployee = useCallback((shiftId, empId) => {
-    setAllotments((prev) => ({
-      ...prev,
-      [shiftId]: (prev[shiftId] || []).filter((e) => e.id !== empId),
-    }));
-    setAssignedFlags((prev) => ({ ...prev, [shiftId]: false }));
-  }, []);
-
-  /**
-   * handleAssign: commits the current allotment list into the shift record
-   * so the table (and any downstream view) can read shift.assignedEmployees.
-   */
-  const handleAssign = useCallback((shiftId) => {
-    const employees = allotments[shiftId] || [];
-    setShifts((prev) =>
-      prev.map((s) =>
-        s.id === shiftId ? { ...s, assignedEmployees: employees } : s
-      )
-    );
-    setAssignedFlags((prev) => ({ ...prev, [shiftId]: true }));
-  }, [allotments]);
-
-  /* ─── Pagination ─────────────────────────────────────────────── */
+  // ── Pagination ──────────────────────────────────────────────
   const totalItems = shifts.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
   const safePage   = Math.min(page, totalPages);
   const startIdx   = (safePage - 1) * perPage;
-  const pageRows   = useMemo(
+
+  const pageRows = useMemo(
     () => shifts.slice(startIdx, startIdx + perPage),
     [shifts, startIdx, perPage]
   );
@@ -394,14 +395,140 @@ const ShiftManagement = () => {
   const open  = (type, shift) => setModal({ type, shift });
   const close = ()             => setModal(null);
 
-  /* ─── Active shifts for the allotment board ──────────────────── */
-  /* We show ALL shifts in the board, active or not — inactive ones
-     disable the dropdown and assign button to prevent changes.     */
+  // ── Create shift ────────────────────────────────────────────
+  const handleCreate = async () => {
+    if (!newName.trim()) {
+      setAddErr('Please select a shift name.');
+      return;
+    }
+    setCreating(true);
+    try {
+      const created = await apiCall('/shifts', 'POST', {
+        name:        newName.trim(),
+        startTime:   newStartTime || null,
+        endTime:     newEndTime   || null,
+        description: newDesc      || null,
+        isActive:    newActive,
+      });
+
+      const mapped = mapShift(created);
+      setShifts(prev => [...prev, mapped]);
+      setAllotments(prev => ({ ...prev, [mapped.id]: [] }));
+      setAssignedFlags(prev => ({ ...prev, [mapped.id]: false }));
+
+      setNewName('');
+      setNewStartTime('');
+      setNewEndTime('');
+      setNewDesc('');
+      setNewActive(true);
+      setAddErr('');
+    } catch (err) {
+      setAddErr(err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // ── Update shift ────────────────────────────────────────────
+  const handleUpdate = useCallback(async (id, payload) => {
+    const updated = await apiCall(`/shifts/${id}`, 'PUT', payload);
+    const mapped  = mapShift(updated);
+    setShifts(prev => prev.map(s => s.id === id ? mapped : s));
+    setAssignedFlags(prev => ({ ...prev, [id]: false }));
+  }, []);
+
+  // ── Delete shift ────────────────────────────────────────────
+  const handleDelete = useCallback(async (id) => {
+    await apiCall(`/shifts/${id}`, 'DELETE');
+    setShifts(prev => prev.filter(s => s.id !== id));
+    setAllotments(prev => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setAssignedFlags(prev => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
+  // ── Allotment Board: add employee to column ─────────────────
+  const handleAddEmployee = useCallback((shiftId, empId) => {
+    const emp = allEmployees.find(e => e.id === empId);
+    if (!emp) return;
+    setAllotments(prev => ({
+      ...prev,
+      [shiftId]: [...(prev[shiftId] || []), {
+        id: emp.id, name: emp.name, email: emp.email
+      }],
+    }));
+    setAssignedFlags(prev => ({ ...prev, [shiftId]: false }));
+  }, [allEmployees]);
+
+  // ── Allotment Board: remove employee from column ────────────
+  const handleRemoveEmployee = useCallback((shiftId, empId) => {
+    setAllotments(prev => ({
+      ...prev,
+      [shiftId]: (prev[shiftId] || []).filter(e => e.id !== empId),
+    }));
+    setAssignedFlags(prev => ({ ...prev, [shiftId]: false }));
+  }, []);
+
+  // ── Allotment Board: commit assignment to backend ───────────
+  const handleAssign = useCallback(async (shiftId) => {
+    const employees = allotments[shiftId] || [];
+    if (employees.length === 0) return;
+
+    setAssigning(shiftId);
+    try {
+      await apiCall(`/shifts/${shiftId}/assign`, 'POST', {
+        userIds: employees.map(e => e.id),
+      });
+
+      // Update local shift record with new assignments
+      setShifts(prev => prev.map(s =>
+        s.id === shiftId
+          ? { ...s, assignedEmployees: employees }
+          : s
+      ));
+      setAssignedFlags(prev => ({ ...prev, [shiftId]: true }));
+
+      // Reload employees to update currentShiftName
+      await loadEmployees();
+
+    } catch (err) {
+      alert('Error assigning shift: ' + err.message);
+    } finally {
+      setAssigning(null);
+    }
+  }, [allotments, loadEmployees]);
+
+  // ── Render ──────────────────────────────────────────────────
+  if (loading) return (
+    <div className="sm-container">
+      <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
+        Loading shifts...
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="sm-container">
+      <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>
+        {error}
+        <br />
+        <button onClick={loadShifts} style={{ marginTop: '12px' }}>
+          Retry
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="sm-container">
 
-      {/* ══ Page Header ══════════════════════════════════════════ */}
+      {/* ── Page Header ── */}
       <div className="sm-page-header">
         <div className="sm-page-title">
           <span className="sm-page-icon">🕒</span>
@@ -409,13 +536,13 @@ const ShiftManagement = () => {
         </div>
         <button
           className="sm-add-header-btn"
-          onClick={() => setShowAddForm((v) => !v)}
+          onClick={() => setShowAddForm(v => !v)}
         >
           {showAddForm ? '✕ Close Form' : '+ Add Shift'}
         </button>
       </div>
 
-      {/* ══ Add New Shift ════════════════════════════════════════ */}
+      {/* ── Add New Shift Form ── */}
       {showAddForm && (
         <div className="sm-add-card">
           <h3 className="sm-add-card-title">Add New Shift</h3>
@@ -427,10 +554,10 @@ const ShiftManagement = () => {
             <select
               className={`sm-form-input${addErr ? ' input-error' : ''}`}
               value={newName}
-              onChange={(e) => { setNewName(e.target.value); setAddErr(''); }}
+              onChange={e => { setNewName(e.target.value); setAddErr(''); }}
             >
               <option value="">Select Shift</option>
-              {SHIFT_NAME_OPTIONS.map((n) => (
+              {SHIFT_NAME_OPTIONS.map(n => (
                 <option key={n} value={n}>{n}</option>
               ))}
             </select>
@@ -440,45 +567,42 @@ const ShiftManagement = () => {
           <div className="sm-form-row">
             <div className="sm-form-group">
               <label className="sm-form-label">Start Time</label>
-              <input type="time" className="sm-form-input" value={newStartTime}
-                onChange={(e) => setNewStartTime(e.target.value)} />
+              <input type="time" className="sm-form-input"
+                value={newStartTime}
+                onChange={e => setNewStartTime(e.target.value)} />
             </div>
             <div className="sm-form-group">
               <label className="sm-form-label">End Time</label>
-              <input type="time" className="sm-form-input" value={newEndTime}
-                onChange={(e) => setNewEndTime(e.target.value)} />
+              <input type="time" className="sm-form-input"
+                value={newEndTime}
+                onChange={e => setNewEndTime(e.target.value)} />
             </div>
           </div>
 
           <div className="sm-form-group">
             <label className="sm-form-label">Description</label>
-            <textarea
-              className="sm-form-textarea"
+            <textarea className="sm-form-textarea"
               placeholder="Optional description"
-              value={newDesc}
-              rows={3}
-              onChange={(e) => setNewDesc(e.target.value)}
-            />
+              value={newDesc} rows={3}
+              onChange={e => setNewDesc(e.target.value)} />
           </div>
 
           <div className="sm-check-group">
             <label className="sm-check-label">
               <input type="checkbox" checked={newActive}
-                onChange={(e) => setNewActive(e.target.checked)} />
+                onChange={e => setNewActive(e.target.checked)} />
               Active
             </label>
           </div>
 
-          <button className="sm-create-btn" onClick={handleCreate}>
-            ＋ Create Shift
+          <button className="sm-create-btn" onClick={handleCreate}
+            disabled={creating}>
+            {creating ? 'Creating...' : '＋ Create Shift'}
           </button>
         </div>
       )}
 
-      {/* ══ Allotment Board ══════════════════════════════════════
-       *  Only rendered when at least one shift exists.
-       *  Columns are generated FROM the shifts list — no hardcoding.
-       ═══════════════════════════════════════════════════════════ */}
+      {/* ── Allotment Board ── */}
       {shifts.length > 0 && (
         <div className="sm-allot-card">
           <div className="sm-allot-card-header">
@@ -487,37 +611,45 @@ const ShiftManagement = () => {
               Shift Allotment &amp; Assignment Board
             </h3>
             <p className="sm-allot-card-subtitle">
-              Select employees for each shift, then click <strong>Assign Shift</strong> to save.
-              Editing allotments un-saves the assignment until you re-assign.
+              Select employees for each shift, then click{' '}
+              <strong>Assign Shift</strong> to save.
+              Editing allotments un-saves the assignment until
+              you re-assign.
             </p>
           </div>
 
           <div
             className="sm-allot-grid"
             style={{
-              gridTemplateColumns: `repeat(${Math.min(shifts.length, 4)}, 1fr)`,
+              gridTemplateColumns: `repeat(${
+                Math.min(shifts.length, 4)
+              }, 1fr)`,
             }}
           >
-            {shifts.map((shift) => (
+            {shifts.map(shift => (
               <AllotmentColumn
                 key={shift.id}
                 shift={shift}
                 allottedList={allotments[shift.id] || []}
                 isAssigned={!!assignedFlags[shift.id]}
                 globalAllottedIds={globalAllottedIds}
+                allEmployees={allEmployees}
                 onAddEmployee={handleAddEmployee}
                 onRemoveEmployee={handleRemoveEmployee}
                 onAssign={handleAssign}
+                assigning={assigning}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* ══ All Shifts Table ═════════════════════════════════════ */}
+      {/* ── All Shifts Table ── */}
       <div className="sm-table-card">
         <div className="sm-table-header">
-          <h3 className="sm-table-title">All Shifts ({totalItems})</h3>
+          <h3 className="sm-table-title">
+            All Shifts ({totalItems})
+          </h3>
         </div>
 
         <div className="sm-table-wrapper">
@@ -540,25 +672,37 @@ const ShiftManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {pageRows.map((shift) => (
+                {pageRows.map(shift => (
                   <tr key={shift.id}>
                     <td className="td-name col-left">{shift.name}</td>
-                    <td className="td-time">{fmt12(shift.startTime)}</td>
-                    <td className="td-time">{fmt12(shift.endTime)}</td>
+                    <td className="td-time">
+                      {fmt12(shift.startTime)}
+                    </td>
+                    <td className="td-time">
+                      {fmt12(shift.endTime)}
+                    </td>
                     <td className="td-desc">
-                      {shift.description || <span className="sm-dash">—</span>}
+                      {shift.description || (
+                        <span className="sm-dash">—</span>
+                      )}
                     </td>
                     <td>
-                      <span className={`sm-status-badge${shift.active ? ' active' : ' inactive'}`}>
+                      <span className={`sm-status-badge${
+                        shift.active ? ' active' : ' inactive'
+                      }`}>
                         {shift.active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="td-assigned">
-                      {shift.assignedEmployees && shift.assignedEmployees.length > 0 ? (
+                      {shift.assignedEmployees?.length > 0 ? (
                         <div className="sm-assigned-chips">
-                          {shift.assignedEmployees.slice(0, 3).map((emp) => (
-                            <span key={emp.id} className="sm-chip">{emp.name}</span>
-                          ))}
+                          {shift.assignedEmployees
+                            .slice(0, 3)
+                            .map(emp => (
+                              <span key={emp.id} className="sm-chip">
+                                {emp.name}
+                              </span>
+                            ))}
                           {shift.assignedEmployees.length > 3 && (
                             <span className="sm-chip sm-chip-more">
                               +{shift.assignedEmployees.length - 3} more
@@ -566,16 +710,26 @@ const ShiftManagement = () => {
                           )}
                         </div>
                       ) : (
-                        <span className="sm-dash sm-not-assigned">Not assigned</span>
+                        <span className="sm-dash sm-not-assigned">
+                          Not assigned
+                        </span>
                       )}
                     </td>
-                    <td className="td-created">{fmtDate(shift.created)}</td>
+                    <td className="td-created">
+                      {fmtDate(shift.created)}
+                    </td>
                     <td>
                       <div className="sm-action-btns">
-                        <button className="sm-act-edit" title="Edit Shift"
-                          onClick={() => open('edit', shift)}>✏️</button>
-                        <button className="sm-act-del" title="Delete Shift"
-                          onClick={() => open('delete', shift)}>🗑️</button>
+                        <button className="sm-act-edit"
+                          title="Edit Shift"
+                          onClick={() => open('edit', shift)}>
+                          ✏️
+                        </button>
+                        <button className="sm-act-del"
+                          title="Delete Shift"
+                          onClick={() => open('delete', shift)}>
+                          🗑️
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -590,8 +744,9 @@ const ShiftManagement = () => {
           <div className="sm-pagination">
             <div className="sm-per-page">
               <span>Items per page:</span>
-              <select value={perPage} onChange={(e) => handlePerPage(Number(e.target.value))}>
-                {ITEMS_PER_PAGE_OPTIONS.map((n) => (
+              <select value={perPage}
+                onChange={e => handlePerPage(Number(e.target.value))}>
+                {ITEMS_PER_PAGE_OPTIONS.map(n => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>
@@ -599,34 +754,43 @@ const ShiftManagement = () => {
 
             <div className="sm-page-info">
               Showing {startIdx + 1} to{' '}
-              {Math.min(startIdx + perPage, totalItems)} of {totalItems} items
+              {Math.min(startIdx + perPage, totalItems)} of{' '}
+              {totalItems} items
             </div>
 
             {totalPages > 1 && (
               <div className="sm-page-nav">
-                <button className="sm-nav-btn" disabled={safePage === 1}
-                  onClick={() => setPage((p) => p - 1)}>‹</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    className={`sm-nav-btn${safePage === n ? ' active-page' : ''}`}
-                    onClick={() => setPage(n)}
-                  >{n}</button>
+                <button className="sm-nav-btn"
+                  disabled={safePage === 1}
+                  onClick={() => setPage(p => p - 1)}>‹</button>
+                {Array.from(
+                  { length: totalPages }, (_, i) => i + 1
+                ).map(n => (
+                  <button key={n}
+                    className={`sm-nav-btn${
+                      safePage === n ? ' active-page' : ''
+                    }`}
+                    onClick={() => setPage(n)}>
+                    {n}
+                  </button>
                 ))}
-                <button className="sm-nav-btn" disabled={safePage === totalPages}
-                  onClick={() => setPage((p) => p + 1)}>›</button>
+                <button className="sm-nav-btn"
+                  disabled={safePage === totalPages}
+                  onClick={() => setPage(p => p + 1)}>›</button>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* ══ Modals ════════════════════════════════════════════════ */}
+      {/* ── Modals ── */}
       {modal?.type === 'edit' && (
-        <EditModal shift={modal.shift} onClose={close} onUpdate={handleUpdate} />
+        <EditModal shift={modal.shift} onClose={close}
+          onUpdate={handleUpdate} />
       )}
       {modal?.type === 'delete' && (
-        <DeleteModal shift={modal.shift} onClose={close} onDelete={handleDelete} />
+        <DeleteModal shift={modal.shift} onClose={close}
+          onDelete={handleDelete} />
       )}
     </div>
   );

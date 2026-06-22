@@ -7,12 +7,12 @@
 //  4. Invoice table: fully flexible, dynamic borders matching Image exactly
 //  5. Export alignment fixed: all table borders consistent
 // ============================================================
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./Invoice.css";
 import sign from "../../assets/images/sign.png";
 import letterpad from "../../assets/images/letterpad.png";
-import qrDefault from "../../assets/images/qr.png";
 import html2canvas from "html2canvas";
+import apiCall from "../../utils/api";
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -21,7 +21,6 @@ const MONTHS = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
 const YEARS = Array.from({ length: 10 }, (_, i) => 2024 + i);
 
-const PROJECT_OPTIONS = ["All Projects", "LDM - Hanser", "ING - Usen", "ING - OUP", "LDM - T&F", "LDM - WILEY", "CNT", "IMP - EPUB", "CMT - JATS", "ING - ACDC", "LDM - ASS EPUB3"];
 const PROCESS_OPTIONS = ["All Processes", "EPUB - QC Process", "EPUB - Tagging", "FIG - Croping", "INDEX - Process", "MATH - Keying", "OCR - Process", "Proof Reading - Process", "REF - Process", "TABLE - Process", "VALID - Process", "WORD - QC Process", "WORD - Styling", "XML - QC Process", "XML - Tagging"];
 const COMPLEXITY_OPTIONS = ["All", "Simple", "Medium", "Complex", "Heavy Complex"];
 const FILE_STATUS_OPTIONS = ["All", "Uploaded", "RTU", "Hold", "Query"];
@@ -44,32 +43,6 @@ const getComplexityClass = (v) => {
   return "";
 };
 
-const DUMMY_CLIENTS = [
-  { id: "C001", name: "ACRUX IT SERVICES (P) LTD.", address: "Block 1st Floor, T-HuB 1/C, 83/1 Raidurg Panmaktha, Near Hitech City,\nHyderabad, Rangareddy, Telangana - 500081" },
-  { id: "C002", name: "WILEY INDIA PVT. LTD.", address: "4435/7 Ansari Road, Daryaganj,\nNew Delhi - 110002" },
-  { id: "C003", name: "OXFORD UNIVERSITY PRESS INDIA", address: "YMCA Library Building, 1 Jai Singh Road,\nNew Delhi - 110001" },
-  { id: "C004", name: "SPRINGER NATURE INDIA PVT. LTD.", address: "7th Floor, Vijaya Building, 17 Barakhamba Road,\nNew Delhi - 110001" },
-  { id: "C005", name: "TAYLOR & FRANCIS GROUP", address: "2nd Floor, Vardhman Fortune Mall, Plot No. 4, NSP, Pitampura,\nNew Delhi - 110034" },
-  { id: "C006", name: "ELSEVIER INDIA PVT. LTD.", address: "14th Floor, Building No. 10B, DLF Cyber City Phase-II,\nGurgaon, Haryana - 122002" },
-  { id: "C007", name: "MACMILLAN PUBLISHERS INDIA LTD.", address: "21 Patullos Road, Chennai - 600002, Tamil Nadu" },
-  { id: "C008", name: "CENGAGE LEARNING INDIA PVT. LTD.", address: "418, F.I.E., Patparganj Industrial Area,\nDelhi - 110092" },
-];
-
-const DUMMY_PROJECTS = [
-  { id: "DP001", project: "LDM - T&F", process: "XML - Tagging", bookBatchName: "168111500001760", jobId: "JOB-1001", titleName: "TandF XML Conversion Vol 1", pageCount: 200, startDate: "2026-01-10", endDate: "2026-03-20", xmlIsbn: "978-0-12-345678-9", chapters: 12, complexity: "Simple", fileStatus: "RTU", uploadedDate: "2026-01-15", billingStatus: "Pending" },
-  { id: "DP002", project: "LDM - WILEY", process: "EPUB - Tagging", bookBatchName: "168111500001761", jobId: "JOB-1002", titleName: "Wiley Chapter Conversion", pageCount: 350, startDate: "2026-02-05", endDate: "2026-04-15", xmlIsbn: "978-1-23-456789-0", chapters: 18, complexity: "Complex", fileStatus: "Uploaded", uploadedDate: "2026-02-10", billingStatus: "Pending" },
-  { id: "DP003", project: "ING - OUP", process: "MATH - Keying", bookBatchName: "168111500001762", jobId: "JOB-1003", titleName: "Elsevier Journal Markup", pageCount: 500, startDate: "2026-03-01", endDate: "2026-05-30", xmlIsbn: "978-2-34-567890-1", chapters: 25, complexity: "Heavy Complex", fileStatus: "RTU", uploadedDate: "2026-03-05", billingStatus: "Invoiced" },
-  { id: "DP004", project: "CMT - JATS", process: "XML - QC Process", bookBatchName: "168111500001763", jobId: "JOB-1004", titleName: "Springer Book Processing", pageCount: 280, startDate: "2026-04-10", endDate: "2026-05-25", xmlIsbn: "978-3-45-678901-2", chapters: 15, complexity: "Medium", fileStatus: "Hold", uploadedDate: "2026-04-20", billingStatus: "Pending" },
-  { id: "DP005", project: "IMP - EPUB", process: "EPUB - QC Process", bookBatchName: "168111500001764", jobId: "JOB-1005", titleName: "EPUB Academic Series", pageCount: 180, startDate: "2026-01-08", endDate: "2026-02-28", xmlIsbn: "978-4-56-789012-3", chapters: 10, complexity: "Simple", fileStatus: "Uploaded", uploadedDate: "2026-01-20", billingStatus: "Pending" },
-  { id: "DP006", project: "LDM - Hanser", process: "TABLE - Process", bookBatchName: "168111500001765", jobId: "JOB-1006", titleName: "Hanser Technical Manual", pageCount: 320, startDate: "2026-02-14", endDate: "2026-03-31", xmlIsbn: "978-5-67-890123-4", chapters: 20, complexity: "Complex", fileStatus: "Query", uploadedDate: "2026-02-25", billingStatus: "Pending" },
-  { id: "DP007", project: "ING - Usen", process: "REF - Process", bookBatchName: "168111500001766", jobId: "JOB-1007", titleName: "Reference Processing Vol2", pageCount: 410, startDate: "2026-03-07", endDate: "2026-04-20", xmlIsbn: "978-6-78-901234-5", chapters: 22, complexity: "Medium", fileStatus: "RTU", uploadedDate: "2026-03-10", billingStatus: "Pending" },
-  { id: "DP008", project: "CNT", process: "WORD - Styling", bookBatchName: "168111500001767", jobId: "JOB-1008", titleName: "Content Styling Project", pageCount: 260, startDate: "2026-04-03", endDate: "2026-05-15", xmlIsbn: "978-7-89-012345-6", chapters: 16, complexity: "Simple", fileStatus: "Uploaded", uploadedDate: "2026-04-05", billingStatus: "Pending" },
-  { id: "DP009", project: "ING - ACDC", process: "OCR - Process", bookBatchName: "168111500001768", jobId: "JOB-1009", titleName: "ACDC Digital Conversion", pageCount: 150, startDate: "2026-01-20", endDate: "2026-01-31", xmlIsbn: "978-8-90-123456-7", chapters: 8, complexity: "Simple", fileStatus: "RTU", uploadedDate: "2026-01-30", billingStatus: "Pending" },
-  { id: "DP010", project: "LDM - ASS EPUB3", process: "EPUB - Tagging", bookBatchName: "168111500001769", jobId: "JOB-1010", titleName: "ASS EPUB3 Migration", pageCount: 440, startDate: "2026-05-02", endDate: "2026-06-30", xmlIsbn: "978-9-01-234567-8", chapters: 28, complexity: "Heavy Complex", fileStatus: "Hold", uploadedDate: "2026-05-01", billingStatus: "Pending" },
-  { id: "DP011", project: "LDM - T&F", process: "VALID - Process", bookBatchName: "168111500001770", jobId: "JOB-1011", titleName: "TandF Validation Run", pageCount: 190, startDate: "2026-02-10", endDate: "2026-03-25", xmlIsbn: "978-0-23-456789-1", chapters: 11, complexity: "Medium", fileStatus: "RTU", uploadedDate: "2026-02-14", billingStatus: "Pending" },
-  { id: "DP012", project: "CMT - JATS", process: "FIG - Croping", bookBatchName: "168111500001771", jobId: "JOB-1012", titleName: "JATS Figure Crop Batch", pageCount: 300, startDate: "2026-03-12", endDate: "2026-04-22", xmlIsbn: "978-1-34-567890-2", chapters: 19, complexity: "Complex", fileStatus: "Uploaded", uploadedDate: "2026-03-18", billingStatus: "Pending" },
-];
-
 const OPTIONAL_COLUMNS = [
   { key: "projectName", label: "Project Name" },
   { key: "process", label: "Process" },
@@ -85,93 +58,13 @@ const OPTIONAL_COLUMNS = [
   { key: "chapters", label: "No. of Chapters" },
   { key: "pdfInputType", label: "Input Type" },
   { key: "complexity", label: "Complexity" },
+  { key: "diffLevel", label: "Diff Level" },
+  { key: "lob", label: "LOB" },
   { key: "referenceType", label: "Reference Type" },
   { key: "fileStatus", label: "File Status" },
   { key: "uploadedDate", label: "Uploaded Date" },
   { key: "billingStatus", label: "Billing Status" },
   { key: "articleCount", label: "Article Count" },
-];
-
-const DEFAULT_BANKS = {
-  kvb: { key: "kvb", label: "KVB Current Account", acNo: "1681115000001760", bankName: "KARUR VYSYA BANK", branch: "LAWSPET", ifsc: "KVBL0001681", type: "Current", nameOnAccount: "ARROW DATA-TECH", gpay: "+91-9894562152", qrImage: qrDefault },
-  sbi: { key: "sbi", label: "SBI Personal Account", acNo: "9876543210001", bankName: "STATE BANK OF INDIA", branch: "PONDICHERRY", ifsc: "SBIN0001234", type: "Savings", nameOnAccount: "ARROW DATA-TECH", gpay: "", qrImage: "" },
-  hdfc: { key: "hdfc", label: "HDFC Personal Account", acNo: "1122334455667", bankName: "HDFC BANK", branch: "VANUR", ifsc: "HDFC0002345", type: "Savings", nameOnAccount: "ARROW DATA-TECH", gpay: "", qrImage: "" },
-};
-
-// ── Dummy Invoice History ──────────────────────────────────
-const DUMMY_HISTORY = [
-  {
-    id: "HIST-001", invoiceNo: "ADT-2026-0501", invoiceDate: "01-05-2026", client: "ACRUX IT SERVICES (P) LTD.",
-    month: "April", year: 2026, rows: 3, grandTotal: 18540, status: "Paid",
-    items: [
-      { project: "LDM - T&F", process: "XML - Tagging", pages: 200, rate: 7, total: 1400 },
-      { project: "IMP - EPUB", process: "EPUB - QC Process", pages: 180, rate: 4, total: 720 },
-      { project: "CMT - JATS", process: "FIG - Croping", pages: 300, rate: 7, total: 2100 },
-    ]
-  },
-  {
-    id: "HIST-002", invoiceNo: "ADT-2026-0401", invoiceDate: "01-04-2026", client: "WILEY INDIA PVT. LTD.",
-    month: "March", year: 2026, rows: 2, grandTotal: 9760, status: "Paid",
-    items: [
-      { project: "LDM - WILEY", process: "EPUB - Tagging", pages: 350, rate: 6, total: 2100 },
-      { project: "ING - Usen", process: "REF - Process", pages: 410, rate: 4, total: 1640 },
-    ]
-  },
-  {
-    id: "HIST-003", invoiceNo: "ADT-2026-0301", invoiceDate: "01-03-2026", client: "OXFORD UNIVERSITY PRESS INDIA",
-    month: "February", year: 2026, rows: 4, grandTotal: 24350, status: "Pending",
-    items: [
-      { project: "ING - OUP", process: "MATH - Keying", pages: 500, rate: 8, total: 4000 },
-      { project: "LDM - T&F", process: "VALID - Process", pages: 190, rate: 3, total: 570 },
-      { project: "ING - ACDC", process: "OCR - Process", pages: 150, rate: 4, total: 600 },
-      { project: "CNT", process: "WORD - Styling", pages: 260, rate: 5, total: 1300 },
-    ]
-  },
-  {
-    id: "HIST-004", invoiceNo: "ADT-2026-0201", invoiceDate: "01-02-2026", client: "SPRINGER NATURE INDIA PVT. LTD.",
-    month: "January", year: 2026, rows: 2, grandTotal: 6580, status: "Paid",
-    items: [
-      { project: "CMT - JATS", process: "XML - QC Process", pages: 280, rate: 5, total: 1400 },
-      { project: "LDM - Hanser", process: "TABLE - Process", pages: 320, rate: 7, total: 2240 },
-    ]
-  },
-  {
-    id: "HIST-005", invoiceNo: "ADT-2025-1201", invoiceDate: "01-12-2025", client: "TAYLOR & FRANCIS GROUP",
-    month: "November", year: 2025, rows: 5, grandTotal: 31200, status: "Paid",
-    items: [
-      { project: "LDM - T&F", process: "XML - Tagging", pages: 600, rate: 7, total: 4200 },
-      { project: "LDM - T&F", process: "EPUB - Tagging", pages: 400, rate: 6, total: 2400 },
-      { project: "ING - OUP", process: "MATH - Keying", pages: 250, rate: 8, total: 2000 },
-      { project: "CMT - JATS", process: "REF - Process", pages: 380, rate: 4, total: 1520 },
-      { project: "CNT", process: "WORD - QC Process", pages: 220, rate: 4, total: 880 },
-    ]
-  },
-  {
-    id: "HIST-006", invoiceNo: "ADT-2025-1101", invoiceDate: "01-11-2025", client: "ELSEVIER INDIA PVT. LTD.",
-    month: "October", year: 2025, rows: 3, grandTotal: 14800, status: "Overdue",
-    items: [
-      { project: "ING - OUP", process: "XML - QC Process", pages: 430, rate: 5, total: 2150 },
-      { project: "LDM - ASS EPUB3", process: "EPUB - Tagging", pages: 440, rate: 6, total: 2640 },
-      { project: "CMT - JATS", process: "FIG - Croping", pages: 280, rate: 3, total: 840 },
-    ]
-  },
-  {
-    id: "HIST-007", invoiceNo: "ADT-2025-1001", invoiceDate: "01-10-2025", client: "MACMILLAN PUBLISHERS INDIA LTD.",
-    month: "September", year: 2025, rows: 2, grandTotal: 8920, status: "Paid",
-    items: [
-      { project: "LDM - Hanser", process: "TABLE - Process", pages: 360, rate: 7, total: 2520 },
-      { project: "ING - Usen", process: "REF - Process", pages: 290, rate: 4, total: 1160 },
-    ]
-  },
-  {
-    id: "HIST-008", invoiceNo: "ADT-2025-0901", invoiceDate: "01-09-2025", client: "CENGAGE LEARNING INDIA PVT. LTD.",
-    month: "August", year: 2025, rows: 3, grandTotal: 11640, status: "Paid",
-    items: [
-      { project: "LDM - T&F", process: "XML - Tagging", pages: 300, rate: 7, total: 2100 },
-      { project: "IMP - EPUB", process: "EPUB - QC Process", pages: 200, rate: 4, total: 800 },
-      { project: "CNT", process: "WORD - Styling", pages: 180, rate: 5, total: 900 },
-    ]
-  },
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -208,6 +101,7 @@ const EMPTY_ROW = (o = {}) => ({
   receivedDate: "", jobId: "", titleName: "", pageCount: "",
   startDate: "", endDate: "", xmlIsbn: "", chapters: "",
   pdfInputType: "", complexity: "", referenceType: "",
+  diffLevel: "", lob: "Service",
   fileStatus: "", uploadedDate: "", billingStatus: "",
   articleCount: "",
   orderPages: "", ratePage: "", amount: "", deductionAmount: "", totalAmount: "",
@@ -231,22 +125,22 @@ function Toggle({ checked, onChange, label }) {
 // ─────────────────────────────────────────────────────────────
 // HISTORY SECTION COMPONENT
 // ─────────────────────────────────────────────────────────────
-function HistorySection({ onClose }) {
+function HistorySection({ onClose, historyList = [], summary = {}, onDelete, onUpdatePayment, onRehydrate }) {
   const [expandedId, setExpandedId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  const filtered = DUMMY_HISTORY.filter(h => {
-    const matchSearch = h.invoiceNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      h.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      h.month.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchStatus = statusFilter === "All" || h.status === statusFilter;
+  const filtered = (historyList || []).filter(h => {
+    const matchSearch = (h.invoiceNumber || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (h.clientName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (h.periodMonth || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const matchStatus = statusFilter === "All" || h.paymentStatus === statusFilter;
     return matchSearch && matchStatus;
   });
 
-  const totalInvoiced = DUMMY_HISTORY.reduce((s, h) => s + h.grandTotal, 0);
-  const totalPaid = DUMMY_HISTORY.filter(h => h.status === "Paid").reduce((s, h) => s + h.grandTotal, 0);
-  const totalPending = DUMMY_HISTORY.filter(h => h.status === "Pending" || h.status === "Overdue").reduce((s, h) => s + h.grandTotal, 0);
+  const totalInvoiced = summary.totalInvoiced || 0;
+  const totalPaid = summary.totalReceived || 0;
+  const totalPending = summary.outstandingAmount || 0;
 
   return (
     <div className="inv-history-panel">
@@ -257,7 +151,7 @@ function HistorySection({ onClose }) {
             <span className="inv-history-icon">📜</span>
             <div>
               <h2 className="inv-history-title">Invoice History</h2>
-              <p className="inv-history-sub">{DUMMY_HISTORY.length} invoices generated</p>
+              <p className="inv-history-sub">{(historyList || []).length} invoices generated</p>
             </div>
           </div>
           <button className="inv-btn inv-btn--outline inv-btn--sm" onClick={onClose}>✕ Close History</button>
@@ -290,7 +184,7 @@ function HistorySection({ onClose }) {
             <span className="inv-hist-stat-icon">🧾</span>
             <div>
               <div className="inv-hist-stat-label">Invoices</div>
-              <div className="inv-hist-stat-value">{DUMMY_HISTORY.length}</div>
+              <div className="inv-hist-stat-value">{(historyList || []).length}</div>
             </div>
           </div>
         </div>
@@ -304,10 +198,10 @@ function HistorySection({ onClose }) {
             onChange={e => setSearchTerm(e.target.value)}
           />
           <div className="inv-history-status-tabs">
-            {["All", "Paid", "Pending", "Overdue"].map(s => (
+            {["All", "Paid", "Pending", "Overdue", "Partially Paid"].map(s => (
               <button
                 key={s}
-                className={`inv-hist-tab ${statusFilter === s ? "inv-hist-tab--active" : ""} inv-hist-tab--${s.toLowerCase()}`}
+                className={`inv-hist-tab ${statusFilter === s ? "inv-hist-tab--active" : ""} inv-hist-tab--${s.toLowerCase().replace(/\s+/g, "")}`}
                 onClick={() => setStatusFilter(s)}
               >{s}</button>
             ))}
@@ -324,14 +218,23 @@ function HistorySection({ onClose }) {
             <div key={h.id} className={`inv-hist-item ${expandedId === h.id ? "inv-hist-item--expanded" : ""}`}>
               <div className="inv-hist-item-header" onClick={() => setExpandedId(expandedId === h.id ? null : h.id)}>
                 <div className="inv-hist-item-left">
-                  <div className="inv-hist-item-no">{h.invoiceNo}</div>
-                  <div className="inv-hist-item-client">{h.client}</div>
-                  <div className="inv-hist-item-period">📅 {h.month} {h.year} &nbsp;·&nbsp; {h.rows} line{h.rows > 1 ? "s" : ""} &nbsp;·&nbsp; {h.invoiceDate}</div>
+                  <div className="inv-hist-item-no">{h.invoiceNumber}</div>
+                  <div className="inv-hist-item-client">{h.clientName}</div>
+                  <div className="inv-hist-item-period">📅 {h.periodMonth} {h.periodYear} &nbsp;·&nbsp; {h.lineItems?.length || 0} line{h.lineItems?.length !== 1 ? "s" : ""} &nbsp;·&nbsp; {h.invoiceDate}</div>
                 </div>
-                <div className="inv-hist-item-right">
+                <div className="inv-hist-item-right" onClick={e => e.stopPropagation()}>
                   <div className="inv-hist-item-amount">{fmt(h.grandTotal)}</div>
-                  <span className={`inv-hist-status inv-hist-status--${h.status.toLowerCase()}`}>{h.status}</span>
-                  <span className="inv-hist-chevron">{expandedId === h.id ? "▲" : "▼"}</span>
+                  <select
+                    className={`inv-hist-status-select inv-hist-status--${(h.paymentStatus || "").toLowerCase().replace(/\s+/g, "")}`}
+                    value={h.paymentStatus}
+                    style={{ marginRight: "10px", padding: "4px 8px", borderRadius: "4px", border: "1px solid #ccc", background: "#fff", fontWeight: "600" }}
+                    onChange={e => onUpdatePayment(h.id, e.target.value, h.grandTotal)}
+                  >
+                    {["Pending", "Paid", "Overdue", "Partially Paid"].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                  <span className="inv-hist-chevron" style={{ cursor: "pointer" }} onClick={() => setExpandedId(expandedId === h.id ? null : h.id)}>{expandedId === h.id ? "▲" : "▼"}</span>
                 </div>
               </div>
 
@@ -349,14 +252,14 @@ function HistorySection({ onClose }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {h.items.map((item, idx) => (
+                      {(h.lineItems || []).map((item, idx) => (
                         <tr key={idx}>
                           <td>{idx + 1}</td>
-                          <td>{item.project}</td>
-                          <td>{item.process}</td>
+                          <td>{item.projectName}</td>
+                          <td>{item.processName}</td>
                           <td>{item.pages}</td>
-                          <td>₹{item.rate}</td>
-                          <td className="inv-hist-detail-total">₹{item.total.toLocaleString("en-IN")}</td>
+                          <td>₹{item.ratePerPage}</td>
+                          <td className="inv-hist-detail-total">₹{(item.total || 0).toLocaleString("en-IN")}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -367,10 +270,9 @@ function HistorySection({ onClose }) {
                       </tr>
                     </tfoot>
                   </table>
-                  <div className="inv-hist-detail-actions">
-                    <button className="inv-btn inv-btn--outline inv-btn--sm">👁 Re-preview</button>
-                    <button className="inv-btn inv-btn--secondary inv-btn--sm">📄 Download PDF</button>
-                    <button className="inv-btn inv-btn--secondary inv-btn--sm">📊 Download CSV</button>
+                  <div className="inv-hist-detail-actions" style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                    <button className="inv-btn inv-btn--outline inv-btn--sm" onClick={() => onRehydrate(h)}>👁 Re-preview</button>
+                    <button className="inv-btn inv-btn--secondary inv-btn--sm" style={{ backgroundColor: "#ef4444", color: "#fff" }} onClick={() => onDelete(h.id)}>✕ Delete</button>
                   </div>
                 </div>
               )}
@@ -389,40 +291,33 @@ export default function Invoice() {
 
   // ── Invoice Details ─────────────────────────────────────
   const [vendorName, setVendorName] = useState("Arrow Data Tech");
-  const [vendorAddress, setVendorAddress] = useState("#07, M.G Road, Kottakuppam, (Near Roundana), (Near Puducherry),\nVanur Taluk, Villupuram District, Tamilnadu-605104");
+  const [vendorAddress, setVendorAddress] = useState("");
   const [invoiceNo, setInvoiceNo] = useState(genInvNo());
   const [invoiceDate, setInvoiceDate] = useState(today());
   const [panNo, setPanNo] = useState("AWXPM3024B");
   const [gstinNo, setGstinNo] = useState("");
 
   // ── Client ──────────────────────────────────────────────
-  const [clients, setClients] = useState(DUMMY_CLIENTS);
-  const [selectedClientId, setSelectedClientId] = useState("C001");
+  const [clients, setClients] = useState([]);
+  const [selectedClientId, setSelectedClientId] = useState("");
   const [showClientModal, setShowClientModal] = useState(false);
   const [clientModalMode, setClientModalMode] = useState("edit");
   const [clientDraft, setClientDraft] = useState({ id: "", name: "", address: "" });
-  const currentClient = clients.find(c => c.id === selectedClientId) || clients[0];
+  const currentClient = clients.find(c => c.id === selectedClientId) || null;
 
-  const openEditClient = () => { setClientDraft({ ...currentClient }); setClientModalMode("edit"); setShowClientModal(true); };
-  const openAddClient = () => { setClientDraft({ id: `C${String(clients.length + 1).padStart(3, "0")}`, name: "", address: "" }); setClientModalMode("add"); setShowClientModal(true); };
-  const saveClientModal = () => {
-    if (!clientDraft.name.trim()) return;
-    if (clientModalMode === "edit") {
-      setClients(p => p.map(c => c.id === clientDraft.id ? { ...clientDraft } : c));
-    } else {
-      const newId = `C${String(clients.length + 1).padStart(3, "0")}`;
-      setClients(p => [...p, { ...clientDraft, id: newId }]);
-      setSelectedClientId(newId);
-    }
-    setShowClientModal(false);
-  };
+  // ── Client Projects and Unbilled Jobs ───────────────────
+  const [clientProjects, setClientProjects] = useState([]);
+  const [projectChoices, setProjectChoices] = useState(["All Projects"]);
+  const [unbilledJobs, setUnbilledJobs] = useState([]);
+  const [projectRates, setProjectRates] = useState({});
+  const [processes, setProcesses] = useState([]);
 
   // ── Invoice Title ────────────────────────────────────────
   const [titleMonth, setTitleMonth] = useState(MONTHS[new Date().getMonth()]);
   const [titleYear, setTitleYear] = useState(new Date().getFullYear());
 
   // ── Column Config ────────────────────────────────────────
-  const [activeCols, setActiveCols] = useState([]);
+  const [activeCols, setActiveCols] = useState(["projectName", "process", "bookBatchName", "orderPages", "ratePage"]);
   const [colHeaders, setColHeaders] = useState(() =>
     OPTIONAL_COLUMNS.reduce((acc, c) => { acc[c.key] = c.label; return acc; }, {})
   );
@@ -445,40 +340,30 @@ export default function Invoice() {
   const [igstPct, setIgstPct] = useState(0);
 
   // ── Bank Details ─────────────────────────────────────────
-  const [bankData, setBankData] = useState({ ...DEFAULT_BANKS });
-  const [bankKey, setBankKey] = useState("kvb");
+  const [bankData, setBankData] = useState({});
+  const [bankKey, setBankKey] = useState("");
   const [editingBank, setEditingBank] = useState(false);
-  const [bankDraft, setBankDraft] = useState({ ...DEFAULT_BANKS.kvb });
+  const [bankDraft, setBankDraft] = useState({});
   const [showAddBank, setShowAddBank] = useState(false);
   const [newBankDraft, setNewBankDraft] = useState({ label: "", acNo: "", bankName: "", branch: "", ifsc: "", type: "Current", nameOnAccount: "ARROW DATA-TECH", gpay: "", qrImage: "" });
 
+  // ── History ──────────────────────────────────────────────
+  const [historyList, setHistoryList] = useState([]);
+  const [historySummary, setHistorySummary] = useState({});
+
   // ── QR Code ──────────────────────────────────────────────
   const qrInputRef = useRef(null);
-  const handleQrUpload = (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader();
-    r.onload = ev => setBankData(p => ({ ...p, [bankKey]: { ...p[bankKey], qrImage: ev.target.result } }));
-    r.readAsDataURL(f);
-  };
 
   // ── Signature ────────────────────────────────────────────
   const [sigName, setSigName] = useState("T. Mohamed Usen");
   const [sigDesig, setSigDesig] = useState("Managing Director");
   const [sigImage, setSigImage] = useState(sign);
   const sigInputRef = useRef(null);
-  const handleSigUpload = (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = ev => setSigImage(ev.target.result); r.readAsDataURL(f);
-  };
 
   // ── Letter Pad ───────────────────────────────────────────
   const [useLetterPad, setUseLetterPad] = useState(true);
   const [letterPadImage, setLetterPadImage] = useState(letterpad);
   const letterPadInputRef = useRef(null);
-  const handleLetterPadUpload = (e) => {
-    const f = e.target.files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = ev => setLetterPadImage(ev.target.result); r.readAsDataURL(f);
-  };
 
   // ── UI Panels ────────────────────────────────────────────
   const [showPreview, setShowPreview] = useState(false);
@@ -486,17 +371,225 @@ export default function Invoice() {
   const [showColPanel, setShowColPanel] = useState(true);
   const [showProjPanel, setShowProjPanel] = useState(true);
 
+  // ── Overlay Mode State ───────────────────────────────────
+  const [invoiceMode, setInvoiceMode] = useState("standard"); // standard vs overlay
+  const [overlayFile, setOverlayFile] = useState(null);
+  const [overlayFileUrl, setOverlayFileUrl] = useState(null);
+  const [overlayFileType, setOverlayFileType] = useState(null); // image vs pdf
+  const [overlayTopSpacing, setOverlayTopSpacing] = useState(130);
+  const [overlayBottomSpacing, setOverlayBottomSpacing] = useState(60);
+  const [overlayScale, setOverlayScale] = useState(100);
+  const [overlayBlend, setOverlayBlend] = useState(true);
+  const [pdfPages, setPdfPages] = useState([]);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const overlayInputRef = useRef(null);
+
+  // ── API Helpers ──────────────────────────────────────────
+  const fetchClients = async () => {
+    try {
+      const list = await apiCall("/clients");
+      const mapped = list.map(c => ({
+        id: c.id,
+        name: c.companyName,
+        address: [
+          c.addressLine1,
+          c.addressLine2,
+          c.city ? `${c.city}, ${c.state || ""} ${c.pinCode || ""}` : null,
+          c.country
+        ].filter(Boolean).join("\n"),
+        panNumber: c.panNumber,
+        gstin: c.gstin
+      }));
+      setClients(mapped);
+      if (mapped.length > 0 && !selectedClientId) {
+        setSelectedClientId(mapped[0].id);
+      }
+    } catch (err) {
+      console.error("Failed to fetch clients:", err);
+    }
+  };
+
+  const fetchBankAccounts = async () => {
+    try {
+      const list = await apiCall("/bank-accounts");
+      const bankObj = {};
+      list.forEach(acc => {
+        bankObj[acc.id] = {
+          key: acc.id,
+          label: acc.label,
+          acNo: acc.accountNumber,
+          bankName: acc.bankName,
+          branch: acc.branch,
+          ifsc: acc.ifscCode,
+          type: acc.accountType,
+          nameOnAccount: acc.accountHolder,
+          gpay: acc.gpayNumber,
+          qrImage: acc.qrCodeImageUrl ? `http://localhost:8080/api${acc.qrCodeImageUrl}` : ""
+        };
+      });
+      setBankData(bankObj);
+      if (list.length > 0) {
+        setBankKey(prev => prev && bankObj[prev] ? prev : list[0].id);
+      }
+    } catch (err) {
+      console.error("Failed to fetch bank accounts:", err);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const settings = await apiCall("/settings");
+      if (settings.companyName) setVendorName(settings.companyName);
+      if (settings.streetAddress || settings.city) {
+        setVendorAddress([
+          settings.streetAddress,
+          settings.city,
+          settings.state,
+          settings.country ? `${settings.country} - ${settings.zipCode || ""}` : null
+        ].filter(Boolean).join(", "));
+      }
+      if (settings.authorizedPersonName) setSigName(settings.authorizedPersonName);
+      if (settings.designation) setSigDesig(settings.designation);
+      if (settings.signatureImageUrl) setSigImage(`http://localhost:8080/api${settings.signatureImageUrl}`);
+      if (settings.letterPadImageUrl) setLetterPadImage(`http://localhost:8080/api${settings.letterPadImageUrl}`);
+    } catch (err) {
+      console.error("Failed to fetch settings:", err);
+    }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const resp = await apiCall("/invoices");
+      setHistoryList(resp.content || []);
+      const summaryResp = await apiCall("/invoices/summary");
+      setHistorySummary(summaryResp);
+    } catch (err) {
+      console.error("Failed to fetch invoice history:", err);
+    }
+  };
+
+  const fetchProcesses = async () => {
+    try {
+      const list = await apiCall("/processes");
+      setProcesses(list || []);
+    } catch (err) {
+      console.error("Failed to fetch processes:", err);
+    }
+  };
+
+  const fetchProjectsAndJobs = async (clientId) => {
+    if (!clientId) return;
+    try {
+      const projs = await apiCall(`/projects/by-client/${clientId}`);
+      setClientProjects(projs);
+      setProjectChoices(["All Projects", ...projs.map(p => p.name)]);
+      
+      const rates = {};
+      projs.forEach(p => {
+        rates[p.id] = p.ratePerPage || 5;
+      });
+      setProjectRates(rates);
+
+      const jobsResp = await apiCall(`/jobs/search?clientId=${clientId}&billingStatus=PENDING&size=200`);
+      const jobs = jobsResp.content || [];
+      const mapped = jobs.map(j => ({
+        id: j.id,
+        project: j.projectName || "",
+        process: "",
+        bookBatchName: j.jobIdCode || "",
+        jobId: j.jobIdCode || "",
+        titleName: j.titleName || "",
+        pageCount: j.pageCount || 0,
+        startDate: j.receiveDate || "",
+        endDate: j.uploadDate || "",
+        xmlIsbn: j.xmlIsbn || "",
+        chapters: j.numberOfChapters || 0,
+        complexity: j.complexity || "",
+        fileStatus: j.fileStatus || "",
+        uploadedDate: j.uploadDate || "",
+        billingStatus: j.billingStatus || "PENDING",
+        projectId: j.projectId
+      }));
+      setUnbilledJobs(mapped);
+    } catch (err) {
+      console.error("Failed to fetch projects/jobs for client:", err);
+    }
+  };
+
+  // ── Media Uploader Helper ────────────────────────────────
+  const uploadMediaFile = async (file, entityType) => {
+    const token = sessionStorage.getItem('accessToken');
+    const formData = new FormData();
+    formData.append('file', file);
+    if (entityType) {
+      formData.append('entityType', entityType);
+    }
+    const res = await fetch('http://localhost:8080/api/media/upload', {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'Upload failed');
+    return json.data;
+  };
+
+  useEffect(() => {
+    fetchClients();
+    fetchBankAccounts();
+    fetchSettings();
+    fetchHistory();
+    fetchProcesses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (selectedClientId) {
+      fetchProjectsAndJobs(selectedClientId);
+      setRows([EMPTY_ROW(), EMPTY_ROW()]);
+      setSelectedDPIds(new Set());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClientId]);
+
+  const openEditClient = () => { setClientDraft({ id: currentClient?.id || "", name: currentClient?.name || "", address: currentClient?.address || "" }); setClientModalMode("edit"); setShowClientModal(true); };
+  const openAddClient = () => { setClientDraft({ id: "", name: "", address: "" }); setClientModalMode("add"); setShowClientModal(true); };
+  
+  const saveClientModal = async () => {
+    if (!clientDraft.name.trim()) return;
+    try {
+      if (clientModalMode === "edit") {
+        await apiCall(`/clients/${clientDraft.id}`, 'PUT', {
+          companyName: clientDraft.name,
+          addressLine1: clientDraft.address
+        });
+      } else {
+        const created = await apiCall('/clients', 'POST', {
+          companyName: clientDraft.name,
+          addressLine1: clientDraft.address
+        });
+        setSelectedClientId(created.id);
+      }
+      setShowClientModal(false);
+      fetchClients();
+    } catch (err) {
+      alert("Error saving client: " + err.message);
+    }
+  };
+
   // ── Derived ──────────────────────────────────────────────
   const enabledOptCols = activeCols.map(key => OPTIONAL_COLUMNS.find(c => c.key === key));
-  const currentBank = bankData[bankKey];
+  const currentBank = bankData[bankKey] || null;
 
-  const filteredDPs = DUMMY_PROJECTS.filter(dp => {
+  const filteredDPs = unbilledJobs.filter(dp => {
     if (filterProject !== "All Projects" && dp.project !== filterProject) return false;
-    if (filterProcess !== "All Processes" && dp.process !== filterProcess) return false;
-    if (filterComplexity !== "All" && dp.complexity !== filterComplexity) return false;
-    if (filterFileStatus !== "All" && dp.fileStatus !== filterFileStatus) return false;
-    if (filterStartDate && dp.startDate < filterStartDate) return false;
-    if (filterEndDate && dp.endDate > filterEndDate) return false;
+    if (filterProcess !== "All Processes" && dp.process && dp.process !== filterProcess) return false;
+    if (filterComplexity !== "All" && dp.complexity && dp.complexity !== filterComplexity) return false;
+    if (filterFileStatus !== "All" && dp.fileStatus && dp.fileStatus !== filterFileStatus) return false;
+    if (filterStartDate && dp.startDate && dp.startDate < filterStartDate) return false;
+    if (filterEndDate && dp.endDate && dp.endDate > filterEndDate) return false;
     return true;
   });
 
@@ -526,9 +619,9 @@ export default function Invoice() {
 
   const addSelectedToInvoice = () => {
     if (selectedDPIds.size === 0) return;
-    const toAdd = DUMMY_PROJECTS.filter(dp => selectedDPIds.has(dp.id));
+    const toAdd = unbilledJobs.filter(dp => selectedDPIds.has(dp.id));
     const newRows = toAdd.map(dp => {
-      const rate = PROCESS_RATES[dp.process] || 5;
+      const rate = projectRates[dp.projectId] || PROCESS_RATES[dp.process] || 5;
       const amt = dp.pageCount * rate;
       return EMPTY_ROW({
         projectName: dp.project, process: dp.process, bookBatchName: dp.bookBatchName,
@@ -536,7 +629,9 @@ export default function Invoice() {
         startDate: dp.startDate, endDate: dp.endDate, xmlIsbn: dp.xmlIsbn,
         chapters: dp.chapters, complexity: dp.complexity, fileStatus: dp.fileStatus,
         uploadedDate: dp.uploadedDate, billingStatus: dp.billingStatus,
+        diffLevel: dp.complexity, lob: "Service",
         orderPages: dp.pageCount, ratePage: rate, amount: amt, deductionAmount: 0, totalAmount: amt,
+        projectId: dp.projectId, jobIdRaw: dp.id
       });
     });
     setRows(prev => {
@@ -551,16 +646,301 @@ export default function Invoice() {
 
   // ── Bank helpers ──────────────────────────────────────────
   const handleBankSwitch = (key) => { setBankKey(key); setEditingBank(false); };
-  const startEditBank = () => { setBankDraft({ ...currentBank }); setEditingBank(true); };
-  const saveBank = () => { setBankData(p => ({ ...p, [bankKey]: { ...bankDraft } })); setEditingBank(false); };
-  const saveNewBank = () => {
-    if (!newBankDraft.label.trim() || !newBankDraft.acNo.trim()) return;
-    const key = `bank_${Date.now()}`;
-    setBankData(p => ({ ...p, [key]: { ...newBankDraft, key } }));
-    setBankKey(key);
-    setNewBankDraft({ label: "", acNo: "", bankName: "", branch: "", ifsc: "", type: "Current", nameOnAccount: "ARROW DATA-TECH", gpay: "", qrImage: "" });
-    setShowAddBank(false);
+  const startEditBank = () => { setBankDraft(currentBank ? { ...currentBank } : {}); setEditingBank(true); };
+  
+  const saveBank = async () => {
+    try {
+      await apiCall(`/bank-accounts/${bankKey}`, 'PUT', {
+        label: bankDraft.label,
+        bankName: bankDraft.bankName,
+        accountHolder: bankDraft.nameOnAccount,
+        accountNumber: bankDraft.acNo,
+        branch: bankDraft.branch,
+        ifscCode: bankDraft.ifsc,
+        accountType: bankDraft.type,
+        gpayNumber: bankDraft.gpay,
+        qrCodeImageId: bankDraft.qrCodeImageId
+      });
+      setEditingBank(false);
+      fetchBankAccounts();
+    } catch (err) {
+      alert("Error updating bank account: " + err.message);
+    }
   };
+
+  const saveNewBank = async () => {
+    if (!newBankDraft.label.trim() || !newBankDraft.acNo.trim()) return;
+    try {
+      await apiCall('/bank-accounts', 'POST', {
+        label: newBankDraft.label,
+        bankName: newBankDraft.bankName,
+        accountHolder: newBankDraft.nameOnAccount,
+        accountNumber: newBankDraft.acNo,
+        branch: newBankDraft.branch,
+        ifscCode: newBankDraft.ifsc,
+        accountType: newBankDraft.type,
+        gpayNumber: newBankDraft.gpay
+      });
+      setNewBankDraft({ label: "", acNo: "", bankName: "", branch: "", ifsc: "", type: "Current", nameOnAccount: "ARROW DATA-TECH", gpay: "", qrImage: "" });
+      setShowAddBank(false);
+      fetchBankAccounts();
+    } catch (err) {
+      alert("Error creating bank account: " + err.message);
+    }
+  };
+
+  // ── Upload Handlers ─────────────────────────────────────
+  const handleQrUpload = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const media = await uploadMediaFile(f, 'qr_code');
+      if (editingBank) {
+        setBankDraft(d => ({ ...d, qrImage: `http://localhost:8080/api/media/${media.id}`, qrCodeImageId: media.id }));
+      } else if (currentBank) {
+        await apiCall(`/bank-accounts/${bankKey}`, 'PUT', {
+          label: currentBank.label,
+          bankName: currentBank.bankName,
+          accountHolder: currentBank.nameOnAccount,
+          accountNumber: currentBank.acNo,
+          qrCodeImageId: media.id
+        });
+        fetchBankAccounts();
+      }
+    } catch (err) {
+      alert("Error uploading QR code: " + err.message);
+    }
+  };
+
+  const handleSigUpload = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const media = await uploadMediaFile(f, 'signature');
+      setSigImage(`http://localhost:8080/api/media/${media.id}`);
+      await apiCall('/settings', 'PUT', { signatureImageId: media.id });
+    } catch (err) {
+      alert("Error uploading signature: " + err.message);
+    }
+  };
+
+  const handleLetterPadUpload = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const media = await uploadMediaFile(f, 'letter_pad');
+      setLetterPadImage(`http://localhost:8080/api/media/${media.id}`);
+      await apiCall('/settings', 'PUT', { letterPadImageId: media.id });
+    } catch (err) {
+      alert("Error uploading letter pad: " + err.message);
+    }
+  };
+
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load script ${src}`));
+      document.head.appendChild(script);
+    });
+  };
+
+  const loadPdfJs = async () => {
+    if (window.pdfjsLib) return window.pdfjsLib;
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js");
+    const pdfjsLib = window.pdfjsLib;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+    return pdfjsLib;
+  };
+
+  const handleOverlayFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (overlayFileUrl) {
+      URL.revokeObjectURL(overlayFileUrl);
+    }
+    setPdfPages([]);
+
+    if (file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      setOverlayFile(file);
+      setOverlayFileUrl(url);
+      setOverlayFileType("image");
+    } else if (file.type === "application/pdf") {
+      setPdfLoading(true);
+      try {
+        const pdfjsLib = await loadPdfJs();
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const typedarray = new Uint8Array(event.target.result);
+            const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+            const urls = [];
+            for (let i = 1; i <= pdf.numPages; i++) {
+              const page = await pdf.getPage(i);
+              const viewport = page.getViewport({ scale: 2.0 }); // high resolution print quality
+              const canvas = document.createElement("canvas");
+              const context = canvas.getContext("2d");
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+              await page.render({ canvasContext: context, viewport }).promise;
+              urls.push(canvas.toDataURL("image/png"));
+            }
+            setPdfPages(urls);
+            setOverlayFileType("pdf");
+            setOverlayFile(file);
+            setOverlayFileUrl(null);
+          } catch (err) {
+            alert("Error parsing PDF pages: " + err.message);
+          } finally {
+            setPdfLoading(false);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } catch (err) {
+        alert("Error loading PDF reader library: " + err.message);
+        setPdfLoading(false);
+      }
+    } else {
+      setOverlayFile(null);
+      setOverlayFileUrl(null);
+      setOverlayFileType(null);
+      alert("Unsupported file type. Please upload an image or a PDF.");
+    }
+  };
+
+  const handleClearOverlayFile = () => {
+    if (overlayFileUrl) {
+      URL.revokeObjectURL(overlayFileUrl);
+    }
+    setOverlayFile(null);
+    setOverlayFileUrl(null);
+    setOverlayFileType(null);
+    setPdfPages([]);
+  };
+
+  const handleSaveInvoice = async () => {
+    if (!selectedClientId) {
+      alert("Please select a client.");
+      return;
+    }
+    const filteredRows = rows.filter(r => r.projectName || r.process || r.orderPages || r.totalAmount);
+    if (filteredRows.length === 0) {
+      alert("Invoice must have at least one line item.");
+      return;
+    }
+
+    try {
+      const payload = {
+        clientId: selectedClientId,
+        invoiceTitle: `INVOICE OF ${vendorName.toUpperCase()} FOR THE MONTH OF ${titleMonth.toUpperCase()} - ${titleYear}`,
+        periodMonth: titleMonth,
+        periodYear: titleYear,
+        invoiceDate: invoiceDate,
+        gstPercentage: igstPct,
+        bankAccountId: bankKey || null,
+        columnConfig: JSON.stringify(activeCols),
+        letterPadEnabled: useLetterPad,
+        showSignature: showSignature,
+        showQr: showQr,
+        lineItems: filteredRows.map((r, idx) => {
+          const matchedProj = clientProjects.find(p => p.name === r.projectName);
+          const matchedProc = processes.find(p => p.name === r.process);
+          return {
+            sno: idx + 1,
+            projectId: r.projectId || matchedProj?.id || null,
+            processId: r.processId || matchedProc?.id || null,
+            jobId: r.jobIdRaw || null,
+            batchName: r.bookBatchName,
+            pages: Number(r.orderPages) || 0,
+            ratePerPage: Number(r.ratePage) || 0,
+            deduction: Number(r.deductionAmount) || 0,
+            uploadedDate: r.uploadedDate || null,
+            startDate: r.startDate || null,
+            endDate: r.endDate || null
+          };
+        })
+      };
+
+      const resp = await apiCall('/invoices', 'POST', payload);
+      alert(`Invoice ${resp.invoiceNumber} saved successfully!`);
+      fetchHistory();
+      setRows([EMPTY_ROW(), EMPTY_ROW()]);
+      setSelectedDPIds(new Set());
+      fetchProjectsAndJobs(selectedClientId);
+    } catch (err) {
+      alert("Error saving invoice: " + err.message);
+    }
+  };
+
+  const handleDeleteInvoice = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this invoice? This will restore the jobs' billing status to pending.")) return;
+    try {
+      await apiCall(`/invoices/${id}`, 'DELETE');
+      alert("Invoice deleted successfully.");
+      fetchHistory();
+      if (selectedClientId) {
+        fetchProjectsAndJobs(selectedClientId);
+      }
+    } catch (err) {
+      alert("Error deleting invoice: " + err.message);
+    }
+  };
+
+  const handleUpdatePayment = async (id, status, total) => {
+    try {
+      await apiCall(`/invoices/${id}/payment`, 'PUT', {
+        paymentStatus: status,
+        totalReceived: status === "Paid" ? total : 0
+      });
+      alert("Payment status updated successfully.");
+      fetchHistory();
+    } catch (err) {
+      alert("Error updating payment status: " + err.message);
+    }
+  };
+
+  const handleRehydrateInvoice = (h) => {
+    setInvoiceNo(h.invoiceNumber);
+    setInvoiceDate(h.invoiceDate);
+    setSelectedClientId(h.clientId);
+    setVendorName(h.vendorName);
+    setVendorAddress(h.vendorAddress);
+    setTitleMonth(h.periodMonth);
+    setTitleYear(h.periodYear);
+    setIgstPct(h.gstPercentage);
+    setBankKey(h.bankAccountId || (Object.keys(bankData).length > 0 ? Object.keys(bankData)[0] : ""));
+    setUseLetterPad(h.letterPadEnabled);
+    setShowSignature(h.showSignature);
+    setShowQr(h.showQr);
+
+    if (h.columnConfig) {
+      try {
+        setActiveCols(JSON.parse(h.columnConfig));
+      } catch (e) {}
+    }
+
+    const mappedRows = (h.lineItems || []).map(item => ({
+      id: item.id || (Date.now() + Math.random()),
+      projectName: item.projectName,
+      process: item.processName,
+      bookBatchName: item.batchName,
+      orderPages: item.pages,
+      ratePage: item.ratePerPage,
+      amount: item.amount,
+      deductionAmount: item.deduction,
+      totalAmount: item.total,
+      uploadedDate: item.uploadedDate,
+      startDate: item.startDate,
+      endDate: item.endDate
+    }));
+    setRows(mappedRows);
+    setShowHistory(false);
+  };
+
 
   // ── Col helpers ───────────────────────────────────────────
   const toggleCol = (key) => setActiveCols(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
@@ -627,21 +1007,53 @@ export default function Invoice() {
           </div>
         </div>
         <div className="inv-header-actions">
-          {/* History button replaces Preview + Export PDF */}
-          <button className="inv-btn inv-btn--history" onClick={() => setShowHistory(v => !v)}>
-            <span>📜</span> {showHistory ? "Close History" : "History"}
-          </button>
-          <button className="inv-btn inv-btn--primary" onClick={() => setShowPreview(true)}>👁 Preview</button>
+          {invoiceMode === "standard" && (
+            <button className="inv-btn inv-btn--history" onClick={() => setShowHistory(v => !v)}>
+              <span>📜</span> {showHistory ? "Close History" : "History"}
+            </button>
+          )}
+          {invoiceMode === "overlay" && overlayFile && (
+            <button className="inv-btn inv-btn--primary" onClick={exportPDF}>🖨 Print / Save PDF</button>
+          )}
+          <button className="inv-btn inv-btn--primary" onClick={() => setShowPreview(true)} disabled={invoiceMode === "overlay" && !overlayFile}>👁 Preview</button>
+          {invoiceMode === "standard" && (
+            <button className="inv-btn inv-btn--success" onClick={handleSaveInvoice}>💾 Save Invoice</button>
+          )}
         </div>
+      </div>
+
+      {/* ── Invoice Mode Tabs ── */}
+      <div className="inv-mode-tabs">
+        <button
+          className={`inv-mode-tab ${invoiceMode === "standard" ? "inv-mode-tab--active" : ""}`}
+          onClick={() => { setInvoiceMode("standard"); setShowHistory(false); }}
+        >
+          🧾 Standard Invoice Builder
+        </button>
+        <button
+          className={`inv-mode-tab ${invoiceMode === "overlay" ? "inv-mode-tab--active" : ""}`}
+          onClick={() => { setInvoiceMode("overlay"); setShowHistory(false); }}
+        >
+          🖼️ Letterpad Background Overlay (Client Upload)
+        </button>
       </div>
 
       {/* ── History Section (collapsible, below header) ── */}
       {showHistory && (
-        <HistorySection onClose={() => setShowHistory(false)} />
+        <HistorySection
+          onClose={() => setShowHistory(false)}
+          historyList={historyList}
+          summary={historySummary}
+          onDelete={handleDeleteInvoice}
+          onUpdatePayment={handleUpdatePayment}
+          onRehydrate={handleRehydrateInvoice}
+        />
       )}
 
-      {/* ── Section 1: Invoice Details ── */}
-      <div className="inv-card">
+      {invoiceMode === "standard" && (
+        <>
+          {/* ── Section 1: Invoice Details ── */}
+          <div className="inv-card">
         <div className="inv-card-header">
           <span className="inv-card-icon">📋</span>
           <h2 className="inv-card-title">Invoice Details</h2>
@@ -735,7 +1147,7 @@ export default function Invoice() {
         {showProjPanel && (
           <div className="inv-card-body">
             <div className="inv-proj-filters">
-              {[["Project", PROJECT_OPTIONS, filterProject, setFilterProject], ["Process", PROCESS_OPTIONS, filterProcess, setFilterProcess], ["Complexity", COMPLEXITY_OPTIONS, filterComplexity, setFilterComplexity], ["File Status", FILE_STATUS_OPTIONS, filterFileStatus, setFilterFileStatus]].map(([lbl, opts, val, set]) => (
+              {[["Project", projectChoices, filterProject, setFilterProject], ["Process", PROCESS_OPTIONS, filterProcess, setFilterProcess], ["Complexity", COMPLEXITY_OPTIONS, filterComplexity, setFilterComplexity], ["File Status", FILE_STATUS_OPTIONS, filterFileStatus, setFilterFileStatus]].map(([lbl, opts, val, set]) => (
                 <div key={lbl} className="inv-field-block">
                   <label className="inv-label">{lbl}</label>
                   <select className="inv-select" value={val} onChange={e => set(e.target.value)}>
@@ -762,12 +1174,16 @@ export default function Invoice() {
                   </tr></thead>
                   <tbody>
                     {filteredDPs.map(dp => {
-                      const rate = PROCESS_RATES[dp.process] || 5, amt = dp.pageCount * rate, sel = selectedDPIds.has(dp.id);
+                      const rate = (dp.process ? PROCESS_RATES[dp.process] : null) || projectRates[dp.projectId] || 5;
+                      const amt = dp.pageCount * rate;
+                      const sel = selectedDPIds.has(dp.id);
+                      const complexityCls = dp.complexity ? dp.complexity.toLowerCase().replace(/\s+/g, "") : "";
+                      const fileStatusCls = dp.fileStatus ? dp.fileStatus.toLowerCase() : "";
                       return (
                         <tr key={dp.id} className={`inv-proj-row ${sel ? "inv-proj-row--sel" : ""}`} onClick={() => toggleSelectDP(dp.id)}>
                           <td style={{ textAlign: "center" }}><input type="checkbox" checked={sel} onChange={() => toggleSelectDP(dp.id)} onClick={e => e.stopPropagation()} /></td>
-                          <td><span className="inv-proj-tag">{dp.project}</span></td>
-                          <td><span className="inv-proc-tag">{dp.process}</span></td>
+                          <td><span className="inv-proj-tag">{dp.project || "—"}</span></td>
+                          <td><span className="inv-proc-tag">{dp.process || "—"}</span></td>
                           <td className="inv-td-mono">{dp.jobId}</td>
                           <td className="inv-td-title" title={dp.titleName}>{dp.titleName}</td>
                           <td className="inv-td-num">{dp.pageCount}</td>
@@ -775,8 +1191,8 @@ export default function Invoice() {
                           <td className="inv-td-amt">₹{amt.toLocaleString("en-IN")}</td>
                           <td className="inv-td-mono">{formatDate(dp.startDate)}</td>
                           <td className="inv-td-mono">{formatDate(dp.endDate)}</td>
-                          <td><span className={`inv-complexity inv-complexity--${dp.complexity.toLowerCase().replace(/\s+/g, "")}`}>{dp.complexity}</span></td>
-                          <td><span className={`inv-fstatus inv-fstatus--${dp.fileStatus.toLowerCase()}`}>{dp.fileStatus}</span></td>
+                          <td>{complexityCls ? <span className={`inv-complexity inv-complexity--${complexityCls}`}>{dp.complexity}</span> : <span className="inv-complexity">—</span>}</td>
+                          <td>{fileStatusCls ? <span className={`inv-fstatus inv-fstatus--${fileStatusCls}`}>{dp.fileStatus}</span> : <span className="inv-fstatus">—</span>}</td>
                         </tr>
                       );
                     })}
@@ -860,10 +1276,59 @@ export default function Invoice() {
                       const isComp = c.key === "complexity";
 
                       if (c.key === "projectName") {
-                        return <td key={c.key} className="inv-td col-left"><input className="inv-cell-input" value={row.projectName} onChange={e => updateRow(row.id, "projectName", e.target.value)} placeholder="Project" /></td>;
+                        const projListId = `proj-list-${row.id}`;
+                        return (
+                          <td key={c.key} className="inv-td col-left">
+                            <input
+                              list={projListId}
+                              className="inv-cell-input inv-cell-input--combo"
+                              value={row.projectName}
+                              placeholder="Type project name…"
+                              onChange={e => {
+                                const val = e.target.value;
+                                updateRow(row.id, "projectName", val);
+                                const matchedProj = clientProjects.find(p => p.name === val);
+                                if (matchedProj) {
+                                  updateRow(row.id, "projectId", matchedProj.id);
+                                  if (projectRates[matchedProj.id]) {
+                                    updateRow(row.id, "ratePage", projectRates[matchedProj.id]);
+                                  }
+                                }
+                              }}
+                            />
+                            <datalist id={projListId}>
+                              {clientProjects.map(p => <option key={p.id} value={p.name} />)}
+                            </datalist>
+                          </td>
+                        );
                       }
                       if (c.key === "process") {
-                        return <td key={c.key} className="inv-td"><input className="inv-cell-input" value={row.process} onChange={e => updateRow(row.id, "process", e.target.value)} placeholder="Process" /></td>;
+                        const procListId = `proc-list-${row.id}`;
+                        return (
+                          <td key={c.key} className="inv-td">
+                            <input
+                              list={procListId}
+                              className="inv-cell-input inv-cell-input--combo"
+                              value={row.process}
+                              placeholder="Type process…"
+                              onChange={e => {
+                                const val = e.target.value;
+                                updateRow(row.id, "process", val);
+                                const matchedProc = processes.find(p => p.name === val);
+                                if (matchedProc) {
+                                  updateRow(row.id, "processId", matchedProc.id);
+                                  if (PROCESS_RATES[val]) {
+                                    updateRow(row.id, "ratePage", PROCESS_RATES[val]);
+                                  }
+                                }
+                              }}
+                            />
+                            <datalist id={procListId}>
+                              {processes.map(p => <option key={p.id} value={p.name} />)}
+                              {PROCESS_OPTIONS.filter(o => o !== "All Processes").map(o => <option key={o} value={o} />)}
+                            </datalist>
+                          </td>
+                        );
                       }
                       if (c.key === "bookBatchName") {
                         return <td key={c.key} className="inv-td"><input className="inv-cell-input" value={row.bookBatchName} onChange={e => updateRow(row.id, "bookBatchName", e.target.value)} placeholder="Batch Name" /></td>;
@@ -935,7 +1400,7 @@ export default function Invoice() {
               </select>
             </div>
             <div style={{ display: "flex", gap: "8px", alignSelf: "flex-end", flexWrap: "wrap" }}>
-              {!editingBank && <button className="inv-btn inv-btn--outline inv-btn--sm" onClick={startEditBank}>✏ Edit Bank</button>}
+              {!editingBank && currentBank && <button className="inv-btn inv-btn--outline inv-btn--sm" onClick={startEditBank}>✏ Edit Bank</button>}
               <button className="inv-btn inv-btn--success inv-btn--sm" onClick={() => setShowAddBank(true)}>+ Add Bank</button>
             </div>
           </div>
@@ -972,7 +1437,7 @@ export default function Invoice() {
                 <button className="inv-btn inv-btn--primary inv-btn--sm" onClick={saveBank}>💾 Save</button>
               </div>
             </div>
-          ) : (
+          ) : currentBank ? (
             <div className="inv-bank-display-with-qr">
               <div className="inv-bank-display">
                 <div className="inv-bank-display-grid">
@@ -996,6 +1461,10 @@ export default function Invoice() {
                 <input ref={qrInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleQrUpload} />
                 <p className="inv-qr-note">QR appears on invoice between bank details and signature.</p>
               </div>
+            </div>
+          ) : (
+            <div className="inv-bank-empty" style={{ padding: "16px", color: "var(--inv-text-muted)", fontSize: "0.85rem", background: "#f8fafc", border: "1px dashed var(--inv-border)", borderRadius: "var(--inv-radius-sm)", textAlign: "center" }}>
+              No bank account selected. Please select or add a bank account.
             </div>
           )}
         </div>
@@ -1062,6 +1531,164 @@ export default function Invoice() {
           </div>
         </div>
       </div>
+      </>)}
+
+      {/* ── Overlay Mode Panels ── */}
+      {invoiceMode === "overlay" && (
+        <>
+          {/* Card 1: Upload */}
+          <div className="inv-card">
+            <div className="inv-card-header">
+              <span className="inv-card-icon">📤</span>
+              <h2 className="inv-card-title">Upload Client Invoice Details</h2>
+            </div>
+            <div className="inv-card-body">
+              {pdfLoading ? (
+                <div style={{ padding: "40px 20px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", textAlign: "center" }}>
+                  <div className="inv-spinner" />
+                  <span style={{ fontWeight: 600, color: "#334155" }}>Converting PDF pages to high-resolution overlay images...</span>
+                  <span style={{ fontSize: "0.8rem", color: "#64748b" }}>Please wait, this might take a moment depending on the PDF size.</span>
+                </div>
+              ) : !overlayFile ? (
+                <div className="inv-overlay-upload-zone" onClick={() => overlayInputRef.current?.click()}>
+                  <span className="inv-overlay-upload-icon">📄</span>
+                  <span className="inv-overlay-upload-text">Click to select or drag & drop client invoice file</span>
+                  <span className="inv-overlay-upload-sub">Supports JPG, PNG images and PDFs</span>
+                </div>
+              ) : (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#f8fafc", border: "1px solid var(--inv-border)", borderRadius: "var(--inv-radius-sm)", marginBottom: "20px" }}>
+                  <div>
+                    <span style={{ fontWeight: 600, color: "#334155" }}>📎 {overlayFile.name}</span>
+                    <span style={{ marginLeft: "8px", fontSize: "0.8rem", color: "#64748b" }}>({(overlayFile.size / 1024).toFixed(1)} KB)</span>
+                  </div>
+                  <button className="inv-btn inv-btn--secondary inv-btn--sm" style={{ backgroundColor: "#ef4444", color: "#fff" }} onClick={handleClearOverlayFile}>✕ Remove</button>
+                </div>
+              )}
+              <input ref={overlayInputRef} type="file" accept="image/*,application/pdf" style={{ display: "none" }} onChange={handleOverlayFileChange} />
+            </div>
+          </div>
+
+          {/* Card 2: Layout Controls (visible only if file is loaded) */}
+          {overlayFile && (
+            <div className="inv-card">
+              <div className="inv-card-header">
+                <span className="inv-card-icon">⚙️</span>
+                <h2 className="inv-card-title">Overlay Layout Controls</h2>
+              </div>
+              <div className="inv-card-body">
+                <div className="inv-overlay-controls">
+                  <div className="inv-overlay-control-group">
+                    <label className="inv-overlay-control-label">
+                      <span>Top Spacer (Header Gap)</span>
+                      <span className="inv-overlay-control-val">{overlayTopSpacing}px</span>
+                    </label>
+                    <input type="range" min={0} max={300} className="inv-overlay-slider" value={overlayTopSpacing} onChange={e => setOverlayTopSpacing(Number(e.target.value))} />
+                  </div>
+                  
+                  <div className="inv-overlay-control-group">
+                    <label className="inv-overlay-control-label">
+                      <span>Bottom Spacer (Footer Gap)</span>
+                      <span className="inv-overlay-control-val">{overlayBottomSpacing}px</span>
+                    </label>
+                    <input type="range" min={0} max={200} className="inv-overlay-slider" value={overlayBottomSpacing} onChange={e => setOverlayBottomSpacing(Number(e.target.value))} />
+                  </div>
+
+                  {(overlayFileType === "image" || overlayFileType === "pdf") && (
+                    <>
+                      <div className="inv-overlay-control-group">
+                        <label className="inv-overlay-control-label">
+                          <span>Scale / Width</span>
+                          <span className="inv-overlay-control-val">{overlayScale}%</span>
+                        </label>
+                        <input type="range" min={50} max={100} className="inv-overlay-slider" value={overlayScale} onChange={e => setOverlayScale(Number(e.target.value))} />
+                      </div>
+
+                      <div className="inv-overlay-control-group" style={{ justifyContent: "center" }}>
+                        <label className="inv-overlay-toggle-row">
+                          <input type="checkbox" checked={overlayBlend} onChange={e => setOverlayBlend(e.target.checked)} style={{ width: "16px", height: "16px", cursor: "pointer" }} />
+                          Strip White Background (Multiply Blend)
+                        </label>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Card 3: Preview and Export */}
+          {overlayFile && (
+            <div className="inv-card">
+              <div className="inv-card-header">
+                <span className="inv-card-icon">👁</span>
+                <h2 className="inv-card-title">Preview & Export</h2>
+              </div>
+              <div className="inv-card-body">
+                <div className="inv-overlay-preview-container">
+                  <span className="inv-overlay-preview-title">📝 Client Invoice Overlay Preview</span>
+                  <div className="inv-document-outer" style={{ width: "100%", maxWidth: "800px" }}>
+                    {overlayFileType === "image" ? (
+                      <div className={`inv-document ${useLetterPad ? "inv-document--letterpad" : "inv-document--plain"}`} style={{ minHeight: "1050px" }}>
+                        {useLetterPad && letterPadImage && (
+                          <img src={letterPadImage} alt="Letterpad" className="inv-letterpad-bg-img" />
+                        )}
+
+                        <div style={{ height: `${overlayTopSpacing}px` }} />
+
+                        <div className="inv-document-overlay-content">
+                          <img
+                            src={overlayFileUrl}
+                            alt="Client Invoice Details"
+                            className="inv-overlay-img"
+                            style={{
+                              width: `${overlayScale}%`,
+                              mixBlendMode: overlayBlend ? "multiply" : "normal"
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ height: `${overlayBottomSpacing}px` }} />
+                      </div>
+                    ) : (
+                      pdfPages.map((pageUrl, idx) => (
+                        <div key={idx} className={`inv-document ${useLetterPad ? "inv-document--letterpad" : "inv-document--plain"}`} style={{ minHeight: "1050px", marginBottom: "20px" }}>
+                          {useLetterPad && letterPadImage && (
+                            <img src={letterPadImage} alt="Letterpad" className="inv-letterpad-bg-img" />
+                          )}
+
+                          <div style={{ height: `${overlayTopSpacing}px` }} />
+
+                          <div className="inv-document-overlay-content">
+                            <img
+                              src={pageUrl}
+                              alt={`Client Invoice Page ${idx + 1}`}
+                              className="inv-overlay-img"
+                              style={{
+                                width: `${overlayScale}%`,
+                                mixBlendMode: overlayBlend ? "multiply" : "normal"
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ height: `${overlayBottomSpacing}px` }} />
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="inv-export-grid" style={{ marginTop: "20px" }}>
+                  <button className="inv-export-btn inv-export-btn--preview" onClick={() => setShowPreview(true)}><span className="inv-export-icon">👁</span><span className="inv-export-label">Preview Modal</span><span className="inv-export-sub">Full screen preview</span></button>
+                  <button className="inv-export-btn inv-export-btn--pdf" onClick={exportPDF}><span className="inv-export-icon">📄</span><span className="inv-export-label">Export PDF</span><span className="inv-export-sub">Print / Save as PDF</span></button>
+                  {overlayFileType === "image" && (
+                    <button className="inv-export-btn inv-export-btn--image" onClick={exportImage}><span className="inv-export-icon">🖼</span><span className="inv-export-label">Export Image</span><span className="inv-export-sub">Save as PNG file</span></button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* ── Client Modal ── */}
       {showClientModal && (
@@ -1111,23 +1738,29 @@ export default function Invoice() {
               <span className="inv-preview-bar-title">Invoice Preview</span>
               <div className="inv-preview-bar-actions">
                 <button className="inv-btn inv-btn--primary inv-btn--sm" onClick={exportPDF}>🖨 Print / Save PDF</button>
-                <button className="inv-btn inv-btn--secondary inv-btn--sm" onClick={exportImage}>🖼 Export Image</button>
-                <button className="inv-btn inv-btn--secondary inv-btn--sm" onClick={exportExcel}>📊 Export Excel</button>
-                <button className="inv-btn inv-btn--secondary inv-btn--sm" onClick={exportWord}>📝 Export Word</button>
+                {!(invoiceMode === "overlay" && overlayFileType === "pdf") && (
+                  <button className="inv-btn inv-btn--secondary inv-btn--sm" onClick={exportImage}>🖼 Export Image</button>
+                )}
+                {invoiceMode === "standard" && (
+                  <>
+                    <button className="inv-btn inv-btn--secondary inv-btn--sm" onClick={exportExcel}>📊 Export Excel</button>
+                    <button className="inv-btn inv-btn--secondary inv-btn--sm" onClick={exportWord}>📝 Export Word</button>
+                  </>
+                )}
                 <button className="inv-btn inv-btn--outline inv-btn--sm" onClick={() => setShowPreview(false)}>✕ Close</button>
               </div>
             </div>
 
-            <div className="inv-document-outer">
-              <div className={`inv-document ${useLetterPad ? "inv-document--letterpad" : "inv-document--plain"}`} id="inv-printable-doc">
-                {useLetterPad && letterPadImage && (
-                  <img src={letterPadImage} alt="Letterpad" className="inv-letterpad-bg-img" />
-                )}
+            <div className={`inv-document-outer ${invoiceMode === "overlay" ? "inv-preview-overlay-active" : ""}`}>
+              {invoiceMode === "standard" ? (
+                <div className={`inv-document ${useLetterPad ? "inv-document--letterpad" : "inv-document--plain"}`} id="inv-printable-doc">
+                  {useLetterPad && letterPadImage && (
+                    <img src={letterPadImage} alt="Letterpad" className="inv-letterpad-bg-img" />
+                  )}
+                  {useLetterPad && <div className="inv-doc-letterpad-spacer" />}
 
-                {useLetterPad && <div className="inv-doc-letterpad-spacer" />}
-
-                {/* ── META TABLE ── */}
-                <table className="inv-doc-meta-table">
+                    {/* ── META TABLE ── */}
+                    <table className="inv-doc-meta-table">
                   <tbody>
                     <tr>
                       <td className="inv-doc-meta-lbl" rowSpan={2}><strong>VENDOR NAME:</strong></td>
@@ -1219,34 +1852,40 @@ export default function Invoice() {
                 <div className="inv-doc-bottom">
                   <div className="inv-doc-bank">
                     <div className="inv-doc-bank-title">BANK DETAILS:</div>
-                    <table className="inv-doc-bank-table">
-                      <tbody>
-                        <tr><td><strong>NAME IN BANK A/C</strong></td><td><strong>:</strong></td><td>{(currentBank.nameOnAccount || "").toUpperCase()}</td></tr>
-                        <tr><td><strong>BANK NAME</strong></td>        <td><strong>:</strong></td><td>{currentBank.bankName}</td></tr>
-                        <tr><td><strong>BANK A/C NO</strong></td>      <td><strong>:</strong></td><td>{currentBank.acNo}</td></tr>
-                        <tr><td><strong>BRANCH</strong></td>           <td><strong>:</strong></td><td>{currentBank.branch}</td></tr>
-                        <tr><td><strong>IFSC CODE</strong></td>        <td><strong>:</strong></td><td>{currentBank.ifsc}</td></tr>
-                        <tr><td><strong>GPAY</strong></td>             <td><strong>:</strong></td><td>{currentBank.gpay || ""}</td></tr>
-                        {showQr && (
-                          <tr>
-                            <td><strong>E-Pay QR</strong></td>
-                            <td><strong>:</strong></td>
-                            <td>
-                              <div className="inv-doc-qr">
-                                {currentBank.qrImage ? (
-                                  <img src={currentBank.qrImage} alt="Payment QR" className="inv-doc-qr-img" />
-                                ) : (
-                                  <div className="inv-doc-qr-placeholder">
-                                    <span className="inv-doc-qr-placeholder-icon">📱</span>
-                                    <span className="inv-doc-qr-placeholder-text">E-Pay QR</span>
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                    {currentBank ? (
+                      <table className="inv-doc-bank-table">
+                        <tbody>
+                          <tr><td><strong>NAME IN BANK A/C</strong></td><td><strong>:</strong></td><td>{(currentBank.nameOnAccount || "").toUpperCase()}</td></tr>
+                          <tr><td><strong>BANK NAME</strong></td>        <td><strong>:</strong></td><td>{currentBank.bankName}</td></tr>
+                          <tr><td><strong>BANK A/C NO</strong></td>      <td><strong>:</strong></td><td>{currentBank.acNo}</td></tr>
+                          <tr><td><strong>BRANCH</strong></td>           <td><strong>:</strong></td><td>{currentBank.branch}</td></tr>
+                          <tr><td><strong>IFSC CODE</strong></td>        <td><strong>:</strong></td><td>{currentBank.ifsc}</td></tr>
+                          <tr><td><strong>GPAY</strong></td>             <td><strong>:</strong></td><td>{currentBank.gpay || ""}</td></tr>
+                          {showQr && (
+                            <tr>
+                              <td><strong>E-Pay QR</strong></td>
+                              <td><strong>:</strong></td>
+                              <td>
+                                <div className="inv-doc-qr">
+                                  {currentBank.qrImage ? (
+                                    <img src={currentBank.qrImage} alt="Payment QR" className="inv-doc-qr-img" />
+                                  ) : (
+                                    <div className="inv-doc-qr-placeholder">
+                                      <span className="inv-doc-qr-placeholder-icon">📱</span>
+                                      <span className="inv-doc-qr-placeholder-text">E-Pay QR</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <div style={{ color: "#ef4444", fontWeight: "bold", padding: "8px 0" }}>
+                        ⚠️ No bank details selected. Please select a bank account.
+                      </div>
+                    )}
                   </div>
 
                   {/* ── SIGNATURE FIX:
@@ -1266,9 +1905,51 @@ export default function Invoice() {
                 </div>
 
                 {useLetterPad && <div className="inv-doc-letterpad-footer-spacer" />}
-
-              </div>{/* end inv-document */}
-            </div>{/* end inv-document-outer */}
+                </div>
+              ) : overlayFileType === "image" ? (
+                <div className={`inv-document ${useLetterPad ? "inv-document--letterpad" : "inv-document--plain"} inv-document-overlay-page`} id="inv-printable-doc" style={{ minHeight: "1050px" }}>
+                  {useLetterPad && letterPadImage && (
+                    <img src={letterPadImage} alt="Letterpad" className="inv-letterpad-bg-img" />
+                  )}
+                  <div style={{ height: `${overlayTopSpacing}px` }} />
+                  <div className="inv-document-overlay-content">
+                    <img
+                      src={overlayFileUrl}
+                      alt="Client Invoice Details"
+                      className="inv-overlay-img"
+                      style={{
+                        width: `${overlayScale}%`,
+                        mixBlendMode: overlayBlend ? "multiply" : "normal"
+                      }}
+                    />
+                  </div>
+                  <div style={{ height: `${overlayBottomSpacing}px` }} />
+                </div>
+              ) : (
+                <div id="inv-printable-doc" style={{ width: "100%" }}>
+                  {pdfPages.map((pageUrl, idx) => (
+                    <div key={idx} className={`inv-document ${useLetterPad ? "inv-document--letterpad" : "inv-document--plain"} inv-document-overlay-page`} style={{ minHeight: "1050px", marginBottom: "20px" }}>
+                      {useLetterPad && letterPadImage && (
+                        <img src={letterPadImage} alt="Letterpad" className="inv-letterpad-bg-img" />
+                      )}
+                      <div style={{ height: `${overlayTopSpacing}px` }} />
+                      <div className="inv-document-overlay-content">
+                        <img
+                          src={pageUrl}
+                          alt={`Client Invoice Page ${idx + 1}`}
+                          className="inv-overlay-img"
+                          style={{
+                            width: `${overlayScale}%`,
+                            mixBlendMode: overlayBlend ? "multiply" : "normal"
+                          }}
+                        />
+                      </div>
+                      <div style={{ height: `${overlayBottomSpacing}px` }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>{/* end inv-preview-wrapper */}
         </div>
       )}

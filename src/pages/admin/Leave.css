@@ -151,7 +151,7 @@
   padding: 14px 15px;
   color: #475569;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 14px;
   border-bottom: 1px solid #edf2f7;
   white-space: nowrap;
   letter-spacing: 0.2px;
@@ -448,4 +448,55 @@
   .lv-form-row { grid-template-columns: 1fr; }
   .lv-filter-card { flex-direction: column; align-items: stretch; }
   .lv-modal { margin: 0; padding: 24px 18px 20px; }
+}
+
+/* ══════════════════════════════════════════════
+   PENDING REQUEST HIGHLIGHTING
+   ══════════════════════════════════════════════ */
+.lv-row--pending {
+  background-color: #fffbeb !important; /* Soft warm amber/yellow tint */
+  transition: background-color 0.25s ease;
+}
+
+.lv-row--pending:hover {
+  background-color: #fef3c7 !important; /* Slightly darker warm tint on hover */
+}
+
+.lv-row--pending td {
+  background-color: inherit;
+  font-weight: 500;
+  color: #1e293b;
+  border-bottom: 1px solid #fef08a !important; /* Soft yellow separator border */
+}
+
+.lv-row--pending td:first-child {
+  position: relative;
+  border-left: 4px solid #d97706 !important; /* Solid amber border accent on the left */
+}
+
+@keyframes lv-pulse {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(217, 119, 6, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+  }
+}
+
+.lv-pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #d97706; /* Match the amber accent */
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: lv-pulse 2s infinite ease-in-out;
+  vertical-align: middle;
+  box-shadow: 0 0 8px rgba(217, 119, 6, 0.5);
 }
