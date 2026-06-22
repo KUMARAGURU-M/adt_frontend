@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-import { saveSession, getRolePrefix } from "../../../utils/api";
+import { saveSession, getRolePrefix, API_BASE } from "../../../utils/api";
 
 // ── Inline SVG eye icons (no external dependency) ──
 function Eye() {
@@ -208,7 +208,7 @@ function Login() {
   useEffect(() => {
     refreshCaptcha();
 
-    fetch("http://localhost:8080/api/settings/public")
+    fetch(`${API_BASE}/settings/public`)
       .then(res => res.json())
       .then(json => {
         if (json.success && json.data) {
@@ -264,7 +264,7 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

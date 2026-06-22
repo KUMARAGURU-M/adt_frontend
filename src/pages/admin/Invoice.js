@@ -12,7 +12,7 @@ import "./Invoice.css";
 import sign from "../../assets/images/sign.png";
 import letterpad from "../../assets/images/letterpad.png";
 import html2canvas from "html2canvas";
-import apiCall from "../../utils/api";
+import apiCall, { API_BASE } from "../../utils/api";
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -424,7 +424,7 @@ export default function Invoice() {
           type: acc.accountType,
           nameOnAccount: acc.accountHolder,
           gpay: acc.gpayNumber,
-          qrImage: acc.qrCodeImageUrl ? `http://localhost:8080/api${acc.qrCodeImageUrl}` : ""
+          qrImage: acc.qrCodeImageUrl ? `${API_BASE}${acc.qrCodeImageUrl}` : ""
         };
       });
       setBankData(bankObj);
@@ -450,8 +450,8 @@ export default function Invoice() {
       }
       if (settings.authorizedPersonName) setSigName(settings.authorizedPersonName);
       if (settings.designation) setSigDesig(settings.designation);
-      if (settings.signatureImageUrl) setSigImage(`http://localhost:8080/api${settings.signatureImageUrl}`);
-      if (settings.letterPadImageUrl) setLetterPadImage(`http://localhost:8080/api${settings.letterPadImageUrl}`);
+      if (settings.signatureImageUrl) setSigImage(`${API_BASE}${settings.signatureImageUrl}`);
+      if (settings.letterPadImageUrl) setLetterPadImage(`${API_BASE}${settings.letterPadImageUrl}`);
     } catch (err) {
       console.error("Failed to fetch settings:", err);
     }
@@ -524,7 +524,7 @@ export default function Invoice() {
     if (entityType) {
       formData.append('entityType', entityType);
     }
-    const res = await fetch('http://localhost:8080/api/media/upload', {
+    const res = await fetch(`${API_BASE}/media/upload`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -695,7 +695,7 @@ export default function Invoice() {
     try {
       const media = await uploadMediaFile(f, 'qr_code');
       if (editingBank) {
-        setBankDraft(d => ({ ...d, qrImage: `http://localhost:8080/api/media/${media.id}`, qrCodeImageId: media.id }));
+        setBankDraft(d => ({ ...d, qrImage: `${API_BASE}/media/${media.id}`, qrCodeImageId: media.id }));
       } else if (currentBank) {
         await apiCall(`/bank-accounts/${bankKey}`, 'PUT', {
           label: currentBank.label,
@@ -715,7 +715,7 @@ export default function Invoice() {
     const f = e.target.files[0]; if (!f) return;
     try {
       const media = await uploadMediaFile(f, 'signature');
-      setSigImage(`http://localhost:8080/api/media/${media.id}`);
+      setSigImage(`${API_BASE}/media/${media.id}`);
       await apiCall('/settings', 'PUT', { signatureImageId: media.id });
     } catch (err) {
       alert("Error uploading signature: " + err.message);
@@ -726,7 +726,7 @@ export default function Invoice() {
     const f = e.target.files[0]; if (!f) return;
     try {
       const media = await uploadMediaFile(f, 'letter_pad');
-      setLetterPadImage(`http://localhost:8080/api/media/${media.id}`);
+      setLetterPadImage(`${API_BASE}/media/${media.id}`);
       await apiCall('/settings', 'PUT', { letterPadImageId: media.id });
     } catch (err) {
       alert("Error uploading letter pad: " + err.message);
