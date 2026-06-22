@@ -249,7 +249,7 @@ export default function Tools() {
     }
   }, []);
 
-  useEffect(() => { loadTools(); }, []);
+  useEffect(() => { loadTools(); }, [loadTools]);
 
   // ── Load access list when tab changes ────────────────────────
   const loadAccess = useCallback(async (toolId) => {
@@ -264,7 +264,7 @@ export default function Tools() {
 
   useEffect(() => {
     if (activeTab) loadAccess(activeTab);
-  }, [activeTab]);
+  }, [activeTab, loadAccess]);
 
   const currentTool = tools.find(t => t.id === activeTab);
   const currentEntries = accessMap[activeTab] || [];

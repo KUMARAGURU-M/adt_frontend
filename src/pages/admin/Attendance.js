@@ -129,7 +129,6 @@ const Attendance = () => {
   const [modal,      setModal]      = useState(null);
 
   const [loading, setLoading] = useState(true);
-  const [saving,  setSaving]  = useState(false);
 
   // Scroll sync refs
   const monthlyTopRef   = useRef(null);
@@ -189,7 +188,7 @@ const Attendance = () => {
 
   useEffect(() => {
     loadMonth(selYear, selMonth);
-  }, [selYear, selMonth]);
+  }, [selYear, selMonth, loadMonth]);
 
   // ── Scroll width observers ────────────────────────────────────
   useEffect(() => {

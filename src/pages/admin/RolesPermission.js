@@ -99,7 +99,7 @@ const RolesPermission = () => {
     setLoading(false);
   }, [loadRoles, loadPermissions]);
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { loadAll(); }, [loadAll]);
 
   // ── Role handlers ─────────────────────────────────────────────
   const openAddRole = () => {

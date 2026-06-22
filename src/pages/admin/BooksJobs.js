@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './BooksJobs.css';
 import { apiCall } from '../../utils/api';
 
@@ -893,7 +893,7 @@ const BooksJobs = () => {
   useEffect(() => {
     loadProjects();
     loadJobs(0);
-  }, []);
+  }, [loadProjects, loadJobs]);
 
   // All filtering is server-side; rows = already filtered page
   const rows = jobs;

@@ -1,5 +1,5 @@
 import React, {
-  useState, useMemo, useEffect, useCallback
+  useState, useEffect, useCallback
 } from "react";
 import { useLocation } from "react-router-dom";
 import "./TaskManagement.css";
@@ -653,7 +653,6 @@ export default function TaskManagement() {
 
   // Filters
   const [search,         setSearch]         = useState("");
-  const [searchApplied,  setSearchApplied]  = useState("");
   const [filterProject,  setFilterProject]  = useState("");
   const [filterProcess,  setFilterProcess]  = useState("");
   const [filterEmployee, setFilterEmployee] = useState("");
@@ -714,7 +713,7 @@ export default function TaskManagement() {
   useEffect(() => {
     loadDropdowns();
     loadTasks(0);
-  }, []);
+  }, [loadDropdowns, loadTasks]);
 
   useEffect(() => {
     if (location.state?.openAddTask) {
@@ -752,7 +751,6 @@ export default function TaskManagement() {
 
   // ── Search / Clear ──────────────────────────────────────────
   const applySearch = () => {
-    setSearchApplied(search);
     loadTasks(0, {
       projectId:  filterProject,
       processId:  filterProcess,
@@ -763,7 +761,7 @@ export default function TaskManagement() {
   };
 
   const clearFilters = () => {
-    setSearch(""); setSearchApplied("");
+    setSearch("");
     setFilterProject(""); setFilterProcess("");
     setFilterEmployee(""); setFilterStatus("");
     loadTasks(0);

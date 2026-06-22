@@ -72,7 +72,7 @@ const EmpLeave = () => {
     }
   }, []);
 
-  useEffect(() => { loadAll(); }, []);
+  useEffect(() => { loadAll(); }, [loadAll]);
 
   // ── Apply for leave ───────────────────────────────────────────
   const validate = () => {
