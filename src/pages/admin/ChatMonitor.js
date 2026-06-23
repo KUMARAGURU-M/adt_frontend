@@ -236,9 +236,9 @@ export default function ChatMonitor() {
                                 {msg.mediaFile.mimeType.startsWith('image/') ? (
                                   <div className="audit-image-preview">
                                     <img 
-                                      src={`${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}${msg.mediaFile.url}`} 
+                                      src={`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`} 
                                       alt={msg.mediaFile.originalName}
-                                      onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}${msg.mediaFile.url}`, '_blank')}
+                                      onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`, '_blank')}
                                     />
                                   </div>
                                 ) : (
@@ -251,7 +251,7 @@ export default function ChatMonitor() {
                                   </div>
                                 )}
                                 <a 
-                                  href={`${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}${msg.mediaFile.url}`} 
+                                  href={`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`} 
                                   download 
                                   target="_blank" 
                                   rel="noreferrer"
