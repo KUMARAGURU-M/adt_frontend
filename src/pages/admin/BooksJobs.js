@@ -24,7 +24,7 @@ const REF_TYPES = ['-','BE-REF','CH-REF','PE-REF','CH_BE-REF'];
 
 const ALL_BULK_FIELDS = [
   { key: 'receiveDate', label: 'RECEIVED DATE',        mandatory: true  },
-  { key: 'jobId',       label: 'JOB ID',               mandatory: true  },
+  { key: 'jobId',       label: 'JOB ID',               mandatory: false },
   { key: 'title',       label: 'TITLE NAME',            mandatory: true  },
   { key: 'pageCount',   label: 'PAGE COUNT',            mandatory: true  },
   { key: 'startMonth',  label: 'START MONTH',           mandatory: false },
@@ -38,13 +38,14 @@ const ALL_BULK_FIELDS = [
   { key: 'fileStatus',  label: 'FILE STATUS',          mandatory: false },
   { key: 'uploadDate',  label: 'UPLOADED DATE',        mandatory: false },
   { key: 'billing',     label: 'BILLING STATUS',       mandatory: false },
+  { key: 'language',    label: 'LANGUAGE',             mandatory: false },
 ];
 
 const EMPTY_FORM = {
   project: '', projectId: null,
   startMonth: '', endMonth: '', receiveDate: '', jobId: '', isbn: '',
   title: '', pageCount: '', chapters: '', pdfType: '', complexity: '',
-  refType: '', status: '', fileStatus: '', uploadDate: '', billing: '',
+  refType: '', status: '', fileStatus: '', uploadDate: '', billing: '', language: '',
 };
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -78,6 +79,7 @@ const mapJob = (j) => ({
   fileStatus:  j.fileStatus    || '',
   uploadDate:  j.uploadDate    || '',
   billing:     j.billingStatus || '',
+  language:    j.language      || '',
 });
 
 // ── Sub-components ────────────────────────────────────────────────
@@ -250,15 +252,22 @@ const JobForm = ({ form, onChange, projects = [] }) => (
       </div>
     </div>
 
-    <div className="bj-form-group" style={{ maxWidth: '50%' }}>
-      <label>Billing Status</label>
-      <select value={form.billing}
-        onChange={e => onChange('billing', e.target.value)}>
-        <option value="">Select...</option>
-        {BILLING_STATUS_OPTIONS.map(b => (
-          <option key={b} value={b}>{b}</option>
-        ))}
-      </select>
+    <div className="bj-form-row">
+      <div className="bj-form-group">
+        <label>Billing Status</label>
+        <select value={form.billing}
+          onChange={e => onChange('billing', e.target.value)}>
+          <option value="">Select...</option>
+          {BILLING_STATUS_OPTIONS.map(b => (
+            <option key={b} value={b}>{b}</option>
+          ))}
+        </select>
+      </div>
+      <div className="bj-form-group">
+        <label>Language</label>
+        <input placeholder="e.g., English, French" value={form.language || ''}
+          onChange={e => onChange('language', e.target.value)} />
+      </div>
     </div>
   </div>
 );
@@ -270,9 +279,9 @@ const AddJobModal = ({ onClose, onAdd, projects }) => {
   const change = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleCreate = async () => {
-    if (!form.receiveDate || !form.jobId || !form.title ||
+    if (!form.receiveDate || !form.title ||
         !form.pageCount || !form.startMonth || !form.endMonth) {
-      alert('Please fill required fields: Receive Date, Start Month, End Month, Job ID, Title Name, Page Count.');
+      alert('Please fill required fields: Receive Date, Start Month, End Month, Title Name, Page Count.');
       return;
     }
     setSaving(true);
@@ -321,12 +330,13 @@ const EditJobModal = ({ job, onClose, onUpdate, projects }) => {
     fileStatus:  job.fileStatus  || '',
     uploadDate:  job.uploadDate  || '',
     billing:     job.billing     || '',
+    language:    job.language    || '',
   });
   const [saving, setSaving] = useState(false);
   const change = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleUpdate = async () => {
-    if (!form.receiveDate || !form.jobId || !form.title ||
+    if (!form.receiveDate || !form.title ||
         !form.pageCount || !form.startMonth || !form.endMonth) {
       alert('Please fill required fields.');
       return;
@@ -753,6 +763,11 @@ const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
 
           <div className="bj-modal-actions">
             <button className="bj-btn-cancel" onClick={onClose}>Cancel</button>
+            {parsedJobs.length > 0 && (
+              <button className="bj-btn-cancel" onClick={() => { setParsedJobs([]); setPasteText(''); }}>
+                Clear
+              </button>
+            )}
             <button
               className="bj-bulk-btn"
               onClick={handleImport}
@@ -948,6 +963,7 @@ const BooksJobs = () => {
       receiveDate:      form.receiveDate || null,
       startMonth:       form.startMonth  || null,
       endMonth:         form.endMonth    || null,
+      language:         form.language    || null,
     });
     await loadJobs(0);
   };
@@ -970,6 +986,7 @@ const BooksJobs = () => {
       receiveDate:      form.receiveDate || null,
       startMonth:       form.startMonth  || null,
       endMonth:         form.endMonth    || null,
+      language:         form.language    || null,
     });
     await loadJobs(page);
     close();
@@ -1002,11 +1019,19 @@ const BooksJobs = () => {
   };
 
   // ── Export ──────────────────────────────────────────────────
-  const fmt = (d) => d
-    ? new Date(d).toLocaleDateString('en-GB', {
-        day:'numeric', month:'short', year:'numeric'
-      })
-    : '-';
+  const fmt = (d) => {
+    if (!d) return '-';
+    try {
+      const date = new Date(d);
+      if (isNaN(date.getTime())) return d;
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return d;
+    }
+  };
 
   const exportPDF = () => {
     const pw = window.open('', '_blank');
@@ -1023,16 +1048,16 @@ const BooksJobs = () => {
       <h2>Job Management Report</h2>
       <p>Generated: ${new Date().toLocaleDateString('en-GB')}</p>
       <table><thead><tr>
-        <th>Project</th><th>Processes</th><th>Receive Date</th><th>Job ID</th>
-        <th>ISBN</th><th>Title</th><th>Pages</th>
+        <th>Project</th><th>Receive Date</th><th>Job ID</th>
+        <th>ISBN</th><th>Language</th><th>Title</th><th>Pages</th>
         <th>PDF Type</th><th>Complexity</th><th>Ref Type</th>
         <th>Status</th><th>File Status</th><th>Upload Date</th>
         <th>Billing</th>
       </tr></thead><tbody>
       ${rows.map(j => `<tr>
-        <td>${j.project||'-'}</td><td>${(j.processes || []).join(', ')||'-'}</td><td>${fmt(j.receiveDate)}</td>
+        <td>${j.project||'-'}</td><td>${fmt(j.receiveDate)}</td>
         <td><b>${j.jobId||'-'}</b></td><td>${j.isbn||'-'}</td>
-        <td>${j.title||'-'}</td><td>${j.pageCount||'-'}</td>
+        <td>${j.language||'-'}</td><td>${j.title||'-'}</td><td>${j.pageCount||'-'}</td>
         <td>${j.pdfType||'-'}</td><td>${j.complexity||'-'}</td>
         <td>${j.refType||'-'}</td><td>${j.status||'-'}</td>
         <td>${j.fileStatus||'-'}</td><td>${fmt(j.uploadDate)}</td>
@@ -1047,13 +1072,13 @@ const BooksJobs = () => {
 
   const exportExcel = () => {
     const headers = [
-      'Project','Processes','Receive Date','Job ID','XML ISBN','Title Name',
+      'Project','Receive Date','Job ID','XML ISBN','Language','Title Name',
       'Page Count','PDF Type','Complexity','Ref Type','Status',
       'File Status','Upload Date','Billing Status'
     ];
     const csvRows = rows.map(j => [
-      `"${j.project||''}"`, `"${(j.processes || []).join('; ')}"`, j.receiveDate ? fmt(j.receiveDate) : '',
-      `"${j.jobId||''}"`, `"${j.isbn||''}"`, `"${j.title||''}"`,
+      `"${j.project||''}"`, j.receiveDate ? fmt(j.receiveDate) : '',
+      `"${j.jobId||''}"`, `"${j.isbn||''}"`, `"${j.language||''}"`, `"${j.title||''}"`,
       j.pageCount||'', `"${j.pdfType||''}"`, `"${j.complexity||''}"`,
       `"${j.refType||''}"`, `"${j.status||''}"`,
       `"${j.fileStatus||''}"`, j.uploadDate ? fmt(j.uploadDate) : '',
@@ -1246,10 +1271,10 @@ const BooksJobs = () => {
               <thead>
                 <tr>
                   <th>Project</th>
-                  <th>Processes</th>
                   <th>Receive Date</th>
                   <th>Job ID</th>
                   <th>XML ISBN</th>
+                  <th>Language</th>
                   <th>Title Name</th>
                   <th>Page Count</th>
                   <th>PDF Type</th>
@@ -1276,23 +1301,15 @@ const BooksJobs = () => {
                         ? <span className="bj-project-link">{job.project}</span>
                         : <span className="cell-dash">-</span>}
                     </td>
-                    <td className="td-processes">
-                      {job.processes && job.processes.length > 0 ? (
-                        <div className="bj-processes-list">
-                          {job.processes.map((proc, idx) => (
-                            <span key={idx} className="bj-process-tag">{proc}</span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="cell-dash">-</span>
-                      )}
-                    </td>
                     <td className="td-date">{fmt(job.receiveDate)}</td>
                     <td><strong>{job.jobId}</strong></td>
                     <td>
                       {job.isbn
                         ? <span className="bj-isbn-link">{job.isbn}</span>
                         : <span className="cell-dash">-</span>}
+                    </td>
+                    <td>
+                      {job.language || <span className="cell-dash">-</span>}
                     </td>
                     <td className="td-title col-left">
                       {job.title || <span className="cell-dash">-</span>}

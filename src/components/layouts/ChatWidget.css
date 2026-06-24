@@ -3,8 +3,8 @@
 /* Floating Container */
 .adt-chat-widget-container {
   position: fixed;
-  bottom: 25px;
-  right: 25px;
+  bottom: 16px;
+  right: 16px;
   z-index: 9999;
   font-family: 'Poppins', 'Inter', sans-serif;
   display: flex;
@@ -14,8 +14,8 @@
 
 /* Floating Trigger Button */
 .adt-chat-trigger-btn {
-  width: 56px;
-  height: 56px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   background: linear-gradient(135deg, #c28595, #f0979c);
   color: white;
@@ -24,7 +24,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(194, 133, 149, 0.4);
+  box-shadow: 0 3px 12px rgba(194, 133, 149, 0.4);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   outline: none;
@@ -49,10 +49,10 @@
 /* Pulse Ring Animation */
 .pulse-ring {
   position: absolute;
-  top: -10px;
-  left: -10px;
-  right: -10px;
-  bottom: -10px;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
   border: 2px solid #f0979c;
   border-radius: 50%;
   animation: chatPulse 2s infinite ease-out;
@@ -74,17 +74,17 @@
 
 /* Chat Drawer Window */
 .adt-chat-window {
-  width: 330px;
-  height: 480px;
+  width: 270px;
+  height: 370px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 20px;
+  border-radius: 12px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(194, 133, 149, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   animation: floatUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   transform-origin: bottom right;
 }
@@ -105,32 +105,32 @@
 .adt-chat-header {
   background: linear-gradient(135deg, #c28595, #f0979c);
   color: white;
-  padding: 12px 16px;
+  padding: 5px 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .header-default h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.5px;
 }
 
 .header-default p {
-  margin: 2px 0 0 0;
-  font-size: 0.7rem;
+  margin: 1px 0 0 0;
+  font-size: 0.65rem;
   opacity: 0.9;
 }
 
 .header-chatting-with {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .back-btn {
@@ -157,11 +157,11 @@
 
 .header-info .contact-name {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .header-info .contact-role {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   opacity: 0.85;
 }
 
@@ -201,7 +201,7 @@
 }
 
 .search-bar {
-  padding: 12px 16px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   background: white;
@@ -212,18 +212,19 @@
 .search-icon {
   color: #94a3b8;
   position: absolute;
-  left: 28px;
+  left: 20px;
 }
 
 .search-bar input {
   width: 100%;
-  padding: 8px 12px 8px 36px;
+  padding: 5px 8px 5px 24px;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   outline: none;
   background: #f8fafc;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .search-bar input:focus {
@@ -235,15 +236,15 @@
 .contacts-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 6px;
 }
 
 .contact-card {
   display: flex;
   align-items: center;
-  padding: 12px;
-  margin-bottom: 4px;
-  border-radius: 12px;
+  padding: 6px 8px;
+  margin-bottom: 3px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   background: white;
@@ -257,17 +258,17 @@
 }
 
 .contact-avatar {
-  width: 40px;
-  height: 40px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: linear-gradient(135deg, #cbd5e1, #94a3b8);
   color: white;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
+  margin-right: 8px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -285,19 +286,19 @@
 
 .contact-details .name {
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: #1e293b;
 }
 
 .contact-details .code {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   color: #94a3b8;
 }
 
 .contact-details .role {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #64748b;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* Chat Thread Pane */
@@ -311,10 +312,10 @@
 .message-list {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   background: #f8fafc;
 }
 
@@ -332,13 +333,13 @@
 }
 
 .message-bubble {
-  max-width: 75%;
-  padding: 10px 14px;
-  border-radius: 16px;
+  max-width: 85%;
+  padding: 5px 8px 3px 8px;
+  border-radius: 10px;
   position: relative;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  font-size: 0.88rem;
-  line-height: 1.4;
+  font-size: 0.75rem;
+  line-height: 1.3;
   word-wrap: break-word;
 }
 
@@ -346,13 +347,13 @@
   background: white;
   color: #1e293b;
   border: 1px solid #e2e8f0;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 2px;
 }
 
 .message-bubble-wrapper.other .message-bubble {
   background: white;
   color: #1e293b;
-  border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 2px;
   border: 1px solid #e2e8f0;
 }
 
@@ -364,9 +365,9 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
-  margin-top: 4px;
-  font-size: 0.68rem;
+  gap: 3px;
+  margin-top: 0px;
+  font-size: 0.62rem;
   opacity: 0.8;
 }
 
@@ -378,24 +379,36 @@
   color: #94a3b8;
 }
 
-.read-status .sent {
-  color: #94a3b8;
+.read-status {
+  display: flex;
+  align-items: center;
 }
 
-.read-status .read {
-  color: #38bdf8;
-  /* Soft blue tick */
+.read-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-left: 2px;
+}
+
+.read-dot.read {
+  background-color: #22c55e;
+}
+
+.read-dot.sent {
+  background-color: #f97316;
 }
 
 /* File Sharing Cards */
 .shared-file-card {
   background: #f1f5f9;
-  border-radius: 12px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 5px 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   border: 1px solid #e2e8f0;
   margin-bottom: 4px;
   width: 100%;
@@ -403,10 +416,10 @@
 }
 
 .shared-image-preview {
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  max-width: 180px;
-  max-height: 120px;
+  max-width: 140px;
+  max-height: 90px;
   cursor: pointer;
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
@@ -421,7 +434,7 @@
 .file-attachment-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
   flex: 1;
 }
@@ -440,7 +453,7 @@
 
 .file-name {
   font-weight: 500;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -448,7 +461,7 @@
 }
 
 .file-size {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #64748b;
   margin-top: 2px;
 }
@@ -457,8 +470,8 @@
   color: #475569;
   background: #cbd5e1;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -477,8 +490,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 16px;
-  font-size: 0.75rem;
+  padding: 4px 10px;
+  font-size: 0.7rem;
   color: #c28595;
   background: #fff5f5;
   border-top: 1px solid #ffd8d8;
@@ -498,10 +511,10 @@
 .chat-input-bar {
   background: white;
   border-top: 1px solid #e2e8f0;
-  padding: 10px 16px;
+  padding: 6px 10px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .attach-btn,
@@ -512,8 +525,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   transition: all 0.2s;
   color: #64748b;
@@ -544,10 +557,10 @@
 
 .chat-input-bar input[type="text"] {
   flex: 1;
-  padding: 8px 14px;
+  padding: 5px 10px;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   outline: none;
   transition: all 0.2s;
 }
@@ -587,15 +600,15 @@
 /* Unread Message Count Badges */
 .adt-chat-unread-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -6px;
+  right: -6px;
   background: #ef4444;
   /* Premium bright red */
   color: white;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -621,18 +634,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .contact-unread-badge {
   background: #c28595;
   color: white;
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -55,6 +55,7 @@ const OPTIONAL_COLUMNS = [
   { key: "startDate", label: "Start Date" },
   { key: "endDate", label: "End Date" },
   { key: "xmlIsbn", label: "XML ISBN" },
+  { key: "language", label: "Language" },
   { key: "chapters", label: "No. of Chapters" },
   { key: "pdfInputType", label: "Input Type" },
   { key: "complexity", label: "Complexity" },
@@ -103,7 +104,7 @@ const EMPTY_ROW = (o = {}) => ({
   pdfInputType: "", complexity: "", referenceType: "",
   diffLevel: "", lob: "Service",
   fileStatus: "", uploadedDate: "", billingStatus: "",
-  articleCount: "",
+  articleCount: "", language: "",
   orderPages: "", ratePage: "", amount: "", deductionAmount: "", totalAmount: "",
   ...o,
 });
@@ -508,7 +509,8 @@ export default function Invoice() {
         fileStatus: j.fileStatus || "",
         uploadedDate: j.uploadDate || "",
         billingStatus: j.billingStatus || "PENDING",
-        projectId: j.projectId
+        projectId: j.projectId,
+        language: j.language || ""
       }));
       setUnbilledJobs(mapped);
     } catch (err) {
@@ -631,7 +633,8 @@ export default function Invoice() {
         uploadedDate: dp.uploadedDate, billingStatus: dp.billingStatus,
         diffLevel: dp.complexity, lob: "Service",
         orderPages: dp.pageCount, ratePage: rate, amount: amt, deductionAmount: 0, totalAmount: amt,
-        projectId: dp.projectId, jobIdRaw: dp.id
+        projectId: dp.projectId, jobIdRaw: dp.id,
+        language: dp.language
       });
     });
     setRows(prev => {
@@ -935,7 +938,8 @@ export default function Invoice() {
       totalAmount: item.total,
       uploadedDate: item.uploadedDate,
       startDate: item.startDate,
-      endDate: item.endDate
+      endDate: item.endDate,
+      language: item.language || ""
     }));
     setRows(mappedRows);
     setShowHistory(false);

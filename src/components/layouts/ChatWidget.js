@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { 
-  Send, Paperclip, ChevronLeft, X, Search, FileText, 
-  Download, Check, CheckCheck, MessageSquare, Loader2 
+import {
+  Send, Paperclip, ChevronLeft, X, Search, FileText,
+  Download, MessageSquare, Loader2
 } from 'lucide-react';
 import { apiCall, getCurrentUser, getAccessToken } from '../../utils/api';
 import './ChatWidget.css';
@@ -24,7 +24,7 @@ export default function ChatWidget() {
   const pollIntervalRef = useRef(null);
   const prevUnreadRef = useRef(0);
   const location = useLocation();
-  
+
   const currentUser = getCurrentUser();
   const token = getAccessToken();
 
@@ -35,7 +35,7 @@ export default function ChatWidget() {
   const playChime = () => {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      
+
       const osc1 = audioCtx.createOscillator();
       const gain1 = audioCtx.createGain();
       osc1.connect(gain1);
@@ -45,7 +45,7 @@ export default function ChatWidget() {
       gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
       osc1.start(audioCtx.currentTime);
       osc1.stop(audioCtx.currentTime + 0.15);
-      
+
       const osc2 = audioCtx.createOscillator();
       const gain2 = audioCtx.createGain();
       osc2.connect(gain2);
@@ -85,7 +85,7 @@ export default function ChatWidget() {
     try {
       const data = await apiCall(`/chat/messages/${contactId}`);
       setMessages(data || []);
-      
+
       // Determine if there are unread messages in this thread
       const hasUnread = data && data.some(m => !m.isRead && m.senderId !== currentUser.userId);
       if (hasUnread) {
@@ -272,8 +272,8 @@ export default function ChatWidget() {
   };
 
   // Filter contacts by search query
-  const filteredContacts = contacts.filter(c => 
-    c.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredContacts = contacts.filter(c =>
+    c.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -287,21 +287,21 @@ export default function ChatWidget() {
   return (
     <div className={`adt-chat-widget-container ${isOpen ? 'open' : ''}`}>
       {/* Floating Button / Bot Logo */}
-      <button 
-        className="adt-chat-trigger-btn" 
-        onClick={() => setIsOpen(!isOpen)}
-        title="ADT Connect Chat"
-      >
-        {isOpen ? <X size={24} /> : (
+      {!isOpen && (
+        <button
+          className="adt-chat-trigger-btn"
+          onClick={() => setIsOpen(true)}
+          title="ADT Connect Chat"
+        >
           <div className="trigger-content">
-            <MessageSquare size={24} />
+            <MessageSquare size={20} />
             {totalUnread > 0 && (
               <span className="adt-chat-unread-badge">{totalUnread}</span>
             )}
             <span className="pulse-ring" />
           </div>
-        )}
-      </button>
+        </button>
+      )}
 
       {/* Chat Window Panel */}
       {isOpen && (
@@ -311,7 +311,7 @@ export default function ChatWidget() {
             {activeChat ? (
               <div className="header-chatting-with">
                 <button className="back-btn" onClick={() => setActiveChat(null)}>
-                  <ChevronLeft size={20} />
+                  <ChevronLeft size={16} />
                 </button>
                 <div className="header-info">
                   <span className="contact-name">{activeChat.fullName}</span>
@@ -325,7 +325,7 @@ export default function ChatWidget() {
               </div>
             )}
             <button className="close-panel-btn" onClick={() => setIsOpen(false)}>
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
 
@@ -335,9 +335,9 @@ export default function ChatWidget() {
               /* Contacts List View */
               <div className="contacts-view">
                 <div className="search-bar">
-                  <Search size={16} className="search-icon" />
-                  <input 
-                    type="text" 
+                  <Search size={14} className="search-icon" />
+                  <input
+                    type="text"
                     placeholder="Search colleagues..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -346,8 +346,8 @@ export default function ChatWidget() {
                 <div className="contacts-list">
                   {filteredContacts.length > 0 ? (
                     filteredContacts.map(contact => (
-                      <div 
-                        key={contact.id} 
+                      <div
+                        key={contact.id}
                         className="contact-card"
                         onClick={() => setActiveChat(contact)}
                       >
@@ -382,8 +382,8 @@ export default function ChatWidget() {
                   {messages.map(msg => {
                     const isSelf = msg.senderId === currentUser.userId;
                     return (
-                      <div 
-                        key={msg.id} 
+                      <div
+                        key={msg.id}
                         className={`message-bubble-wrapper ${isSelf ? 'self' : 'other'}`}
                       >
                         <div className="message-bubble">
@@ -392,29 +392,29 @@ export default function ChatWidget() {
                             <div className="shared-file-card">
                               {msg.mediaFile.mimeType.startsWith('image/') ? (
                                 <div className="shared-image-preview">
-                                  <img 
-                                    src={`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`} 
-                                    alt={msg.mediaFile.originalName} 
+                                  <img
+                                    src={`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`}
+                                    alt={msg.mediaFile.originalName}
                                     onClick={() => window.open(`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`, '_blank')}
                                   />
                                 </div>
                               ) : (
                                 <div className="file-attachment-info">
-                                  <FileText size={28} className="file-icon" />
+                                  <FileText size={22} className="file-icon" />
                                   <div className="file-details">
                                     <span className="file-name">{msg.mediaFile.originalName}</span>
                                     <span className="file-size">{formatSize(msg.mediaFile.fileSize)}</span>
                                   </div>
                                 </div>
                               )}
-                              <a 
-                                href={`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`} 
-                                download 
-                                target="_blank" 
+                              <a
+                                href={`${process.env.REACT_APP_API_URL || 'https://adt-backend-m4a4.onrender.com/api'}${msg.mediaFile.url}`}
+                                download
+                                target="_blank"
                                 rel="noreferrer"
                                 className="file-download-btn"
                               >
-                                <Download size={16} />
+                                <Download size={14} />
                               </a>
                             </div>
                           ) : (
@@ -426,9 +426,9 @@ export default function ChatWidget() {
                             {isSelf && (
                               <span className="read-status">
                                 {msg.isRead ? (
-                                  <CheckCheck size={14} className="read" />
+                                  <span className="read-dot read" title="Read" />
                                 ) : (
-                                  <Check size={14} className="sent" />
+                                  <span className="read-dot sent" title="Sent" />
                                 )}
                               </span>
                             )}
@@ -443,41 +443,41 @@ export default function ChatWidget() {
                 {/* Upload Status */}
                 {uploading && (
                   <div className="chat-upload-indicator">
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                     <span>{uploadProgress}</span>
                   </div>
                 )}
 
                 {/* Chat Input Bar */}
                 <form className="chat-input-bar" onSubmit={handleSendText}>
-                  <button 
-                    type="button" 
-                    className="attach-btn" 
+                  <button
+                    type="button"
+                    className="attach-btn"
                     onClick={triggerFileSelect}
                     disabled={uploading}
                     title="Share File"
                   >
-                    <Paperclip size={18} />
+                    <Paperclip size={15} />
                   </button>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    style={{ display: 'none' }} 
-                    onChange={handleFileUpload} 
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
                   />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Type a message..."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     disabled={uploading}
                   />
-                  <button 
-                    type="submit" 
-                    className="send-btn" 
+                  <button
+                    type="submit"
+                    className="send-btn"
                     disabled={uploading || !inputText.trim()}
                   >
-                    <Send size={18} />
+                    <Send size={15} />
                   </button>
                 </form>
               </div>
