@@ -266,7 +266,7 @@
 }
 
 .employees-col {
-  max-width: 180px;
+  min-width: 180px;
 }
 
 .emp-names-list {
@@ -329,7 +329,8 @@
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.inline-date-input {
+.inline-date-input,
+.inline-employee-input {
   padding: 6px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
@@ -342,7 +343,8 @@
   box-sizing: border-box;
 }
 
-.inline-date-input:focus {
+.inline-date-input:focus,
+.inline-employee-input:focus {
   border-color: #3b82f6;
   background-color: #ffffff;
 }

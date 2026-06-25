@@ -161,11 +161,13 @@ const Production = () => {
       const currentProcessStatus = newEdits.hasOwnProperty('processStatus') ? newEdits.processStatus : (job.processStatus || 'PENDING');
       const currentQcStatus = newEdits.hasOwnProperty('qcStatus') ? newEdits.qcStatus : (job.qcStatus || 'PENDING');
       const currentEndDate = newEdits.hasOwnProperty('endDate') ? newEdits.endDate : (job.endDate || '');
+      const currentEmployees = newEdits.hasOwnProperty('employees') ? newEdits.employees : (job.employees ? job.employees.join(', ') : '');
 
       const matchesOriginal =
         currentProcessStatus === (job.processStatus || 'PENDING') &&
         currentQcStatus === (job.qcStatus || 'PENDING') &&
-        currentEndDate === (job.endDate || '');
+        currentEndDate === (job.endDate || '') &&
+        currentEmployees === (job.employees ? job.employees.join(', ') : '');
 
       if (matchesOriginal) {
         const updated = { ...prev };
@@ -194,7 +196,10 @@ const Production = () => {
     const payload = {
       processStatus: rowEdits.hasOwnProperty('processStatus') ? rowEdits.processStatus : job.processStatus,
       qcStatus: rowEdits.hasOwnProperty('qcStatus') ? rowEdits.qcStatus : job.qcStatus,
-      endDate: rowEdits.hasOwnProperty('endDate') ? rowEdits.endDate : job.endDate
+      endDate: rowEdits.hasOwnProperty('endDate') ? rowEdits.endDate : job.endDate,
+      employees: rowEdits.hasOwnProperty('employees')
+        ? rowEdits.employees.split(',').map(s => s.trim()).filter(Boolean)
+        : (job.employees || [])
     };
 
     setSavingRows(prev => ({ ...prev, [jobId]: true }));
@@ -326,7 +331,7 @@ const Production = () => {
                     <th>Page Count</th>
                     <th>PDF Type</th>
                     <th>Complexity</th>
-                    <th>Employees Assigned</th>
+                    <th style={{ minWidth: '180px' }}>Employees Assigned</th>
                     <th>Start Date</th>
                     <th style={{ minWidth: '130px' }}>Process Status</th>
                     <th style={{ minWidth: '130px' }}>QC Status</th>
@@ -350,6 +355,9 @@ const Production = () => {
                     const currentEndDate = rowEdits.hasOwnProperty('endDate')
                       ? rowEdits.endDate
                       : (job.endDate || '');
+                    const currentEmployees = rowEdits.hasOwnProperty('employees')
+                      ? rowEdits.employees
+                      : (job.employees ? job.employees.join(', ') : '');
 
                     return (
                       <tr key={job.id} className={isModified ? 'modified-row' : ''}>
@@ -379,19 +387,15 @@ const Production = () => {
                         <td className="complexity-col">
                           <ComplexityBadge value={job.complexity} />
                         </td>
-                        <td className="employees-col" title={job.employees?.join(', ')}>
-                          {job.employees && job.employees.length > 0 ? (
-                            <div className="emp-names-list">
-                              {job.employees.map((emp, i) => (
-                                <React.Fragment key={i}>
-                                  {i > 0 && <span className="emp-separator"> | </span>}
-                                  <span className="emp-name-item">{emp}</span>
-                                </React.Fragment>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="cell-dash">—</span>
-                          )}
+                        <td className="employees-col">
+                          <input
+                            type="text"
+                            className="inline-employee-input"
+                            value={currentEmployees}
+                            onChange={e => handleCellChange(job.id, 'employees', e.target.value)}
+                            disabled={isSaving}
+                            placeholder="Add / edit employee names..."
+                          />
                         </td>
                         <td className="date-col">
                           {job.productionStartDate ? (

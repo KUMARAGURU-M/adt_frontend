@@ -7,37 +7,37 @@ import { apiCall } from '../../utils/api';
 
 // ── Constants ─────────────────────────────────────────────────────
 const STATUS = {
-  P:  { code:'P',  label:'Present',        short:'P',  color:'#16a34a' },
-  A:  { code:'A',  label:'Absent',          short:'A',  color:'#dc2626' },
-  H:  { code:'H',  label:'Half Day',        short:'H',  color:'#d97706' },
-  PH: { code:'PH', label:'Paid Holiday',    short:'PH', color:'#7c3aed' },
-  WO: { code:'WO', label:'Week Off (Sun)',  short:'WO', color:'#64748b' },
-  '-':{ code:'-',  label:'Not Applicable',  short:'-',  color:'#cbd5e0' },
+  P: { code: 'P', label: 'Present', short: 'P', color: '#16a34a' },
+  A: { code: 'A', label: 'Absent', short: 'A', color: '#dc2626' },
+  H: { code: 'H', label: 'Half Day', short: 'H', color: '#d97706' },
+  PH: { code: 'PH', label: 'Paid Holiday', short: 'PH', color: '#7c3aed' },
+  WO: { code: 'WO', label: 'Week Off (Sun)', short: 'WO', color: '#64748b' },
+  '-': { code: '-', label: 'Not Applicable', short: '-', color: '#cbd5e0' },
 };
 
 const CATEGORIES = [
-  'Management','Admin','Vendor Management',
-  'Senior Operator','Operator','Coordinator',
-  'Employee','Team Leader','Manager',
+  'Management', 'Admin', 'Vendor Management',
+  'Senior Operator', 'Operator', 'Coordinator',
+  'Employee', 'Team Leader', 'Manager',
 ];
 
 const MONTHS = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December',
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-const CURRENT_YEAR  = new Date().getFullYear();
+const CURRENT_YEAR = new Date().getFullYear();
 const CURRENT_MONTH = new Date().getMonth();
-const DOW_NAMES     = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOW_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 // ── Local helpers (no API) ────────────────────────────────────────
 const getDaysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
-const getDayOfWeek   = (y, m, d) => new Date(y, m, d).getDay();
+const getDayOfWeek = (y, m, d) => new Date(y, m, d).getDay();
 
 function buildDays(year, month) {
   const total = getDaysInMonth(year, month);
   return Array.from({ length: total }, (_, i) => {
-    const d   = i + 1;
+    const d = i + 1;
     const dow = getDayOfWeek(year, month, d);
     return { day: d, dow, isSunday: dow === 0 };
   });
@@ -50,7 +50,7 @@ function countWorkingDays(year, month) {
 // Initialize local attendance map with PH on Sundays
 function initLocalRecord(year, month, employees) {
   const days = buildDays(year, month);
-  const rec  = {};
+  const rec = {};
   employees.forEach(emp => {
     rec[emp.id] = {};
     days.forEach(({ day, isSunday }) => {
@@ -65,13 +65,13 @@ function computeSummary(empRecord, year, month) {
   let present = 0, absent = 0, half = 0, ph = 0, wo = 0;
   days.forEach(({ day, isSunday }) => {
     const s = empRecord[day] || (isSunday ? 'PH' : '');
-    if (s === 'P')  present++;
-    else if (s === 'A')  absent++;
-    else if (s === 'H')  { present += 0.5; half++; }
+    if (s === 'P') present++;
+    else if (s === 'A') absent++;
+    else if (s === 'H') { present += 0.5; half++; }
     else if (s === 'PH') ph++;
     else if (s === 'WO') wo++;
   });
-  const workingDays  = countWorkingDays(year, month);
+  const workingDays = countWorkingDays(year, month);
   const totalForWages = present + ph + wo;
   return { present, absent, half, ph, wo, workingDays, totalForWages };
 }
@@ -90,10 +90,10 @@ const Modal = ({ onClose, children, wide }) => (
 
 // ── Status Cell ───────────────────────────────────────────────────
 const CYCLE_WEEKDAY = {
-  '':'P', P:'A', A:'H', H:'PH', PH:'',
+  '': 'P', P: 'A', A: 'H', H: 'PH', PH: '',
 };
 const CYCLE_SUNDAY = {
-  '':'PH', PH:'WO', WO:'P', P:'A', A:'H', H:'PH',
+  '': 'PH', PH: 'WO', WO: 'P', P: 'A', A: 'H', H: 'PH',
 };
 
 const StatusCell = ({ value, onChange, isSunday }) => {
@@ -101,7 +101,7 @@ const StatusCell = ({ value, onChange, isSunday }) => {
   const s = STATUS[value] || STATUS['-'];
   return (
     <button
-      className={`att-cell att-cell-${(value||'empty').toLowerCase()}`}
+      className={`att-cell att-cell-${(value || 'empty').toLowerCase()}`}
       style={{ color: s.color, borderColor: s.color + '40' }}
       onClick={() => onChange(cycle[value] ?? (isSunday ? 'PH' : ''))}
       title={s.label}
@@ -115,25 +115,26 @@ const StatusCell = ({ value, onChange, isSunday }) => {
 // MAIN COMPONENT
 // ═════════════════════════════════════════════════════════════════
 const Attendance = () => {
-  const [employees,    setEmployees]    = useState([]);
-  const [attendance,   setAttendance]   = useState({});
-  const [salaryDetails,setSalaryDetails]= useState({});
+  const [employees, setEmployees] = useState([]);
+  const [attendance, setAttendance] = useState({});
+  const [salaryDetails, setSalaryDetails] = useState({});
   const [hiddenEmpIds, setHiddenEmpIds] = useState(new Set());
 
-  const [selYear,  setSelYear]  = useState(CURRENT_YEAR);
+  const [selYear, setSelYear] = useState(CURRENT_YEAR);
   const [selMonth, setSelMonth] = useState(CURRENT_MONTH);
 
-  const [filterCat,  setFilterCat]  = useState('');
+  const [filterCat, setFilterCat] = useState('');
   const [filterName, setFilterName] = useState('');
   const [activeView, setActiveView] = useState('monthly');
-  const [modal,      setModal]      = useState(null);
+  const [modal, setModal] = useState(null);
 
   const [loading, setLoading] = useState(true);
+  const [savingAttendance, setSavingAttendance] = useState(false);
 
   // Scroll sync refs
-  const monthlyTopRef   = useRef(null);
+  const monthlyTopRef = useRef(null);
   const monthlyTableRef = useRef(null);
-  const summaryTopRef   = useRef(null);
+  const summaryTopRef = useRef(null);
   const summaryTableRef = useRef(null);
   const [monthlyW, setMonthlyW] = useState(0);
   const [summaryW, setSummaryW] = useState(0);
@@ -155,7 +156,7 @@ const Attendance = () => {
 
       // Merge backend records with Sunday defaults
       const days = buildDays(year, month);
-      const att  = {};
+      const att = {};
       (data.employees || []).forEach(emp => {
         att[emp.id] = {};
         days.forEach(({ day, isSunday }) => {
@@ -212,9 +213,9 @@ const Attendance = () => {
   // ── Filtered employees ────────────────────────────────────────
   const filtered = useMemo(() =>
     employees.filter(e =>
-      (!filterCat  || e.category === filterCat) &&
+      (!filterCat || e.category === filterCat) &&
       (!filterName || e.name.toLowerCase()
-          .includes(filterName.toLowerCase()))
+        .includes(filterName.toLowerCase()))
     ), [employees, filterCat, filterName]);
 
   const days = useMemo(
@@ -222,34 +223,19 @@ const Attendance = () => {
     [selYear, selMonth]
   );
 
-  // ── Update single cell → persist immediately ──────────────────
-  const updateCell = useCallback(async (empId, day, val) => {
-    // Optimistic update
+  // ── Update single cell (local state only) ──────────────────────
+  const updateCell = useCallback((empId, day, val) => {
     setAttendance(prev => ({
       ...prev,
       [empId]: { ...prev[empId], [day]: val },
     }));
+  }, []);
 
-    // Persist to backend
-    try {
-      const date = new Date(selYear, selMonth, day)
-        .toISOString().slice(0, 10);
-      await apiCall('/attendance/cell', 'PATCH', {
-        employeeId: empId,
-        date,
-        status: val,
-      });
-    } catch (err) {
-      console.error('Cell save failed:', err.message);
-    }
-  }, [selYear, selMonth]);
-
-  // ── Quick mark all employees for a day ───────────────────────
-  const quickMarkDay = useCallback(async (day, status) => {
+  // ── Quick mark all employees for a day (local state only) ──────
+  const quickMarkDay = useCallback((day, status) => {
     const isSunday = days.find(d => d.day === day)?.isSunday;
     const finalStatus = status === 'CLEAR' ? (isSunday ? 'PH' : '') : status;
 
-    // Optimistic
     setAttendance(prev => {
       const next = { ...prev };
       employees.forEach(emp => {
@@ -257,22 +243,30 @@ const Attendance = () => {
       });
       return next;
     });
+  }, [employees, days]);
 
-    // Persist
+  // ── Bulk save monthly attendance ───────────────────────────────
+  const handleSaveAttendance = useCallback(async () => {
+    setSavingAttendance(true);
     try {
-      await apiCall('/attendance/quick-mark', 'POST', {
-        year: selYear, month: selMonth, day,
-        status: finalStatus,
+      await apiCall('/attendance/monthly/save', 'POST', {
+        year: selYear,
+        month: selMonth,
+        attendance: attendance,
       });
+      alert('Attendance updated successfully!');
     } catch (err) {
-      console.error('Quick mark failed:', err.message);
+      console.error('Save failed:', err.message);
+      alert('Failed to save attendance: ' + err.message);
+    } finally {
+      setSavingAttendance(false);
     }
-  }, [employees, days, selYear, selMonth]);
+  }, [selYear, selMonth, attendance]);
 
   // ── Salary detail helpers ─────────────────────────────────────
   const getSalaryDetail = (empId, field, fallback = '') => {
     const detail = salaryDetails[empId];
-    const val    = detail?.[field];
+    const val = detail?.[field];
     if (val === undefined || val === null || val === '') return fallback;
     return val;
   };
@@ -288,24 +282,24 @@ const Attendance = () => {
     try {
       const emp = employees.find(e => e.id === empId);
       const payload = {
-        employeeId:   empId,
-        year:         selYear,
-        month:        selMonth,
-        baseSalary:   field === 'baseSalary'
-                        ? Number(val)
-                        : (salaryDetails[empId]?.baseSalary ?? emp?.baseSalary),
-        incentive:    field === 'incentive'
-                        ? Number(val)
-                        : Number(salaryDetails[empId]?.incentive ?? 0),
-        advance:      field === 'advance'
-                        ? Number(val)
-                        : Number(salaryDetails[empId]?.advance ?? 0),
+        employeeId: empId,
+        year: selYear,
+        month: selMonth,
+        baseSalary: field === 'baseSalary'
+          ? Number(val)
+          : (salaryDetails[empId]?.baseSalary ?? emp?.baseSalary),
+        incentive: field === 'incentive'
+          ? Number(val)
+          : Number(salaryDetails[empId]?.incentive ?? 0),
+        advance: field === 'advance'
+          ? Number(val)
+          : Number(salaryDetails[empId]?.advance ?? 0),
         salaryStatus: field === 'salaryStatus'
-                        ? val
-                        : (salaryDetails[empId]?.salaryStatus ?? 'pending'),
-        isHidden:     field === 'isHidden'
-                        ? val
-                        : (salaryDetails[empId]?.isHidden ?? false),
+          ? val
+          : (salaryDetails[empId]?.salaryStatus ?? 'pending'),
+        isHidden: field === 'isHidden'
+          ? val
+          : (salaryDetails[empId]?.isHidden ?? false),
       };
       await apiCall('/attendance/salary-detail', 'POST', payload);
     } catch (err) {
@@ -332,15 +326,15 @@ const Attendance = () => {
 
   const totalMonthlySalary = useMemo(() =>
     summaries.reduce((sum, s) => {
-      const detail    = salaryDetails[s.emp.id];
-      const basic     = Number(detail?.baseSalary ?? s.emp.baseSalary ?? 5000);
-      const perDay    = basic / 31;
-      const net       = perDay * s.totalForWages;
+      const detail = salaryDetails[s.emp.id];
+      const basic = Number(detail?.baseSalary ?? s.emp.baseSalary ?? 5000);
+      const perDay = basic / 31;
+      const net = perDay * s.totalForWages;
       const incentive = Number(detail?.incentive ?? 0);
-      const advance   = Number(detail?.advance   ?? 0);
+      const advance = Number(detail?.advance ?? 0);
       return sum + net + incentive - advance;
     }, 0),
-  [summaries, salaryDetails]);
+    [summaries, salaryDetails]);
 
   // ── Yearly summary ────────────────────────────────────────────
   const yearlySummary = useMemo(() =>
@@ -350,7 +344,7 @@ const Attendance = () => {
         const s = computeSummary(
           attendance[emp.id] || {}, selYear, m);
         totalPresent += s.present;
-        totalAbsent  += s.absent;
+        totalAbsent += s.absent;
         totalWorking += s.workingDays;
       }
       return { emp, totalPresent, totalAbsent, totalWorking };
@@ -364,7 +358,7 @@ const Attendance = () => {
   // ── Add Employee Modal ────────────────────────────────────────
   const AddEmpModal = () => {
     const [form, setForm] = useState({
-      name:'', category:CATEGORIES[0], salary:'5000', gpay:''
+      name: '', category: CATEGORIES[0], salary: '5000', gpay: ''
     });
     const [saving, setSaving] = useState(false);
 
@@ -373,8 +367,8 @@ const Attendance = () => {
       setSaving(true);
       try {
         const emp = await apiCall('/attendance/employees', 'POST', {
-          name:       form.name.trim(),
-          category:   form.category,
+          name: form.name.trim(),
+          category: form.category,
           gpayNumber: form.gpay.trim() || null,
           baseSalary: Number(form.salary) || 5000,
         });
@@ -395,12 +389,12 @@ const Attendance = () => {
           <label>Name <span className="att-req">*</span></label>
           <input className="att-input" placeholder="Full name"
             value={form.name}
-            onChange={e => setForm(p => ({ ...p, name:e.target.value }))} />
+            onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
         </div>
         <div className="att-form-group">
           <label>Category</label>
           <select className="att-select" value={form.category}
-            onChange={e => setForm(p => ({...p, category:e.target.value}))}>
+            onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
@@ -408,7 +402,7 @@ const Attendance = () => {
           <label>GPay Number</label>
           <input className="att-input" placeholder="GPay Number"
             value={form.gpay}
-            onChange={e => setForm(p => ({ ...p, gpay:e.target.value }))} />
+            onChange={e => setForm(p => ({ ...p, gpay: e.target.value }))} />
         </div>
         <div className="att-form-group">
           <label>Salary <span className="att-req">*</span></label>
@@ -419,7 +413,7 @@ const Attendance = () => {
               placeholder="Monthly Salary"
               value={form.salary}
               onChange={e => setForm(p =>
-                ({ ...p, salary:e.target.value }))} />
+                ({ ...p, salary: e.target.value }))} />
           </div>
         </div>
         <div className="att-modal-actions">
@@ -436,7 +430,7 @@ const Attendance = () => {
 
   // ── Employee Detail Modal ─────────────────────────────────────
   const EmpDetailModal = ({ emp }) => {
-    const s   = computeSummary(
+    const s = computeSummary(
       attendance[emp.id] || {}, selYear, selMonth);
     const pct = s.workingDays > 0
       ? Math.round((s.present / s.workingDays) * 100) : 0;
@@ -448,12 +442,12 @@ const Attendance = () => {
         </p>
         <div className="att-detail-grid">
           {[
-            ['green',  s.present,       'Present'],
-            ['red',    s.absent,        'Absent'],
-            ['amber',  s.half,          'Half Days'],
-            ['purple', s.ph,            'Paid Holidays'],
-            ['blue',   s.workingDays,   'Working Days'],
-            ['teal',   s.totalForWages, 'Days for Wages'],
+            ['green', s.present, 'Present'],
+            ['red', s.absent, 'Absent'],
+            ['amber', s.half, 'Half Days'],
+            ['purple', s.ph, 'Paid Holidays'],
+            ['blue', s.workingDays, 'Working Days'],
+            ['teal', s.totalForWages, 'Days for Wages'],
           ].map(([color, val, lbl]) => (
             <div key={lbl} className={`att-detail-card ${color}`}>
               <span className="att-detail-val">{val}</span>
@@ -467,7 +461,7 @@ const Attendance = () => {
             <div className="att-pct-fill" style={{
               width: `${pct}%`,
               background: pct >= 75 ? '#16a34a'
-                        : pct >= 50 ? '#d97706' : '#dc2626'
+                : pct >= 50 ? '#d97706' : '#dc2626'
             }} />
           </div>
         </div>
@@ -481,21 +475,21 @@ const Attendance = () => {
 
   // ── Edit Employee Modal ───────────────────────────────────────
   const EditEmpModal = ({ emp }) => {
-    const [salary,  setSalary]  = useState(
+    const [salary, setSalary] = useState(
       String(getSalaryDetail(emp.id, 'baseSalary', emp.baseSalary ?? 5000)));
-    const [gpay,    setGpay]    = useState(emp.gpayNumber || '');
-    const [saving,  setSaving]  = useState(false);
+    const [gpay, setGpay] = useState(emp.gpayNumber || '');
+    const [saving, setSaving] = useState(false);
 
     const submit = async () => {
       setSaving(true);
       try {
         const updated = await apiCall(
           `/attendance/employees/${emp.id}`, 'PUT', {
-            name:       emp.name,
-            category:   emp.category,
-            gpayNumber: gpay.trim() || null,
-            baseSalary: Number(salary) || 5000,
-          });
+          name: emp.name,
+          category: emp.category,
+          gpayNumber: gpay.trim() || null,
+          baseSalary: Number(salary) || 5000,
+        });
         setEmployees(prev =>
           prev.map(e => e.id === emp.id ? updated : e));
         // Also update salary detail override
@@ -564,16 +558,16 @@ const Attendance = () => {
       <Modal onClose={() => setModal(null)}>
         <h2 className="att-modal-title">Delete Employee</h2>
         <p className="att-modal-sub" style={{
-          margin:'12px 0 20px', fontSize:'0.88rem', color:'#4b5563'
+          margin: '12px 0 20px', fontSize: '0.88rem', color: '#4b5563'
         }}>
           Are you sure you want to delete <strong>{emp.name}</strong>?
           This action cannot be undone.
         </p>
-        <div className="att-modal-actions" style={{ marginTop:0 }}>
+        <div className="att-modal-actions" style={{ marginTop: 0 }}>
           <button className="att-btn-cancel"
             onClick={() => setModal(null)}>Cancel</button>
           <button className="att-btn-primary"
-            style={{ backgroundColor:'#dc2626' }}
+            style={{ backgroundColor: '#dc2626' }}
             onClick={confirm} disabled={deleting}>
             {deleting ? 'Deleting...' : 'Delete'}
           </button>
@@ -592,6 +586,17 @@ const Attendance = () => {
           <span className="att-page-icon">🗓️</span>
           <h2>Attendance Management</h2>
         </div>
+        <div className="att-header-actions">
+          {activeView === 'monthly' && (
+            <button
+              className="att-btn-mark"
+              onClick={handleSaveAttendance}
+              disabled={savingAttendance}
+            >
+              {savingAttendance ? 'Saving...' : '💾 Update Attendance'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Controls ── */}
@@ -605,7 +610,7 @@ const Attendance = () => {
           </select>
           <select className="att-select-ctrl" value={selYear}
             onChange={e => setSelYear(Number(e.target.value))}>
-            {[2024,2025,2026,2027].map(y => (
+            {[2024, 2025, 2026, 2027].map(y => (
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
@@ -627,12 +632,12 @@ const Attendance = () => {
 
         <div className="att-view-tabs">
           {[
-            ['monthly','📅 Monthly'],
-            ['summary','📊 Summary'],
+            ['monthly', '📅 Monthly'],
+            ['summary', '📊 Summary'],
             ['yearly', '📈 Yearly'],
-          ].map(([v,l]) => (
+          ].map(([v, l]) => (
             <button key={v}
-              className={`att-view-tab${activeView===v?' active':''}`}
+              className={`att-view-tab${activeView === v ? ' active' : ''}`}
               onClick={() => setActiveView(v)}>
               {l}
             </button>
@@ -660,7 +665,7 @@ const Attendance = () => {
       {/* Loading */}
       {loading && (
         <div style={{
-          padding:'40px', textAlign:'center', color:'#888'
+          padding: '40px', textAlign: 'center', color: '#888'
         }}>
           Loading attendance data...
         </div>
@@ -671,7 +676,7 @@ const Attendance = () => {
         <div className="att-table-card">
           <div ref={monthlyTopRef} className="att-top-scroll-wrapper"
             onScroll={() => syncScroll(monthlyTopRef, monthlyTableRef)}>
-            <div style={{ width:`${monthlyW}px`, height:'1px' }} />
+            <div style={{ width: `${monthlyW}px`, height: '1px' }} />
           </div>
           <div ref={monthlyTableRef} className="att-table-scroll"
             onScroll={() => syncScroll(monthlyTableRef, monthlyTopRef)}>
@@ -683,12 +688,12 @@ const Attendance = () => {
                   <th className="att-th-sticky att-th-cat">Role</th>
                   {days.map(({ day, dow, isSunday }) => (
                     <th key={day}
-                      className={`att-th-day${isSunday?' att-th-sunday':''}`}
+                      className={`att-th-day${isSunday ? ' att-th-sunday' : ''}`}
                       title={DOW_NAMES[dow]}>
                       <div className="att-th-day-inner">
                         <span className="att-th-day-num">{day}</span>
                         <span className="att-th-day-name">
-                          {DOW_NAMES[dow].slice(0,2)}
+                          {DOW_NAMES[dow].slice(0, 2)}
                         </span>
                       </div>
                     </th>
@@ -740,14 +745,13 @@ const Attendance = () => {
                       <td className="att-td-name col-left">
                         <button className="att-emp-name-btn"
                           onClick={() =>
-                            setModal({ type:'detail', emp })}>
+                            setModal({ type: 'detail', emp })}>
                           {emp.name}
                         </button>
                       </td>
                       <td className="att-td-cat col-left">
-                        <span className={`att-cat-badge att-cat-${
-                          emp.category.toLowerCase().replace(/\s+/g,'-')
-                        }`}>
+                        <span className={`att-cat-badge att-cat-${emp.category.toLowerCase().replace(/\s+/g, '-')
+                          }`}>
                           {emp.category}
                         </span>
                       </td>
@@ -790,14 +794,14 @@ const Attendance = () => {
             <span>📊 Monthly Summary — {MONTHS[selMonth]} {selYear}</span>
             <span className="att-overall-salary">
               Total: <strong>₹{totalMonthlySalary.toLocaleString(
-                'en-IN', { minimumFractionDigits:2, maximumFractionDigits:2 }
+                'en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }
               )}</strong>
             </span>
           </h3>
 
           <div ref={summaryTopRef} className="att-top-scroll-wrapper"
             onScroll={() => syncScroll(summaryTopRef, summaryTableRef)}>
-            <div style={{ width:`${summaryW}px`, height:'1px' }} />
+            <div style={{ width: `${summaryW}px`, height: '1px' }} />
           </div>
 
           <div ref={summaryTableRef} className="att-table-scroll"
@@ -829,36 +833,34 @@ const Attendance = () => {
               <tbody>
                 {summaries
                   .filter(s =>
-                    (!filterCat  || s.emp.category === filterCat) &&
+                    (!filterCat || s.emp.category === filterCat) &&
                     (!filterName || s.emp.name.toLowerCase()
-                        .includes(filterName.toLowerCase())))
+                      .includes(filterName.toLowerCase())))
                   .map((s, idx) => {
-                    const detail   = salaryDetails[s.emp.id];
-                    const basic    = Number(
+                    const detail = salaryDetails[s.emp.id];
+                    const basic = Number(
                       detail?.baseSalary ?? s.emp.baseSalary ?? 5000);
-                    const perDay   = basic / 31;
-                    const lop      = perDay * s.absent;
-                    const net      = perDay * s.totalForWages;
-                    const incVal   = Number(detail?.incentive ?? 0);
-                    const advVal   = Number(detail?.advance   ?? 0);
-                    const total    = net + incVal - advVal;
+                    const perDay = basic / 31;
+                    const lop = perDay * s.absent;
+                    const net = perDay * s.totalForWages;
+                    const incVal = Number(detail?.incentive ?? 0);
+                    const advVal = Number(detail?.advance ?? 0);
+                    const total = net + incVal - advVal;
                     const isHidden = detail?.isHidden
                       || hiddenEmpIds.has(s.emp.id);
                     const statusVal = detail?.salaryStatus ?? 'pending';
 
                     return (
                       <tr key={s.emp.id}
-                        className={`att-summary-row${
-                          isHidden ? ' att-row-hidden' : ''
-                        }`}>
-                        <td className="att-sum-sticky-id">{idx+1}</td>
+                        className={`att-summary-row${isHidden ? ' att-row-hidden' : ''
+                          }`}>
+                        <td className="att-sum-sticky-id">{idx + 1}</td>
                         <td className="col-left att-sum-sticky-emp">
                           {s.emp.name}
                         </td>
                         <td className="col-left att-sum-sticky-role">
-                          <span className={`att-cat-badge att-cat-${
-                            s.emp.category.toLowerCase().replace(/\s+/g,'-')
-                          }`}>
+                          <span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')
+                            }`}>
                             {s.emp.category}
                           </span>
                         </td>
@@ -871,7 +873,7 @@ const Attendance = () => {
                           ) : (
                             <input type="number"
                               className="att-summary-input"
-                              style={{ width:'90px' }}
+                              style={{ width: '90px' }}
                               value={detail?.baseSalary ?? s.emp.baseSalary ?? 5000}
                               placeholder="5000"
                               onChange={e =>
@@ -883,7 +885,7 @@ const Attendance = () => {
                           <div className="att-actions-cell">
                             <button className="att-action-btn edit"
                               onClick={() =>
-                                setModal({ type:'edit', emp:s.emp })}
+                                setModal({ type: 'edit', emp: s.emp })}
                               title="Edit">✏️</button>
                             <button className="att-action-btn hide"
                               onClick={() => toggleHide(s.emp.id)}
@@ -931,7 +933,7 @@ const Attendance = () => {
                               placeholder="0"
                               onChange={e =>
                                 updateSalaryDetail(
-                                  s.emp.id,'incentive',e.target.value)} />
+                                  s.emp.id, 'incentive', e.target.value)} />
                           )}
                         </td>
                         <td className="td-center">
@@ -944,11 +946,11 @@ const Attendance = () => {
                               placeholder="0"
                               onChange={e =>
                                 updateSalaryDetail(
-                                  s.emp.id,'advance',e.target.value)} />
+                                  s.emp.id, 'advance', e.target.value)} />
                           )}
                         </td>
                         <td className="td-center"
-                          style={{ fontWeight:700, color:'#111827' }}>
+                          style={{ fontWeight: 700, color: '#111827' }}>
                           {isHidden ? (
                             <span className="att-hidden-placeholder">—</span>
                           ) : `₹${total.toFixed(2)}`}
@@ -962,7 +964,7 @@ const Attendance = () => {
                               value={statusVal}
                               onChange={e =>
                                 updateSalaryDetail(
-                                  s.emp.id,'salaryStatus',e.target.value)}>
+                                  s.emp.id, 'salaryStatus', e.target.value)}>
                               <option value="credited">Credited</option>
                               <option value="pending">Pending</option>
                               <option value="wip">WIP</option>
@@ -987,7 +989,7 @@ const Attendance = () => {
 
           <div className="att-yearly-months">
             {MONTHS.map((m, mi) => {
-              const wd    = countWorkingDays(selYear, mi);
+              const wd = countWorkingDays(selYear, mi);
               const totalP = employees.reduce((sum, emp) => {
                 const s = computeSummary(
                   attendance[emp.id] || {}, selYear, mi);
@@ -997,16 +999,16 @@ const Attendance = () => {
                 ? Math.round((totalP / (wd * employees.length)) * 100) : 0;
               return (
                 <div key={m}
-                  className={`att-month-card${mi===selMonth?' current':''}`}
+                  className={`att-month-card${mi === selMonth ? ' current' : ''}`}
                   onClick={() => {
                     setSelMonth(mi);
                     setActiveView('monthly');
                   }}>
-                  <div className="att-month-name">{m.slice(0,3)}</div>
+                  <div className="att-month-name">{m.slice(0, 3)}</div>
                   <div className="att-month-wd">{wd} days</div>
                   <div className="att-month-pct" style={{
                     color: avg >= 75 ? '#16a34a'
-                         : avg >= 50 ? '#d97706' : '#dc2626'
+                      : avg >= 50 ? '#d97706' : '#dc2626'
                   }}>
                     {avg}%
                   </div>
@@ -1015,7 +1017,7 @@ const Attendance = () => {
             })}
           </div>
 
-          <div className="att-table-scroll" style={{ marginTop:20 }}>
+          <div className="att-table-scroll" style={{ marginTop: 20 }}>
             <table className="att-summary-table">
               <thead>
                 <tr>
@@ -1033,19 +1035,18 @@ const Attendance = () => {
                   .filter(s =>
                     (!filterCat || s.emp.category === filterCat) &&
                     (!filterName || s.emp.name.toLowerCase()
-                        .includes(filterName.toLowerCase())))
+                      .includes(filterName.toLowerCase())))
                   .map((s, idx) => {
                     const pct = s.totalWorking > 0
                       ? Math.round(
-                          (s.totalPresent / s.totalWorking) * 100) : 0;
+                        (s.totalPresent / s.totalWorking) * 100) : 0;
                     return (
                       <tr key={s.emp.id}>
                         <td>{idx + 1}</td>
                         <td className="col-left">{s.emp.name}</td>
                         <td className="col-left">
-                          <span className={`att-cat-badge att-cat-${
-                            s.emp.category.toLowerCase().replace(/\s+/g,'-')
-                          }`}>
+                          <span className={`att-cat-badge att-cat-${s.emp.category.toLowerCase().replace(/\s+/g, '-')
+                            }`}>
                             {s.emp.category}
                           </span>
                         </td>
@@ -1060,16 +1061,16 @@ const Attendance = () => {
                           <div className="att-pct-inline">
                             <div className="att-pct-track sm">
                               <div className="att-pct-fill" style={{
-                                width:`${pct}%`,
+                                width: `${pct}%`,
                                 background: pct >= 75 ? '#16a34a'
-                                           : pct >= 50 ? '#d97706'
-                                           : '#dc2626'
+                                  : pct >= 50 ? '#d97706'
+                                    : '#dc2626'
                               }} />
                             </div>
                             <span style={{
                               color: pct >= 75 ? '#16a34a'
-                                   : pct >= 50 ? '#d97706' : '#dc2626',
-                              fontWeight:700
+                                : pct >= 50 ? '#d97706' : '#dc2626',
+                              fontWeight: 700
                             }}>
                               {pct}%
                             </span>

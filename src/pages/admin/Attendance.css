@@ -545,6 +545,21 @@
   color: #0369a1;
 }
 
+.att-cat-employee {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.att-cat-team-leader {
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+.att-cat-manager {
+  background: #faf5ff;
+  color: #6b21a8;
+}
+
 /* Status cells */
 .att-cell {
   width: 30px;
@@ -864,9 +879,9 @@
 }
 
 .att-summary-select.status-pending {
-    color: #fff;
-    background: #e53e3e;
-    border-color: #fde68a;
+  color: #fff;
+  background: #e53e3e;
+  border-color: #fde68a;
 }
 
 .att-summary-select.status-wip {
