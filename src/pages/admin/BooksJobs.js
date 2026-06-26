@@ -5,40 +5,40 @@ import { apiCall } from '../../utils/api';
 
 // ── Constants ─────────────────────────────────────────────────────
 const PDF_TYPES = [
-  'PRINT-PDF','SCANNED-PDF','WORD','XML','HTML','EPUB','INDISGN',
+  'PRINT-PDF', 'SCANNED-PDF', 'WORD', 'XML', 'HTML', 'EPUB', 'INDISGN',
 ];
 
 const COMPLEXITY_OPTIONS = [
-  { label: 'Simple',       color: '#22c55e' },
-  { label: 'Medium',       color: '#f59e0b' },
-  { label: 'Complex',      color: '#ef4444' },
+  { label: 'Simple', color: '#22c55e' },
+  { label: 'Medium', color: '#f59e0b' },
+  { label: 'Complex', color: '#ef4444' },
   { label: 'Heavy Complex', color: '#7c3aed' },
 ];
 
 const STATUS_OPTIONS = [
-  'FINISH','WIP','YTS','RTU','UPLOADED','PENDING','HOLD','QUERY',
+  'FINISH', 'WIP', 'YTS', 'RTU', 'UPLOADED', 'PENDING', 'HOLD', 'QUERY',
 ];
-const FILE_STATUS_OPTIONS   = ['UPLOADED','RTU','QUERY','HOLD'];
-const BILLING_STATUS_OPTIONS = ['CREDITED','PENDING','INVOICED'];
-const REF_TYPES = ['-','BE-REF','CH-REF','PE-REF','CH_BE-REF'];
+const FILE_STATUS_OPTIONS = ['UPLOADED', 'RTU', 'QUERY', 'HOLD'];
+const BILLING_STATUS_OPTIONS = ['CREDITED', 'PENDING', 'INVOICED'];
+const REF_TYPES = ['-', 'BE-REF', 'CH-REF', 'PE-REF', 'CH_BE-REF'];
 
 const ALL_BULK_FIELDS = [
-  { key: 'receiveDate', label: 'RECEIVED DATE',        mandatory: true  },
-  { key: 'jobId',       label: 'JOB ID',               mandatory: false },
-  { key: 'title',       label: 'TITLE NAME',            mandatory: true  },
-  { key: 'pageCount',   label: 'PAGE COUNT',            mandatory: true  },
-  { key: 'startMonth',  label: 'START MONTH',           mandatory: false },
-  { key: 'endMonth',    label: 'END MONTH',             mandatory: false },
-  { key: 'isbn',        label: 'XML ISBN',              mandatory: false },
-  { key: 'chapters',    label: 'NUMBER OF CHAPTERS',   mandatory: false },
-  { key: 'pdfType',     label: 'PDF INPUT TYPE',       mandatory: false },
-  { key: 'complexity',  label: 'COMPLEXITY',           mandatory: false },
-  { key: 'refType',     label: 'REFERENCE TYPE',       mandatory: false },
-  { key: 'status',      label: 'STATUS',               mandatory: false },
-  { key: 'fileStatus',  label: 'FILE STATUS',          mandatory: false },
-  { key: 'uploadDate',  label: 'UPLOADED DATE',        mandatory: false },
-  { key: 'billing',     label: 'BILLING STATUS',       mandatory: false },
-  { key: 'language',    label: 'LANGUAGE',             mandatory: false },
+  { key: 'receiveDate', label: 'RECEIVED DATE', mandatory: true },
+  { key: 'jobId', label: 'JOB ID', mandatory: false },
+  { key: 'title', label: 'TITLE NAME', mandatory: true },
+  { key: 'pageCount', label: 'PAGE COUNT', mandatory: true },
+  { key: 'startMonth', label: 'START MONTH', mandatory: false },
+  { key: 'endMonth', label: 'END MONTH', mandatory: false },
+  { key: 'isbn', label: 'XML ISBN', mandatory: false },
+  { key: 'chapters', label: 'NUMBER OF CHAPTERS', mandatory: false },
+  { key: 'pdfType', label: 'PDF INPUT TYPE', mandatory: false },
+  { key: 'complexity', label: 'COMPLEXITY', mandatory: false },
+  { key: 'refType', label: 'REFERENCE TYPE', mandatory: false },
+  { key: 'status', label: 'STATUS', mandatory: false },
+  { key: 'fileStatus', label: 'FILE STATUS', mandatory: false },
+  { key: 'uploadDate', label: 'UPLOADED DATE', mandatory: false },
+  { key: 'billing', label: 'BILLING STATUS', mandatory: false },
+  { key: 'language', label: 'LANGUAGE', mandatory: false },
 ];
 
 const EMPTY_FORM = {
@@ -52,34 +52,34 @@ const EMPTY_FORM = {
 const getComplexityClass = (value) => {
   if (!value) return '';
   const val = value.toLowerCase().replace(/\s+/g, '');
-  if (val.includes('simple'))       return 'complexity-simple';
-  if (val.includes('medium'))       return 'complexity-medium';
+  if (val.includes('simple')) return 'complexity-simple';
+  if (val.includes('medium')) return 'complexity-medium';
   if (val.includes('heavycomplex')) return 'complexity-heavycomplex';
-  if (val.includes('complex'))      return 'complexity-complex';
+  if (val.includes('complex')) return 'complexity-complex';
   return '';
 };
 
 const mapJob = (j) => ({
-  id:          j.id,
-  project:     j.projectName || '',
-  projectId:   j.projectId   || null,
-  processes:   j.processes   || [],
-  startMonth:  j.startMonth  || '',
-  endMonth:    j.endMonth    || '',
+  id: j.id,
+  project: j.projectName || '',
+  projectId: j.projectId || null,
+  processes: j.processes || [],
+  startMonth: j.startMonth || '',
+  endMonth: j.endMonth || '',
   receiveDate: j.receiveDate || '',
-  jobId:       j.jobIdCode   || '',
-  isbn:        j.xmlIsbn     || '',
-  title:       j.titleName   || '',
-  pageCount:   j.pageCount?.toString() || '',
-  chapters:    j.numberOfChapters?.toString() || '',
-  pdfType:     j.pdfInputType  || '',
-  complexity:  j.complexity    || '',
-  refType:     j.referenceType || '',
-  status:      j.status        || '',
-  fileStatus:  j.fileStatus    || '',
-  uploadDate:  j.uploadDate    || '',
-  billing:     j.billingStatus || '',
-  language:    j.language      || '',
+  jobId: j.jobIdCode || '',
+  isbn: j.xmlIsbn || '',
+  title: j.titleName || '',
+  pageCount: j.pageCount?.toString() || '',
+  chapters: j.numberOfChapters?.toString() || '',
+  pdfType: j.pdfInputType || '',
+  complexity: j.complexity || '',
+  refType: j.referenceType || '',
+  status: j.status || '',
+  fileStatus: j.fileStatus || '',
+  uploadDate: j.uploadDate || '',
+  billing: j.billingStatus || '',
+  language: j.language || '',
 });
 
 // ── Sub-components ────────────────────────────────────────────────
@@ -90,7 +90,6 @@ const ComplexityBadge = ({ value }) => {
     <span className="complexity-badge" style={{
       background: opt.color + '22',
       color: opt.color,
-      border: `1px solid ${opt.color}55`
     }}>
       {value}
     </span>
@@ -274,13 +273,13 @@ const JobForm = ({ form, onChange, projects = [] }) => (
 
 // ── Add Job Modal ─────────────────────────────────────────────────
 const AddJobModal = ({ onClose, onAdd, projects }) => {
-  const [form,   setForm]   = useState({ ...EMPTY_FORM });
+  const [form, setForm] = useState({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
   const change = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleCreate = async () => {
     if (!form.receiveDate || !form.title ||
-        !form.pageCount || !form.startMonth || !form.endMonth) {
+      !form.pageCount || !form.startMonth || !form.endMonth) {
       alert('Please fill required fields: Receive Date, Start Month, End Month, Title Name, Page Count.');
       return;
     }
@@ -312,32 +311,32 @@ const AddJobModal = ({ onClose, onAdd, projects }) => {
 
 // ── Edit Job Modal ────────────────────────────────────────────────
 const EditJobModal = ({ job, onClose, onUpdate, projects }) => {
-  const [form,   setForm]   = useState({
-    project:     job.project,
-    projectId:   job.projectId,
-    startMonth:  job.startMonth  || '',
-    endMonth:    job.endMonth    || '',
+  const [form, setForm] = useState({
+    project: job.project,
+    projectId: job.projectId,
+    startMonth: job.startMonth || '',
+    endMonth: job.endMonth || '',
     receiveDate: job.receiveDate || '',
-    jobId:       job.jobId       || '',
-    isbn:        job.isbn        || '',
-    title:       job.title       || '',
-    pageCount:   job.pageCount   || '',
-    chapters:    job.chapters    || '',
-    pdfType:     job.pdfType     || '',
-    complexity:  job.complexity  || '',
-    refType:     job.refType     || '',
-    status:      job.status      || '',
-    fileStatus:  job.fileStatus  || '',
-    uploadDate:  job.uploadDate  || '',
-    billing:     job.billing     || '',
-    language:    job.language    || '',
+    jobId: job.jobId || '',
+    isbn: job.isbn || '',
+    title: job.title || '',
+    pageCount: job.pageCount || '',
+    chapters: job.chapters || '',
+    pdfType: job.pdfType || '',
+    complexity: job.complexity || '',
+    refType: job.refType || '',
+    status: job.status || '',
+    fileStatus: job.fileStatus || '',
+    uploadDate: job.uploadDate || '',
+    billing: job.billing || '',
+    language: job.language || '',
   });
   const [saving, setSaving] = useState(false);
   const change = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const handleUpdate = async () => {
     if (!form.receiveDate || !form.title ||
-        !form.pageCount || !form.startMonth || !form.endMonth) {
+      !form.pageCount || !form.startMonth || !form.endMonth) {
       alert('Please fill required fields.');
       return;
     }
@@ -389,10 +388,10 @@ const DeleteJobModal = ({ job, onClose, onDelete }) => (
 // ── Reconfirm Delete Modal ────────────────────────────────────────
 const ReconfirmDeleteModal = ({ job, onClose, onDelete }) => {
   const [inputText, setInputText] = useState('');
-  const [deleting,  setDeleting]  = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const isValid = inputText.trim().toUpperCase() === 'DELETE'
-               || inputText.trim().toUpperCase() === 'YES';
+    || inputText.trim().toUpperCase() === 'YES';
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -446,14 +445,14 @@ const ReconfirmDeleteModal = ({ job, onClose, onDelete }) => {
 
 // ── Bulk Import Modal ─────────────────────────────────────────────
 const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
-  const [view,             setView]             = useState('main');
-  const [selectedProject,  setSelectedProject]  = useState('');
-  const [selectedProjId,   setSelectedProjId]   = useState(null);
-  const [orderedFields,    setOrderedFields]    = useState([]);
-  const [pasteText,        setPasteText]        = useState('');
-  const [parsedJobs,       setParsedJobs]       = useState([]);
-  const [importing,        setImporting]        = useState(false);
-  const [savingSettings,   setSavingSettings]   = useState(false);
+  const [view, setView] = useState('main');
+  const [selectedProject, setSelectedProject] = useState('');
+  const [selectedProjId, setSelectedProjId] = useState(null);
+  const [orderedFields, setOrderedFields] = useState([]);
+  const [pasteText, setPasteText] = useState('');
+  const [parsedJobs, setParsedJobs] = useState([]);
+  const [importing, setImporting] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   // Load saved field mapping from backend when project changes
   useEffect(() => {
@@ -506,7 +505,7 @@ const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
   };
 
   const getEffectiveFields = () => {
-    const fields  = orderedFields.map(
+    const fields = orderedFields.map(
       key => ALL_BULK_FIELDS.find(f => f.key === key)
     ).filter(Boolean);
     const missing = ALL_BULK_FIELDS.filter(
@@ -596,17 +595,17 @@ const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
       );
 
       const result = await apiCall('/jobs/bulk-import', 'POST', {
-        projectId:  selectedProjId,
+        projectId: selectedProjId,
         rows,
         fieldOrder: effectiveFields.map(f => f.key),
       });
 
       if (result.failedRows > 0) {
         alert(`Import complete: ${result.successfulRows} success, ` +
-              `${result.failedRows} skipped/failed.\n` +
-              result.errors.slice(0, 5)
-                .map(e => `Row ${e.rowNumber}: ${e.message}`)
-                .join('\n'));
+          `${result.failedRows} skipped/failed.\n` +
+          result.errors.slice(0, 5)
+            .map(e => `Row ${e.rowNumber}: ${e.message}`)
+            .join('\n'));
       } else {
         alert(`✅ Successfully imported ${result.successfulRows} jobs.`);
       }
@@ -644,11 +643,11 @@ const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
           </div>
 
           <div className="bj-bulk-project-selector">
-            <div className="bj-form-group" style={{ flex:1, marginBottom:0 }}>
+            <div className="bj-form-group" style={{ flex: 1, marginBottom: 0 }}>
               <label>
                 Project (Publisher) <span className="req">*</span>
               </label>
-              <div style={{ display:'flex', gap:'10px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <select
                   value={selectedProjId || ''}
                   onChange={e => {
@@ -682,8 +681,8 @@ const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
                 headers below!
               </div>
               <div className="bj-table-wrapper" style={{
-                maxHeight:'50vh', overflowY:'auto',
-                border:'1px solid #e2e8f0'
+                maxHeight: '50vh', overflowY: 'auto',
+                border: '1px solid #e2e8f0'
               }}>
                 <table className="bj-table bj-bulk-table">
                   <thead>
@@ -756,7 +755,7 @@ const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
             </div>
           ) : (
             <div className="bj-empty-state">
-              <span style={{ fontSize:'2.5rem' }}>📂</span>
+              <span style={{ fontSize: '2.5rem' }}>📂</span>
               <p>Please select a Project to begin bulk importing.</p>
             </div>
           )}
@@ -839,11 +838,11 @@ const BulkImportModal = ({ onClose, onBulkAdd, projects }) => {
 // MAIN COMPONENT
 // ═════════════════════════════════════════════════════════════════
 const BooksJobs = () => {
-  const [jobs,               setJobs]               = useState([]);
-  const [projects,           setProjects]           = useState([]);
-  const [loading,            setLoading]            = useState(true);
-  const [error,              setError]              = useState('');
-  const [modal,              setModal]              = useState(null);
+  const [jobs, setJobs] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [modal, setModal] = useState(null);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   // Filter state (un-applied until Search clicked)
@@ -857,10 +856,10 @@ const BooksJobs = () => {
   const setF = (k, v) => setFilters(p => ({ ...p, [k]: v }));
 
   // Pagination
-  const [page,       setPage]       = useState(0);
+  const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const PAGE_SIZE = 50;
+  const [pageSize, setPageSize] = useState(50);
 
   // ── Load projects for dropdowns ─────────────────────────────
   const loadProjects = useCallback(async () => {
@@ -873,7 +872,7 @@ const BooksJobs = () => {
   }, []);
 
   // ── Load jobs with filters ──────────────────────────────────
-  const loadJobs = useCallback(async (pageNum = 0, filterOverride) => {
+  const loadJobs = useCallback(async (pageNum = 0, filterOverride, size = pageSize) => {
     const activeFilters = filterOverride !== undefined ? filterOverride : applied;
     try {
       setLoading(true);
@@ -881,16 +880,16 @@ const BooksJobs = () => {
 
       const params = new URLSearchParams({
         page: pageNum,
-        size: PAGE_SIZE,
-        ...(activeFilters.projectId  && { projectId:      activeFilters.projectId  }),
-        ...(activeFilters.jobId      && { jobIdCode:       activeFilters.jobId      }),
-        ...(activeFilters.isbn       && { xmlIsbn:         activeFilters.isbn       }),
-        ...(activeFilters.startMonth && { startMonthFrom:  activeFilters.startMonth }),
-        ...(activeFilters.endMonth   && { startMonthTo:    activeFilters.endMonth   }),
-        ...(activeFilters.status     && { status:          activeFilters.status     }),
-        ...(activeFilters.billing    && { billingStatus:   activeFilters.billing    }),
-        ...(activeFilters.complexity && { complexity:      activeFilters.complexity }),
-        ...(activeFilters.fileStatus && { fileStatus:      activeFilters.fileStatus }),
+        size: size,
+        ...(activeFilters.projectId && { projectId: activeFilters.projectId }),
+        ...(activeFilters.jobId && { jobIdCode: activeFilters.jobId }),
+        ...(activeFilters.isbn && { xmlIsbn: activeFilters.isbn }),
+        ...(activeFilters.startMonth && { startMonthFrom: activeFilters.startMonth }),
+        ...(activeFilters.endMonth && { startMonthTo: activeFilters.endMonth }),
+        ...(activeFilters.status && { status: activeFilters.status }),
+        ...(activeFilters.billing && { billingStatus: activeFilters.billing }),
+        ...(activeFilters.complexity && { complexity: activeFilters.complexity }),
+        ...(activeFilters.fileStatus && { fileStatus: activeFilters.fileStatus }),
       });
 
       const data = await apiCall(`/jobs/search?${params}`);
@@ -903,7 +902,7 @@ const BooksJobs = () => {
     } finally {
       setLoading(false);
     }
-  }, [applied]);
+  }, [applied, pageSize]);
 
   useEffect(() => {
     loadProjects();
@@ -914,11 +913,11 @@ const BooksJobs = () => {
   const rows = jobs;
 
   // ── Scroll sync refs ────────────────────────────────────────
-  const topScrollRef    = React.useRef(null);
+  const topScrollRef = React.useRef(null);
   const bottomScrollRef = React.useRef(null);
 
   useEffect(() => {
-    const topEl    = topScrollRef.current;
+    const topEl = topScrollRef.current;
     const bottomEl = bottomScrollRef.current;
     if (!topEl || !bottomEl) return;
     const ro = new ResizeObserver(() => {
@@ -930,7 +929,7 @@ const BooksJobs = () => {
     });
     ro.observe(bottomEl);
     let syncT = false, syncB = false;
-    const onTop    = () => { if (!syncB) { syncT = true; bottomEl.scrollLeft = topEl.scrollLeft; syncT = false; } };
+    const onTop = () => { if (!syncB) { syncT = true; bottomEl.scrollLeft = topEl.scrollLeft; syncT = false; } };
     const onBottom = () => { if (!syncT) { syncB = true; topEl.scrollLeft = bottomEl.scrollLeft; syncB = false; } };
     topEl.addEventListener('scroll', onTop);
     bottomEl.addEventListener('scroll', onBottom);
@@ -941,52 +940,52 @@ const BooksJobs = () => {
     };
   }, [rows]);
 
-  const open  = (type, job = null) => setModal({ type, job });
-  const close = ()                  => setModal(null);
+  const open = (type, job = null) => setModal({ type, job });
+  const close = () => setModal(null);
 
   // ── CRUD handlers ───────────────────────────────────────────
   const handleAdd = async (form) => {
     await apiCall('/jobs', 'POST', {
-      projectId:        form.projectId  || null,
-      jobIdCode:        form.jobId,
-      xmlIsbn:          form.isbn       || null,
-      titleName:        form.title,
-      pageCount:        parseInt(form.pageCount)  || 0,
-      numberOfChapters: parseInt(form.chapters)   || null,
-      pdfInputType:     form.pdfType    || null,
-      complexity:       form.complexity || null,
-      referenceType:    form.refType    || null,
-      status:           form.status     || null,
-      fileStatus:       form.fileStatus || null,
-      uploadDate:       form.uploadDate || null,
-      billingStatus:    form.billing    || 'PENDING',
-      receiveDate:      form.receiveDate || null,
-      startMonth:       form.startMonth  || null,
-      endMonth:         form.endMonth    || null,
-      language:         form.language    || null,
+      projectId: form.projectId || null,
+      jobIdCode: form.jobId,
+      xmlIsbn: form.isbn || null,
+      titleName: form.title,
+      pageCount: parseInt(form.pageCount) || 0,
+      numberOfChapters: parseInt(form.chapters) || null,
+      pdfInputType: form.pdfType || null,
+      complexity: form.complexity || null,
+      referenceType: form.refType || null,
+      status: form.status || null,
+      fileStatus: form.fileStatus || null,
+      uploadDate: form.uploadDate || null,
+      billingStatus: form.billing || 'PENDING',
+      receiveDate: form.receiveDate || null,
+      startMonth: form.startMonth || null,
+      endMonth: form.endMonth || null,
+      language: form.language || null,
     });
     await loadJobs(0);
   };
 
   const handleUpdate = async (id, form) => {
     await apiCall(`/jobs/${id}`, 'PUT', {
-      projectId:        form.projectId  || null,
-      jobIdCode:        form.jobId,
-      xmlIsbn:          form.isbn       || null,
-      titleName:        form.title,
-      pageCount:        parseInt(form.pageCount)  || 0,
-      numberOfChapters: parseInt(form.chapters)   || null,
-      pdfInputType:     form.pdfType    || null,
-      complexity:       form.complexity || null,
-      referenceType:    form.refType    || null,
-      status:           form.status     || null,
-      fileStatus:       form.fileStatus || null,
-      uploadDate:       form.uploadDate || null,
-      billingStatus:    form.billing    || null,
-      receiveDate:      form.receiveDate || null,
-      startMonth:       form.startMonth  || null,
-      endMonth:         form.endMonth    || null,
-      language:         form.language    || null,
+      projectId: form.projectId || null,
+      jobIdCode: form.jobId,
+      xmlIsbn: form.isbn || null,
+      titleName: form.title,
+      pageCount: parseInt(form.pageCount) || 0,
+      numberOfChapters: parseInt(form.chapters) || null,
+      pdfInputType: form.pdfType || null,
+      complexity: form.complexity || null,
+      referenceType: form.refType || null,
+      status: form.status || null,
+      fileStatus: form.fileStatus || null,
+      uploadDate: form.uploadDate || null,
+      billingStatus: form.billing || null,
+      receiveDate: form.receiveDate || null,
+      startMonth: form.startMonth || null,
+      endMonth: form.endMonth || null,
+      language: form.language || null,
     });
     await loadJobs(page);
     close();
@@ -1055,13 +1054,13 @@ const BooksJobs = () => {
         <th>Billing</th>
       </tr></thead><tbody>
       ${rows.map(j => `<tr>
-        <td>${j.project||'-'}</td><td>${fmt(j.receiveDate)}</td>
-        <td><b>${j.jobId||'-'}</b></td><td>${j.isbn||'-'}</td>
-        <td>${j.language||'-'}</td><td>${j.title||'-'}</td><td>${j.pageCount||'-'}</td>
-        <td>${j.pdfType||'-'}</td><td>${j.complexity||'-'}</td>
-        <td>${j.refType||'-'}</td><td>${j.status||'-'}</td>
-        <td>${j.fileStatus||'-'}</td><td>${fmt(j.uploadDate)}</td>
-        <td>${j.billing||'-'}</td>
+        <td>${j.project || '-'}</td><td>${fmt(j.receiveDate)}</td>
+        <td><b>${j.jobId || '-'}</b></td><td>${j.isbn || '-'}</td>
+        <td>${j.language || '-'}</td><td>${j.title || '-'}</td><td>${j.pageCount || '-'}</td>
+        <td>${j.pdfType || '-'}</td><td>${j.complexity || '-'}</td>
+        <td>${j.refType || '-'}</td><td>${j.status || '-'}</td>
+        <td>${j.fileStatus || '-'}</td><td>${fmt(j.uploadDate)}</td>
+        <td>${j.billing || '-'}</td>
       </tr>`).join('')}
       </tbody></table>
       <script>window.onload=()=>{window.print();window.close()}</script>
@@ -1072,17 +1071,17 @@ const BooksJobs = () => {
 
   const exportExcel = () => {
     const headers = [
-      'Project','Receive Date','Job ID','XML ISBN','Language','Title Name',
-      'Page Count','PDF Type','Complexity','Ref Type','Status',
-      'File Status','Upload Date','Billing Status'
+      'Project', 'Receive Date', 'Job ID', 'XML ISBN', 'Language', 'Title Name',
+      'Page Count', 'PDF Type', 'Complexity', 'Ref Type', 'Status',
+      'File Status', 'Upload Date', 'Billing Status'
     ];
     const csvRows = rows.map(j => [
-      `"${j.project||''}"`, j.receiveDate ? fmt(j.receiveDate) : '',
-      `"${j.jobId||''}"`, `"${j.isbn||''}"`, `"${j.language||''}"`, `"${j.title||''}"`,
-      j.pageCount||'', `"${j.pdfType||''}"`, `"${j.complexity||''}"`,
-      `"${j.refType||''}"`, `"${j.status||''}"`,
-      `"${j.fileStatus||''}"`, j.uploadDate ? fmt(j.uploadDate) : '',
-      `"${j.billing||''}"`
+      `"${j.project || ''}"`, j.receiveDate ? fmt(j.receiveDate) : '',
+      `"${j.jobId || ''}"`, `"${j.isbn || ''}"`, `"${j.language || ''}"`, `"${j.title || ''}"`,
+      j.pageCount || '', `"${j.pdfType || ''}"`, `"${j.complexity || ''}"`,
+      `"${j.refType || ''}"`, `"${j.status || ''}"`,
+      `"${j.fileStatus || ''}"`, j.uploadDate ? fmt(j.uploadDate) : '',
+      `"${j.billing || ''}"`
     ].join(','));
     const blob = new Blob(
       ['\ufeff' + [headers.join(','), ...csvRows].join('\n')],
@@ -1246,11 +1245,11 @@ const BooksJobs = () => {
 
       {/* ── Table ── */}
       {loading ? (
-        <div style={{ padding:'40px', textAlign:'center', color:'#888' }}>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
           Loading jobs...
         </div>
       ) : error ? (
-        <div style={{ padding:'40px', textAlign:'center', color:'red' }}>
+        <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>
           {error}
         </div>
       ) : (
@@ -1309,7 +1308,7 @@ const BooksJobs = () => {
                         : <span className="cell-dash">-</span>}
                     </td>
                     <td>
-                      {job.language || <span className="cell-dash">-</span>}
+                      {job.language ? <strong>{job.language}</strong> : <span className="cell-dash">-</span>}
                     </td>
                     <td className="td-title col-left">
                       {job.title || <span className="cell-dash">-</span>}
@@ -1336,8 +1335,8 @@ const BooksJobs = () => {
                     <td>
                       {job.billing
                         ? <span className={`billing-badge bb-${job.billing.toLowerCase()}`}>
-                            {job.billing}
-                          </span>
+                          {job.billing}
+                        </span>
                         : <span className="cell-pink">-</span>}
                     </td>
                     <td>
@@ -1355,26 +1354,58 @@ const BooksJobs = () => {
           </div>
 
           {/* Pagination */}
-          {totalPages > 1 && (
+          {totalItems > 0 && (
             <div style={{
-              display:'flex', justifyContent:'center',
-              gap:'8px', padding:'16px'
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '16px',
+              borderTop: '1px solid #e2e8f0',
+              flexWrap: 'wrap',
+              gap: '12px'
             }}>
-              <button
-                className="bj-search-btn"
-                disabled={page === 0}
-                onClick={() => loadJobs(page - 1)}
-                style={{ padding:'6px 14px' }}
-              >‹ Prev</button>
-              <span style={{ padding:'6px 12px', color:'#666' }}>
-                Page {page + 1} of {totalPages}
-              </span>
-              <button
-                className="bj-search-btn"
-                disabled={page >= totalPages - 1}
-                onClick={() => loadJobs(page + 1)}
-                style={{ padding:'6px 14px' }}
-              >Next ›</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ fontSize: '0.85rem', color: '#4a5568' }}>Items per page:</label>
+                <select
+                  value={pageSize}
+                  onChange={e => {
+                    const newSize = Number(e.target.value);
+                    setPageSize(newSize);
+                    loadJobs(0, applied, newSize);
+                  }}
+                  style={{
+                    padding: '4px 8px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '4px',
+                    outline: 'none',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  {[10, 25, 50, 100].map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    className="bj-search-btn"
+                    disabled={page === 0}
+                    onClick={() => loadJobs(page - 1)}
+                    style={{ padding: '6px 14px' }}
+                  >‹ Prev</button>
+                  <span style={{ padding: '6px 12px', color: '#666', fontSize: '0.85rem' }}>
+                    Page {page + 1} of {totalPages}
+                  </span>
+                  <button
+                    className="bj-search-btn"
+                    disabled={page >= totalPages - 1}
+                    onClick={() => loadJobs(page + 1)}
+                    style={{ padding: '6px 14px' }}
+                  >Next ›</button>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -5,73 +5,74 @@ import { apiCall } from "../../utils/api";
 
 // ── Constants ─────────────────────────────────────────────────────
 const RESOURCES_LIST = [
-  { id: "employees",   label: "Users/Employees",    icon: "👥" },
-  { id: "attendance",  label: "Attendance",          icon: "📅" },
-  { id: "projects",    label: "Projects",            icon: "📁" },
-  { id: "jobs",        label: "Jobs",                icon: "🗂️" },
-  { id: "leaves",      label: "Leaves",              icon: "🏖️" },
-  { id: "tags",        label: "Tags",                icon: "🏷️" },
-  { id: "tasks",       label: "Tasks",               icon: "✅" },
-  { id: "processes",   label: "Processes",           icon: "⚙️" },
-  { id: "shifts",      label: "Shifts",              icon: "⏱️" },
-  { id: "timelogs",    label: "Time Logs",           icon: "➡️" },
-  { id: "reports",     label: "Reports",             icon: "📈" },
-  { id: "activitylogs",label: "Activity Logs",       icon: "📋" },
-  { id: "roles",       label: "Roles & Permissions", icon: "🔐" },
-  { id: "invoices",    label: "Invoices",            icon: "💰" },
+  { id: "employees", label: "Users/Employees", icon: "👥" },
+  { id: "attendance", label: "Attendance", icon: "📅" },
+  { id: "projects", label: "Projects", icon: "📁" },
+  { id: "jobs", label: "Jobs", icon: "🗂️" },
+  { id: "leaves", label: "Leaves", icon: "🏖️" },
+  { id: "tags", label: "Tags", icon: "🏷️" },
+  { id: "tasks", label: "Tasks", icon: "✅" },
+  { id: "processes", label: "Processes", icon: "⚙️" },
+  { id: "shifts", label: "Shifts", icon: "⏱️" },
+  { id: "timelogs", label: "Time Logs", icon: "➡️" },
+  { id: "reports", label: "Reports", icon: "📈" },
+  { id: "activitylogs", label: "Activity Logs", icon: "📋" },
+  { id: "roles", label: "Roles & Permissions", icon: "🔐" },
+  { id: "invoices", label: "Invoices", icon: "💰" },
 ];
 
 const ACTIONS_LIST = [
-  { id: "create",       label: "Create",       desc: "Create new records"     },
-  { id: "update",       label: "Update",       desc: "Edit existing records"  },
-  { id: "delete",       label: "Delete",       desc: "Delete records"         },
-  { id: "approve",      label: "Approve",      desc: "Approve requests"       },
-  { id: "export",       label: "Export",       desc: "Export data"            },
-  { id: "manage_roles", label: "Manage Roles", desc: "Assign roles to users"  },
-  { id: "manage_types", label: "Manage Types", desc: "Manage types/policies"  },
-  { id: "bulk_import",  label: "Bulk Import",  desc: "Bulk import data"       },
+  { id: "create", label: "Create", desc: "Create new records" },
+  { id: "update", label: "Update", desc: "Edit existing records" },
+  { id: "delete", label: "Delete", desc: "Delete records" },
+  { id: "approve", label: "Approve", desc: "Approve requests" },
+  { id: "export", label: "Export", desc: "Export data" },
+  { id: "manage_roles", label: "Manage Roles", desc: "Assign roles to users" },
+  { id: "manage_types", label: "Manage Types", desc: "Manage types/policies" },
+  { id: "bulk_import", label: "Bulk Import", desc: "Bulk import data" },
 ];
 
 // ── RolesPermission ───────────────────────────────────────────────
 const RolesPermission = () => {
-  const [roles,       setRoles]       = useState([]);
+  const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
-  const [loading,     setLoading]     = useState(true);
+  const [loading, setLoading] = useState(true);
 
   // Pagination for permissions
-  const [permPage,       setPermPage]       = useState(0);
+  const [permPage, setPermPage] = useState(0);
   const [permTotalPages, setPermTotalPages] = useState(0);
-  const [permTotal,      setPermTotal]      = useState(0);
-  const [permResource,   setPermResource]   = useState("");
+  const [permTotal, setPermTotal] = useState(0);
+  const [permResource, setPermResource] = useState("");
+  const [permSize, setPermSize] = useState(25);
 
   // Role modal
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-  const [editingRole,     setEditingRole]     = useState(null);
-  const [roleForm,        setRoleForm]        = useState({
+  const [editingRole, setEditingRole] = useState(null);
+  const [roleForm, setRoleForm] = useState({
     name: "", description: "", isActive: true
   });
-  const [roleSaving,  setRoleSaving]  = useState(false);
-  const [roleErrors,  setRoleErrors]  = useState({});
+  const [roleSaving, setRoleSaving] = useState(false);
+  const [roleErrors, setRoleErrors] = useState({});
 
   // Delete modal
-  const [isDeleteOpen,  setIsDeleteOpen]  = useState(false);
-  const [deletingRole,  setDeletingRole]  = useState(null);
-  const [deleting,      setDeleting]      = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deletingRole, setDeletingRole] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Assign permissions modal
-  const [isAssignOpen,      setIsAssignOpen]      = useState(false);
-  const [assigningRole,     setAssigningRole]     = useState(null);
-  const [selectedPermIds,   setSelectedPermIds]   = useState([]);
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [assigningRole, setAssigningRole] = useState(null);
+  const [selectedPermIds, setSelectedPermIds] = useState([]);
   const [allPermsForAssign, setAllPermsForAssign] = useState([]);
-  const [assignSaving,      setAssignSaving]      = useState(false);
+  const [assignSaving, setAssignSaving] = useState(false);
 
   // Create permission modal
   const [isPermModalOpen, setIsPermModalOpen] = useState(false);
-  const [permResources,   setPermResources]   = useState([]);
-  const [permActions,     setPermActions]     = useState([]);
-  const [permDesc,        setPermDesc]        = useState("");
-  const [permActive,      setPermActive]      = useState(true);
-  const [permSaving,      setPermSaving]      = useState(false);
+  const [permResources, setPermResources] = useState([]);
+  const [permActions, setPermActions] = useState([]);
+  const [permDesc, setPermDesc] = useState("");
+  const [permActive, setPermActive] = useState(true);
+  const [permSaving, setPermSaving] = useState(false);
 
   // ── Load data ─────────────────────────────────────────────────
   const loadRoles = useCallback(async () => {
@@ -81,9 +82,9 @@ const RolesPermission = () => {
     } catch (e) { console.error(e.message); }
   }, []);
 
-  const loadPermissions = useCallback(async (page = 0, resource = "") => {
+  const loadPermissions = useCallback(async (page = 0, resource = "", size = permSize) => {
     try {
-      const params = new URLSearchParams({ page, size: 25 });
+      const params = new URLSearchParams({ page, size });
       if (resource) params.set("resource", resource);
       const data = await apiCall(`/roles/permissions?${params}`);
       setPermissions(data.content || []);
@@ -91,7 +92,7 @@ const RolesPermission = () => {
       setPermTotal(data.totalElements || 0);
       setPermPage(page);
     } catch (e) { console.error(e.message); }
-  }, []);
+  }, [permSize]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -104,7 +105,7 @@ const RolesPermission = () => {
   // ── Role handlers ─────────────────────────────────────────────
   const openAddRole = () => {
     setEditingRole(null);
-    setRoleForm({ name:"", description:"", isActive:true });
+    setRoleForm({ name: "", description: "", isActive: true });
     setRoleErrors({});
     setIsRoleModalOpen(true);
   };
@@ -112,9 +113,9 @@ const RolesPermission = () => {
   const openEditRole = (role) => {
     setEditingRole(role);
     setRoleForm({
-      name:        role.name,
+      name: role.name,
       description: role.description || "",
-      isActive:    role.isActive,
+      isActive: role.isActive,
     });
     setRoleErrors({});
     setIsRoleModalOpen(true);
@@ -213,10 +214,10 @@ const RolesPermission = () => {
     setPermSaving(true);
     try {
       await apiCall("/roles/permissions", "POST", {
-        resources:   permResources,
-        actions:     permActions,
+        resources: permResources,
+        actions: permActions,
         description: permDesc || null,
-        isActive:    permActive,
+        isActive: permActive,
       });
       setIsPermModalOpen(false);
       await loadPermissions(0, permResource);
@@ -234,9 +235,9 @@ const RolesPermission = () => {
 
   const totalNewPerms = permResources.length * permActions.length;
   const allResourcesSel = permResources.length === RESOURCES_LIST.length;
-  const allActionsSel   = permActions.length   === ACTIONS_LIST.length;
-  const allAssignSel    = selectedPermIds.length === allPermsForAssign.length
-                          && allPermsForAssign.length > 0;
+  const allActionsSel = permActions.length === ACTIONS_LIST.length;
+  const allAssignSel = selectedPermIds.length === allPermsForAssign.length
+    && allPermsForAssign.length > 0;
 
   // ── Render ────────────────────────────────────────────────────
   return (
@@ -245,7 +246,7 @@ const RolesPermission = () => {
       {/* Header */}
       <div className="rp-header-bar">
         <h2>
-          <span role="img" aria-label="lock" style={{ marginRight:8 }}>
+          <span role="img" aria-label="lock" style={{ marginRight: 8 }}>
             🔐
           </span>
           Role & Permission Management
@@ -263,7 +264,7 @@ const RolesPermission = () => {
       </div>
 
       {loading ? (
-        <div style={{ padding:"40px", textAlign:"center", color:"#888" }}>
+        <div style={{ padding: "40px", textAlign: "center", color: "#888" }}>
           Loading...
         </div>
       ) : (
@@ -326,8 +327,10 @@ const RolesPermission = () => {
 
             <div className="rp-grid rp-permissions-grid">
               {permissions.length === 0 ? (
-                <div style={{ gridColumn:"1/-1", textAlign:"center",
-                              color:"#aaa", padding:"32px" }}>
+                <div style={{
+                  gridColumn: "1/-1", textAlign: "center",
+                  color: "#aaa", padding: "32px"
+                }}>
                   No permissions found.
                   {" "}Click "+ Add Permission" to create some.
                 </div>
@@ -345,7 +348,7 @@ const RolesPermission = () => {
                   </div>
                   <p className="rp-perm-desc">{perm.description}</p>
                   {!perm.isActive && (
-                    <span style={{ fontSize:"0.7rem", color:"#dc2626" }}>
+                    <span style={{ fontSize: "0.7rem", color: "#dc2626" }}>
                       Inactive
                     </span>
                   )}
@@ -354,33 +357,50 @@ const RolesPermission = () => {
             </div>
 
             {/* Permissions pagination */}
-            {permTotalPages > 1 && (
+            {permTotal > 0 && (
               <div className="rp-pagination">
+                <div className="rp-items-per-page">
+                  <label>Items per page:</label>
+                  <select
+                    value={permSize}
+                    onChange={e => {
+                      const newSize = Number(e.target.value);
+                      setPermSize(newSize);
+                      loadPermissions(0, permResource, newSize);
+                    }}
+                  >
+                    {[10, 25, 50, 100].map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="rp-pagination-info">
                   Page {permPage + 1} of {permTotalPages}
                   {" "}({permTotal} total)
                 </div>
-                <div className="rp-pagination-controls">
-                  <button disabled={permPage === 0}
-                    onClick={() => loadPermissions(
-                      permPage - 1, permResource)}>
-                    ‹
-                  </button>
-                  {Array.from(
-                    { length: Math.min(permTotalPages, 5) }, (_, i) => i
-                  ).map(n => (
-                    <button key={n}
-                      className={permPage === n ? "rp-active-page" : ""}
-                      onClick={() => loadPermissions(n, permResource)}>
-                      {n + 1}
+                {permTotalPages > 1 && (
+                  <div className="rp-pagination-controls">
+                    <button disabled={permPage === 0}
+                      onClick={() => loadPermissions(
+                        permPage - 1, permResource)}>
+                      ‹
                     </button>
-                  ))}
-                  <button disabled={permPage >= permTotalPages - 1}
-                    onClick={() => loadPermissions(
-                      permPage + 1, permResource)}>
-                    ›
-                  </button>
-                </div>
+                    {Array.from(
+                      { length: Math.min(permTotalPages, 5) }, (_, i) => i
+                    ).map(n => (
+                      <button key={n}
+                        className={permPage === n ? "rp-active-page" : ""}
+                        onClick={() => loadPermissions(n, permResource)}>
+                        {n + 1}
+                      </button>
+                    ))}
+                    <button disabled={permPage >= permTotalPages - 1}
+                      onClick={() => loadPermissions(
+                        permPage + 1, permResource)}>
+                      ›
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -428,14 +448,14 @@ const RolesPermission = () => {
             </div>
             <div className="rp-modal-body">
               <div className="rp-form-group">
-                <label>Name <span style={{ color:"red" }}>*</span></label>
+                <label>Name <span style={{ color: "red" }}>*</span></label>
                 <input type="text"
                   value={roleForm.name}
                   onChange={e => setRoleForm(p =>
                     ({ ...p, name: e.target.value }))}
                   placeholder="e.g., Manager, Viewer" />
                 {roleErrors.name && (
-                  <span style={{ color:"red", fontSize:"0.8rem" }}>
+                  <span style={{ color: "red", fontSize: "0.8rem" }}>
                     {roleErrors.name}
                   </span>
                 )}
@@ -476,14 +496,13 @@ const RolesPermission = () => {
           <div className="rp-modal rp-modal-lg">
             <div className="rp-modal-header">
               <h2>Assign Permissions to {assigningRole?.name}</h2>
-              <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                <span style={{ fontSize:"0.82rem", color:"#6b7280" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: "0.82rem", color: "#6b7280" }}>
                   {selectedPermIds.length}/{allPermsForAssign.length} selected
                 </span>
                 <button
-                  className={`rp-btn rp-btn-select-all ${
-                    allAssignSel ? "rp-btn-deselect" : ""
-                  }`}
+                  className={`rp-btn rp-btn-select-all ${allAssignSel ? "rp-btn-deselect" : ""
+                    }`}
                   onClick={toggleAllPerms}>
                   {allAssignSel ? "✕ Deselect All" : "✓ Select All"}
                 </button>
@@ -496,21 +515,20 @@ const RolesPermission = () => {
                   p => p.resource === res.id);
                 if (resPerms.length === 0) return null;
                 return (
-                  <div key={res.id} style={{ marginBottom:16 }}>
+                  <div key={res.id} style={{ marginBottom: 16 }}>
                     <div style={{
-                      fontWeight:600, fontSize:"0.8rem",
-                      color:"#6b7280", marginBottom:6,
-                      textTransform:"uppercase", letterSpacing:"0.05em"
+                      fontWeight: 600, fontSize: "0.8rem",
+                      color: "#6b7280", marginBottom: 6,
+                      textTransform: "uppercase", letterSpacing: "0.05em"
                     }}>
                       {res.icon} {res.label}
                     </div>
                     <div className="rp-grid rp-assign-perm-grid">
                       {resPerms.map(perm => (
                         <div key={perm.id}
-                          className={`rp-assign-perm-item ${
-                            selectedPermIds.includes(perm.id)
+                          className={`rp-assign-perm-item ${selectedPermIds.includes(perm.id)
                               ? "selected" : ""
-                          }`}
+                            }`}
                           onClick={() => toggleAssignPerm(perm.id)}>
                           <input type="checkbox"
                             checked={selectedPermIds.includes(perm.id)}
@@ -538,18 +556,17 @@ const RolesPermission = () => {
                 return (
                   <div>
                     <div style={{
-                      fontWeight:600, fontSize:"0.8rem",
-                      color:"#6b7280", marginBottom:6
+                      fontWeight: 600, fontSize: "0.8rem",
+                      color: "#6b7280", marginBottom: 6
                     }}>
                       Other
                     </div>
                     <div className="rp-grid rp-assign-perm-grid">
                       {others.map(perm => (
                         <div key={perm.id}
-                          className={`rp-assign-perm-item ${
-                            selectedPermIds.includes(perm.id)
+                          className={`rp-assign-perm-item ${selectedPermIds.includes(perm.id)
                               ? "selected" : ""
-                          }`}
+                            }`}
                           onClick={() => toggleAssignPerm(perm.id)}>
                           <input type="checkbox"
                             checked={selectedPermIds.includes(perm.id)}
@@ -596,9 +613,8 @@ const RolesPermission = () => {
                 <div className="rp-step-header">
                   <h4>Step 1: Select Resource</h4>
                   <button
-                    className={`rp-btn rp-btn-select-all ${
-                      allResourcesSel ? "rp-btn-deselect" : ""
-                    }`}
+                    className={`rp-btn rp-btn-select-all ${allResourcesSel ? "rp-btn-deselect" : ""
+                      }`}
                     onClick={() => setPermResources(
                       allResourcesSel
                         ? []
@@ -610,9 +626,8 @@ const RolesPermission = () => {
                 <div className="rp-resource-grid">
                   {RESOURCES_LIST.map(res => (
                     <div key={res.id}
-                      className={`rp-resource-item ${
-                        permResources.includes(res.id) ? "selected" : ""
-                      }`}
+                      className={`rp-resource-item ${permResources.includes(res.id) ? "selected" : ""
+                        }`}
                       onClick={() => toggleResource(res.id)}>
                       <input type="checkbox"
                         checked={permResources.includes(res.id)}
@@ -631,13 +646,12 @@ const RolesPermission = () => {
               </div>
 
               {/* Step 2: Actions */}
-              <div className="rp-step-section" style={{ marginTop:20 }}>
+              <div className="rp-step-section" style={{ marginTop: 20 }}>
                 <div className="rp-step-header">
                   <h4>Step 2: Select Actions</h4>
                   <button
-                    className={`rp-btn rp-btn-select-all ${
-                      allActionsSel ? "rp-btn-deselect" : ""
-                    }`}
+                    className={`rp-btn rp-btn-select-all ${allActionsSel ? "rp-btn-deselect" : ""
+                      }`}
                     onClick={() => setPermActions(
                       allActionsSel
                         ? []
@@ -649,9 +663,8 @@ const RolesPermission = () => {
                 <div className="rp-action-grid">
                   {ACTIONS_LIST.map(action => (
                     <div key={action.id}
-                      className={`rp-action-item ${
-                        permActions.includes(action.id) ? "selected" : ""
-                      }`}
+                      className={`rp-action-item ${permActions.includes(action.id) ? "selected" : ""
+                        }`}
                       onClick={() => toggleAction(action.id)}>
                       <input type="checkbox"
                         checked={permActions.includes(action.id)}
@@ -678,7 +691,7 @@ const RolesPermission = () => {
               {/* Preview */}
               {totalNewPerms > 0 && (
                 <>
-                  <div className="rp-summary-box" style={{ marginTop:20 }}>
+                  <div className="rp-summary-box" style={{ marginTop: 20 }}>
                     <p>
                       <strong>Resources:</strong>{" "}
                       {permResources.map(r =>
@@ -698,7 +711,7 @@ const RolesPermission = () => {
                     </p>
                   </div>
 
-                  <div className="rp-generated-box" style={{ marginTop:16 }}>
+                  <div className="rp-generated-box" style={{ marginTop: 16 }}>
                     <h5>📝 Auto-generated Names:</h5>
                     <div className="rp-generated-list">
                       {permResources.map(resource =>
@@ -714,7 +727,7 @@ const RolesPermission = () => {
                 </>
               )}
 
-              <div className="rp-form-group" style={{ marginTop:16 }}>
+              <div className="rp-form-group" style={{ marginTop: 16 }}>
                 <label>Description (Optional)</label>
                 <textarea rows={3}
                   value={permDesc}
@@ -722,7 +735,7 @@ const RolesPermission = () => {
                   placeholder="Optional description for these permissions" />
               </div>
 
-              <div className="rp-form-checkbox" style={{ marginTop:8 }}>
+              <div className="rp-form-checkbox" style={{ marginTop: 8 }}>
                 <input type="checkbox" id="permActive"
                   checked={permActive}
                   onChange={e => setPermActive(e.target.checked)} />

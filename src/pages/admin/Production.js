@@ -8,9 +8,9 @@ const STATUS_OPTIONS = [
 ];
 
 const COMPLEXITY_OPTIONS = [
-  { label: 'Simple',       color: '#22c55e' },
-  { label: 'Medium',       color: '#f59e0b' },
-  { label: 'Complex',      color: '#ef4444' },
+  { label: 'Simple', color: '#22c55e' },
+  { label: 'Medium', color: '#f59e0b' },
+  { label: 'Complex', color: '#ef4444' },
   { label: 'Heavy Complex', color: '#7c3aed' },
 ];
 
@@ -53,14 +53,14 @@ const Production = () => {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
-  const PAGE_SIZE = 50;
+  const [pageSize, setPageSize] = useState(50);
 
   // Unsaved Edits State: { [jobId]: { processStatus, qcStatus, endDate } }
   const [edits, setEdits] = useState({});
   const [savingRows, setSavingRows] = useState({}); // { [jobId]: boolean }
   const [successRows, setSuccessRows] = useState({}); // { [jobId]: boolean }
 
-  const topScrollRef    = React.useRef(null);
+  const topScrollRef = React.useRef(null);
   const bottomScrollRef = React.useRef(null);
 
   // ── Load projects for dropdown ─────────────────────────────────────
@@ -74,7 +74,7 @@ const Production = () => {
   }, []);
 
   // ── Load production jobs ──────────────────────────────────────────
-  const loadProductionJobs = useCallback(async (pageNum = 0, filterOverride) => {
+  const loadProductionJobs = useCallback(async (pageNum = 0, filterOverride, size = pageSize) => {
     const activeFilters = filterOverride !== undefined ? filterOverride : appliedFilters;
     try {
       setLoading(true);
@@ -82,7 +82,7 @@ const Production = () => {
 
       const params = new URLSearchParams({
         page: pageNum,
-        size: PAGE_SIZE,
+        size: size,
         ...(activeFilters.projectId && { projectId: activeFilters.projectId }),
         ...(activeFilters.startDate && { startDate: activeFilters.startDate }),
         ...(activeFilters.endDate && { endDate: activeFilters.endDate }),
@@ -101,7 +101,7 @@ const Production = () => {
     } finally {
       setLoading(false);
     }
-  }, [appliedFilters]);
+  }, [appliedFilters, pageSize]);
 
   useEffect(() => {
     loadProjects();
@@ -109,7 +109,7 @@ const Production = () => {
   }, [loadProjects, loadProductionJobs]);
 
   useEffect(() => {
-    const topEl    = topScrollRef.current;
+    const topEl = topScrollRef.current;
     const bottomEl = bottomScrollRef.current;
     if (!topEl || !bottomEl) return;
     const ro = new ResizeObserver(() => {
@@ -121,7 +121,7 @@ const Production = () => {
     });
     ro.observe(bottomEl);
     let syncT = false, syncB = false;
-    const onTop    = () => { if (!syncB) { syncT = true; bottomEl.scrollLeft = topEl.scrollLeft; syncT = false; } };
+    const onTop = () => { if (!syncB) { syncT = true; bottomEl.scrollLeft = topEl.scrollLeft; syncT = false; } };
     const onBottom = () => { if (!syncT) { syncB = true; topEl.scrollLeft = bottomEl.scrollLeft; syncB = false; } };
     topEl.addEventListener('scroll', onTop);
     bottomEl.addEventListener('scroll', onBottom);
@@ -464,6 +464,30 @@ const Production = () => {
 
             {/* Pagination footer */}
             <div className="table-pagination-footer">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Items per page:</label>
+                <select
+                  value={pageSize}
+                  onChange={e => {
+                    const newSize = Number(e.target.value);
+                    setPageSize(newSize);
+                    loadProductionJobs(0, appliedFilters, newSize);
+                  }}
+                  style={{
+                    padding: '4px 8px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    outline: 'none',
+                    fontSize: '0.8rem',
+                    backgroundColor: '#ffffff',
+                    color: '#334155'
+                  }}
+                >
+                  {[10, 25, 50, 100].map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
               <span className="pagination-info">
                 Showing page <strong>{page + 1}</strong> of <strong>{totalPages || 1}</strong> ({totalItems} items)
               </span>

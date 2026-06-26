@@ -5,7 +5,7 @@ import './EmpWorkwise.css';
 import { apiCall } from '../../utils/api';
 
 // ── Constants ─────────────────────────────────────────────────────
-const BREAK_REASONS   = ['Tea Break', 'Lunch Break', 'Restroom', 'Other'];
+const BREAK_REASONS = ['Tea Break', 'Lunch Break', 'Restroom', 'Other'];
 const ON_HOLD_REASONS = ['Client query', 'Rework', 'Need update', 'Others'];
 
 // Must match time_logs.status DB CHECK constraint
@@ -17,12 +17,12 @@ const LOG_STATUSES = [
 // ── Helpers ───────────────────────────────────────────────────────
 const fmt = (s) => {
   if (!s && s !== 0) return '00 : 00 : 00';
-  const h   = Math.floor(s / 3600);
-  const m   = Math.floor((s % 3600) / 60);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
-  return `${String(h).padStart(2,'0')} : `
-       + `${String(m).padStart(2,'0')} : `
-       + `${String(sec).padStart(2,'0')}`;
+  return `${String(h).padStart(2, '0')} : `
+    + `${String(m).padStart(2, '0')} : `
+    + `${String(sec).padStart(2, '0')}`;
 };
 
 const fmtDate = (d) => {
@@ -50,11 +50,11 @@ const formatTime = (isoString) => {
 
 const chipClass = (s) => {
   const v = (s || '').toUpperCase();
-  if (['FINISH','COMPLETED'].includes(v)) return 'chip-finish';
-  if (['WIP','RUNNING'].includes(v))      return 'chip-wip';
-  if (v === 'ON BREAK')                   return 'chip-break';
-  if (v === 'HOLD')                       return 'chip-hold';
-  if (['PENDING','YTS'].includes(v))      return 'chip-pending';
+  if (['FINISH', 'COMPLETED'].includes(v)) return 'chip-finish';
+  if (['WIP', 'RUNNING'].includes(v)) return 'chip-wip';
+  if (v === 'ON BREAK') return 'chip-break';
+  if (v === 'HOLD') return 'chip-hold';
+  if (['PENDING', 'YTS'].includes(v)) return 'chip-pending';
   return 'chip-default';
 };
 
@@ -77,55 +77,56 @@ const ReadOnly = ({ label, icon, value, placeholder = '—' }) => (
 export default function EmpWorkwise() {
 
   // ── Timer state ──────────────────────────────────────────────
-  const [status,    setStatus]    = useState('stopped');
-  const [context,   setContext]   = useState(null);
-  const [elapsed,   setElapsed]   = useState(0);
+  const [status, setStatus] = useState('stopped');
+  const [context, setContext] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
   const [timeLogId, setTimeLogId] = useState(null);
-  const [breakEl,   setBreakEl]   = useState(0);
+  const [breakEl, setBreakEl] = useState(0);
   const breakRef = useRef(null);
 
   // ── Task data ─────────────────────────────────────────────────
-  const [myTasks,  setMyTasks]  = useState([]);
+  const [myTasks, setMyTasks] = useState([]);
   const [nextTask, setNextTask] = useState(null);
 
   // ── Task selection state ──────────────────────────────────────
   // selTask = taskId string
   // selectedTask = full MyTaskOption object
-  const [selTask,       setSelTask]       = useState('');
-  const [selectedTask,  setSelectedTask]  = useState(null);
+  const [selTask, setSelTask] = useState('');
+  const [selectedTask, setSelectedTask] = useState(null);
 
   // Auto-filled display values (derived from selectedTask)
-  const [autoProject,   setAutoProject]   = useState('');
-  const [autoProcess,   setAutoProcess]   = useState('');
-  const [autoJob,       setAutoJob]       = useState('');
+  const [autoProject, setAutoProject] = useState('');
+  const [autoProcess, setAutoProcess] = useState('');
+  const [autoJob, setAutoJob] = useState('');
   const [autoProjectId, setAutoProjectId] = useState(null);
   const [autoProcessId, setAutoProcessId] = useState(null);
-  const [autoJobId,     setAutoJobId]     = useState(null);
+  const [autoJobId, setAutoJobId] = useState(null);
 
   // ── Dropdown data (for log filters only) ─────────────────────
-  const [projects,  setProjects]  = useState([]);
+  const [projects, setProjects] = useState([]);
   const [processes, setProcesses] = useState([]);
 
   // ── Stop popup ────────────────────────────────────────────────
-  const [showStop,      setShowStop]      = useState(false);
-  const [stopVal,       setStopVal]       = useState(null);
-  const [pagesDone,     setPagesDone]     = useState('');
-  const [stopStatus,    setStopStatus]    = useState('stopped');
-  const [holdReason,    setHoldReason]    = useState('');
-  const [holdOther,     setHoldOther]     = useState('');
+  const [showStop, setShowStop] = useState(false);
+  const [stopVal, setStopVal] = useState(null);
+  const [pagesDone, setPagesDone] = useState('');
+  const [stopStatus, setStopStatus] = useState('stopped');
+  const [holdReason, setHoldReason] = useState('');
+  const [holdOther, setHoldOther] = useState('');
 
   // ── Break popup ───────────────────────────────────────────────
-  const [showBreak,  setShowBreak]  = useState(false);
-  const [bReason,    setBReason]    = useState('');
-  const [bCustom,    setBCustom]    = useState('');
-  const [bDesc,      setBDesc]      = useState('');
+  const [showBreak, setShowBreak] = useState(false);
+  const [bReason, setBReason] = useState('');
+  const [bCustom, setBCustom] = useState('');
+  const [bDesc, setBDesc] = useState('');
 
   // ── Time logs ─────────────────────────────────────────────────
-  const [logs,     setLogs]     = useState([]);
-  const [logPage,  setLogPage]  = useState(0);
+  const [logs, setLogs] = useState([]);
+  const [logPage, setLogPage] = useState(0);
   const [logTotal, setLogTotal] = useState(0);
   const [logPages, setLogPages] = useState(0);
-  const [logF,     setLogF]     = useState({
+  const [logSize, setLogSize] = useState(25);
+  const [logF, setLogF] = useState({
     projectId: '', processId: '', status: '',
     startDate: '', endDate: '',
   });
@@ -151,7 +152,7 @@ export default function EmpWorkwise() {
         apiCall('/projects'),
         apiCall('/processes'),
       ]);
-      setProjects(proj  || []);
+      setProjects(proj || []);
       setProcesses(proc || []);
     } catch (e) {
       console.warn('Could not load dropdowns:', e.message);
@@ -181,16 +182,16 @@ export default function EmpWorkwise() {
   }, []);
 
   // BUG FIX: pass filter snapshot to avoid React batching delay
-  const loadLogs = useCallback(async (pg = 0, filter = null) => {
+  const loadLogs = useCallback(async (pg = 0, filter = null, sizeVal = logSize) => {
     try {
       const f = filter !== null ? filter : logF;
-      const p = new URLSearchParams({ page: pg, size: 25 });
+      const p = new URLSearchParams({ page: pg, size: sizeVal });
       if (f.projectId) p.set('projectId', f.projectId);
       if (f.processId) p.set('processId', f.processId);
-      if (f.status)    p.set('status',    f.status);
+      if (f.status) p.set('status', f.status);
       if (f.startDate) p.set('startDate', f.startDate);
-      if (f.endDate)   p.set('endDate',   f.endDate);
-      
+      if (f.endDate) p.set('endDate', f.endDate);
+
       const [logsData, attendanceToday] = await Promise.all([
         apiCall(`/workwise/logs?${p}`),
         apiCall('/attendance/today').catch(() => null)
@@ -226,12 +227,12 @@ export default function EmpWorkwise() {
 
       setLogs(contentList);
       setLogTotal(logsData.totalElements || contentList.length);
-      setLogPages(logsData.totalPages    || 1);
+      setLogPages(logsData.totalPages || 1);
       setLogPage(pg);
     } catch (e) {
       console.warn('Could not load logs:', e.message);
     }
-  }, [logF]);
+  }, [logF, logSize]);
 
   const loadNext = useCallback(async () => {
     try {
@@ -247,7 +248,7 @@ export default function EmpWorkwise() {
     loadCurrent();
     loadLogs(0);
     loadNext();
-  // eslint-disable-next-line
+    // eslint-disable-next-line
   }, []);
 
   // ── Auto-populate from selected task ─────────────────────────
@@ -264,10 +265,10 @@ export default function EmpWorkwise() {
     if (!t) return;
 
     setSelectedTask(t);
-    setAutoProject(t.projectName  || '');
-    setAutoProcess(t.processName  || '');
-    setAutoProjectId(t.projectId  || null);
-    setAutoProcessId(t.processId  || null);
+    setAutoProject(t.projectName || '');
+    setAutoProcess(t.processName || '');
+    setAutoProjectId(t.projectId || null);
+    setAutoProcessId(t.processId || null);
 
     // Auto-fill first job from task's job list
     if (t.jobs && t.jobs.length > 0) {
@@ -354,10 +355,10 @@ export default function EmpWorkwise() {
       // Backend derives project/process/job from task.
       // We send them for logging convenience but backend overwrites from task.
       const data = await apiCall('/workwise/start', 'POST', {
-        taskId:    selectedTask.taskId,
+        taskId: selectedTask.taskId,
         projectId: autoProjectId,
         processId: autoProcessId,
-        jobId:     autoJobId || null,
+        jobId: autoJobId || null,
       });
       setContext(data);
       setTimeLogId(data.timeLogId);
@@ -380,7 +381,7 @@ export default function EmpWorkwise() {
     // BUG FIX: >= check
     if (stopStatus === 'completed' && !canComplete()) {
       const assigned = stopVal?.assignedPages ?? '?';
-      const already  = stopVal?.pagesCompletedSoFar ?? 0;
+      const already = stopVal?.pagesCompletedSoFar ?? 0;
       alert(
         `Cannot mark as Completed.\n\n` +
         `Previously completed: ${already}\n` +
@@ -397,11 +398,11 @@ export default function EmpWorkwise() {
     setBusy(true);
     try {
       const result = await apiCall('/workwise/stop', 'POST', {
-        timeLogId:         timeLogId,
-        pagesCompleted:    pages,
+        timeLogId: timeLogId,
+        pagesCompleted: pages,
         markTaskCompleted: stopStatus === 'completed',
-        status:            stopStatus,
-        onHoldReason:      holdReason || null,
+        status: stopStatus,
+        onHoldReason: holdReason || null,
       });
 
       // Reset all state
@@ -454,10 +455,10 @@ export default function EmpWorkwise() {
     setBusy(true);
     try {
       const data = await apiCall('/workwise/break/start', 'POST', {
-        timeLogId:    timeLogId,
-        breakReason:  bReason,       // DB enum value
+        timeLogId: timeLogId,
+        breakReason: bReason,       // DB enum value
         customReason: bReason === 'Other' ? bCustom : null,
-        description:  bDesc || null,
+        description: bDesc || null,
       });
       setContext(data);
       setStatus('break');
@@ -476,7 +477,7 @@ export default function EmpWorkwise() {
     setBusy(true);
     try {
       const data = await apiCall('/workwise/break/end', 'POST',
-                                  { timeLogId });
+        { timeLogId });
       setContext(data);
       setStatus('running');
       setBreakEl(0);
@@ -489,7 +490,7 @@ export default function EmpWorkwise() {
   };
 
   // Split tasks for dropdown display
-  const activeTasks    = myTasks.filter(t => !t.isCompleted);
+  const activeTasks = myTasks.filter(t => !t.isCompleted);
 
   // ── Render ────────────────────────────────────────────────────
   return (
@@ -569,8 +570,8 @@ export default function EmpWorkwise() {
                   setPagesDone(val);
                   // Auto-select 'completed' when threshold met
                   if (stopVal?.assignedPages != null) {
-                    const entered  = parseInt(val) || 0;
-                    const already  = stopVal.pagesCompletedSoFar || 0;
+                    const entered = parseInt(val) || 0;
+                    const already = stopVal.pagesCompletedSoFar || 0;
                     const assigned = stopVal.assignedPages;
                     if ((already + entered) >= assigned) {
                       setStopStatus('completed');
@@ -583,13 +584,12 @@ export default function EmpWorkwise() {
 
               {/* Live cumulative feedback */}
               {stopVal?.assignedPages != null && pagesDone !== '' && (
-                <div className={`ww-popup-hint ${
-                  canComplete() ? 'hint-success' : 'hint-warn'
-                }`}>
+                <div className={`ww-popup-hint ${canComplete() ? 'hint-success' : 'hint-warn'
+                  }`}>
                   {(() => {
-                    const entered  = parseInt(pagesDone) || 0;
-                    const already  = stopVal.pagesCompletedSoFar || 0;
-                    const total    = already + entered;
+                    const entered = parseInt(pagesDone) || 0;
+                    const already = stopVal.pagesCompletedSoFar || 0;
+                    const total = already + entered;
                     const assigned = stopVal.assignedPages;
                     return canComplete()
                       ? `✅ ${total} / ${assigned} — Can mark as Completed`
@@ -602,9 +602,8 @@ export default function EmpWorkwise() {
             <div className="ww-popup-radio-group">
 
               {/* Completed — disabled until pages met */}
-              <label className={`ww-popup-radio-option ${
-                stopStatus === 'completed' ? 'selected' : ''
-              } ${!canComplete() ? 'option-disabled' : ''}`}>
+              <label className={`ww-popup-radio-option ${stopStatus === 'completed' ? 'selected' : ''
+                } ${!canComplete() ? 'option-disabled' : ''}`}>
                 <input type="radio" name="st" value="completed"
                   checked={stopStatus === 'completed'}
                   disabled={!canComplete()}
@@ -623,9 +622,8 @@ export default function EmpWorkwise() {
               </label>
 
               {/* On Hold */}
-              <label className={`ww-popup-radio-option ${
-                stopStatus === 'on-hold' ? 'selected' : ''
-              }`}>
+              <label className={`ww-popup-radio-option ${stopStatus === 'on-hold' ? 'selected' : ''
+                }`}>
                 <input type="radio" name="st" value="on-hold"
                   checked={stopStatus === 'on-hold'}
                   onChange={e => setStopStatus(e.target.value)} />
@@ -664,9 +662,8 @@ export default function EmpWorkwise() {
               )}
 
               {/* Stopped */}
-              <label className={`ww-popup-radio-option ${
-                stopStatus === 'stopped' ? 'selected' : ''
-              }`}>
+              <label className={`ww-popup-radio-option ${stopStatus === 'stopped' ? 'selected' : ''
+                }`}>
                 <input type="radio" name="st" value="stopped"
                   checked={stopStatus === 'stopped'}
                   onChange={e => setStopStatus(e.target.value)} />
@@ -781,8 +778,8 @@ export default function EmpWorkwise() {
           <h2 className="ww-section-title">WorkWise</h2>
           <div className={`ww-status-pill ${status}`}>
             {status === 'running' ? '▶ Running'
-           : status === 'break'   ? '☕ On Break'
-           : '⏸ Stopped'}
+              : status === 'break' ? '☕ On Break'
+                : '⏸ Stopped'}
           </div>
         </div>
 
@@ -897,7 +894,7 @@ export default function EmpWorkwise() {
                   )}
                 </>
               ) : selectedTask && selectedTask.isCompleted ? (
-                <div className="ww-manual-hint" style={{ color:'#16a34a' }}>
+                <div className="ww-manual-hint" style={{ color: '#16a34a' }}>
                   <span>✅</span>
                   This task is already completed. Select another task.
                 </div>
@@ -912,9 +909,8 @@ export default function EmpWorkwise() {
               {/* Start button */}
               <div className="ww-btn-container">
                 <button
-                  className={`ww-toggle-btn ${
-                    isFormValid() ? 'ww-btn-start' : 'ww-btn-disabled'
-                  }`}
+                  className={`ww-toggle-btn ${isFormValid() ? 'ww-btn-start' : 'ww-btn-disabled'
+                    }`}
                   onClick={handleStart}
                   disabled={!isFormValid() || busy}>
                   {busy ? 'Starting...' : '▶ Start Task'}
@@ -932,12 +928,12 @@ export default function EmpWorkwise() {
 
               <div className="ww-timers-row">
                 <div className="ww-timer-banner ww-timer-running"
-                  style={{ flex:1 }}>
+                  style={{ flex: 1 }}>
                   <div className="ww-timer-display">{fmt(elapsed)}</div>
                   <div className="ww-timer-label">TOTAL ELAPSED</div>
                 </div>
                 <div className="ww-timer-banner ww-timer-break"
-                  style={{ flex:1 }}>
+                  style={{ flex: 1 }}>
                   <div className="ww-timer-display">{fmt(breakEl)}</div>
                   <div className="ww-timer-label">BREAK DURATION</div>
                 </div>
@@ -1018,25 +1014,25 @@ export default function EmpWorkwise() {
 
               <div className="ww-running-grid">
                 {[
-                  ['⏱️','bg-purple','border-blue','STARTED AT',
+                  ['⏱️', 'bg-purple', 'border-blue', 'STARTED AT',
                     context.startedAt
                       ? new Date(context.startedAt).toLocaleTimeString('en-IN')
                       : '-'],
-                  ['📁','bg-green','border-green','PROJECT',
+                  ['📁', 'bg-green', 'border-green', 'PROJECT',
                     context.projectName || '-'],
-                  ['⚙️','bg-orange','border-orange','PROCESS',
+                  ['⚙️', 'bg-orange', 'border-orange', 'PROCESS',
                     context.processName || '-'],
-                  ['📚','bg-blue','border-blue','ISBN / BOOK TITLE',
+                  ['📚', 'bg-blue', 'border-blue', 'ISBN / BOOK TITLE',
                     context.isbnBookTitle || '-'],
-                  ['📅','bg-pink','border-pink','DUE DATE',
+                  ['📅', 'bg-pink', 'border-pink', 'DUE DATE',
                     fmtDate(context.dueDate)],
-                  ['📄','bg-teal','border-teal','ASSIGNED PAGES',
+                  ['📄', 'bg-teal', 'border-teal', 'ASSIGNED PAGES',
                     context.assignedPagesAndChapter || '-'],
-                  ['🕘','bg-purple','border-lightpurple','SHIFT',
+                  ['🕘', 'bg-purple', 'border-lightpurple', 'SHIFT',
                     context.shift || '-'],
-                  ['🧩','bg-orange','border-orange','COMPLEXITY',
+                  ['🧩', 'bg-orange', 'border-orange', 'COMPLEXITY',
                     context.complexity || '-'],
-                  ['📄','bg-teal','border-teal','TOTAL PAGES',
+                  ['📄', 'bg-teal', 'border-teal', 'TOTAL PAGES',
                     context.totalPages?.toString() || '-'],
                 ].map(([icon, iconBg, border, label, val]) => (
                   <div key={label} className={`ww-run-card ${border}`}>
@@ -1051,7 +1047,7 @@ export default function EmpWorkwise() {
 
               {context.taskDescription && (
                 <div className="ww-field"
-                  style={{ marginTop:'8px', width:'100%' }}>
+                  style={{ marginTop: '8px', width: '100%' }}>
                   <label className="ww-label">
                     <span>📝</span> Task Description
                   </label>
@@ -1147,8 +1143,8 @@ export default function EmpWorkwise() {
             <button className="ww-clear-btn"
               onClick={() => {
                 const cleared = {
-                  projectId:'', processId:'', status:'',
-                  startDate:'', endDate:''
+                  projectId: '', processId: '', status: '',
+                  startDate: '', endDate: ''
                 };
                 setLogF(cleared);
                 loadLogs(0, cleared);
@@ -1193,7 +1189,7 @@ export default function EmpWorkwise() {
                   <td className="ww-td-mono">{formatTime(log.manualCheckOut || log.endTime)}</td>
                   <td>{log.projectName || '-'}</td>
                   <td>{log.processName || '-'}</td>
-                  <td>{log.isbnTitle   || '-'}</td>
+                  <td>{log.isbnTitle || '-'}</td>
                   <td className="ww-td-center">
                     {log.pagesCompleted ?? '0'}
                   </td>
@@ -1220,7 +1216,31 @@ export default function EmpWorkwise() {
 
         <div className="ww-pagination">
           <div className="ww-page-items">
-            Showing {logs.length} of {logTotal} records
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '16px' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ww-text-muted)' }}>Items per page:</label>
+              <select
+                value={logSize}
+                onChange={e => {
+                  const newSize = Number(e.target.value);
+                  setLogSize(newSize);
+                  loadLogs(0, logF, newSize);
+                }}
+                style={{
+                  padding: '3px 6px',
+                  border: '1.5px solid var(--ww-border)',
+                  borderRadius: 'var(--ww-radius-sm)',
+                  outline: 'none',
+                  fontSize: '0.75rem',
+                  background: 'var(--ww-surface)',
+                  color: 'var(--ww-text)'
+                }}
+              >
+                {[10, 25, 50, 100].map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+            <span>Showing {logs.length} of {logTotal} records</span>
           </div>
           {logPages > 1 && (
             <div className="ww-page-controls">
