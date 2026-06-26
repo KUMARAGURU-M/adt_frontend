@@ -59,6 +59,16 @@ const getComplexityClass = (value) => {
   return '';
 };
 
+const getProjectBadgeClass = (projectName) => {
+  if (!projectName) return 'proj-badge-default';
+  let hash = 0;
+  for (let i = 0; i < projectName.length; i++) {
+    hash = projectName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % 8;
+  return `proj-badge proj-badge-${index}`;
+};
+
 const mapJob = (j) => ({
   id: j.id,
   project: j.projectName || '',
@@ -99,7 +109,7 @@ const ComplexityBadge = ({ value }) => {
 const StatusPill = ({ value, type }) => {
   if (!value) return <span className="cell-pink">-</span>;
   const cls = type === 'status'
-    ? `status-pill sp-${value.toLowerCase().replace(/\s+/g, '-')}`
+    ? `bj-status-pill bj-sp-${value.toLowerCase().replace(/\s+/g, '-')}`
     : 'filestatus-pill';
   return <span className={cls}>{value}</span>;
 };
@@ -1297,7 +1307,7 @@ const BooksJobs = () => {
                   <tr key={job.id}>
                     <td>
                       {job.project
-                        ? <span className="bj-project-link">{job.project}</span>
+                        ? <span className={getProjectBadgeClass(job.project)}>{job.project}</span>
                         : <span className="cell-dash">-</span>}
                     </td>
                     <td className="td-date">{fmt(job.receiveDate)}</td>

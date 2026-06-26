@@ -29,6 +29,16 @@ const getComplexityClass = (value) => {
   return "";
 };
 
+const getProjectBadgeClass = (projectName) => {
+  if (!projectName) return 'proj-badge-default';
+  let hash = 0;
+  for (let i = 0; i < projectName.length; i++) {
+    hash = projectName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % 8;
+  return `proj-badge proj-badge-${index}`;
+};
+
 // Map backend response → frontend shape
 const mapProject = (p) => ({
   id:          p.id,
@@ -278,7 +288,11 @@ export default function Projects() {
               </tr>
             ) : paginatedProjects.map((project) => (
               <tr key={project.id} className="pm-row">
-                <td className="pm-name">{project.name}</td>
+                <td className="pm-name">
+                  <span className={getProjectBadgeClass(project.name)}>
+                    {project.name}
+                  </span>
+                </td>
                 <td className="pm-desc">{project.description || "-"}</td>
                 <td>
                   <span className="badge badge--billing">

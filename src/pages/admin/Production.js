@@ -230,10 +230,24 @@ const Production = () => {
     }
   };
 
-  // Helper to get status class
-  const getStatusClass = (status) => {
-    if (!status) return 'status-pill sp-pending';
-    return `status-pill sp-${status.toLowerCase()}`;
+  const getProcessStatusClass = (status) => {
+    if (!status) return 'prod-status-pill prod-sp-pending';
+    return `prod-status-pill prod-sp-${status.toLowerCase()}`;
+  };
+
+  const getQcStatusClass = (status) => {
+    if (!status) return 'qc-status-pill qc-sp-pending';
+    return `qc-status-pill qc-sp-${status.toLowerCase()}`;
+  };
+
+  const getProjectBadgeClass = (projectName) => {
+    if (!projectName) return 'proj-badge-default';
+    let hash = 0;
+    for (let i = 0; i < projectName.length; i++) {
+      hash = projectName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % 8;
+    return `proj-badge proj-badge-${index}`;
   };
 
   return (
@@ -362,7 +376,13 @@ const Production = () => {
                     return (
                       <tr key={job.id} className={isModified ? 'modified-row' : ''}>
                         <td className="proj-name-col" title={job.projectName}>
-                          {job.projectName}
+                          {job.projectName ? (
+                            <span className={getProjectBadgeClass(job.projectName)}>
+                              {job.projectName}
+                            </span>
+                          ) : (
+                            '—'
+                          )}
                         </td>
                         <td className="date-col">
                           {job.receiveDate || '—'}
@@ -406,9 +426,9 @@ const Production = () => {
                             <span className="not-started">Not Started</span>
                           )}
                         </td>
-                        <td>
+                         <td>
                           <select
-                            className={`inline-select ${getStatusClass(currentProcessStatus)}`}
+                            className={`inline-select ${getProcessStatusClass(currentProcessStatus)}`}
                             value={currentProcessStatus}
                             onChange={e => handleCellChange(job.id, 'processStatus', e.target.value)}
                             disabled={isSaving}
@@ -420,7 +440,7 @@ const Production = () => {
                         </td>
                         <td>
                           <select
-                            className={`inline-select ${getStatusClass(currentQcStatus)}`}
+                            className={`inline-select ${getQcStatusClass(currentQcStatus)}`}
                             value={currentQcStatus}
                             onChange={e => handleCellChange(job.id, 'qcStatus', e.target.value)}
                             disabled={isSaving}
